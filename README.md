@@ -1,1 +1,1 @@
-## GEOF - Games Every One Finds Fun.
+## GEOFF - Games Every One Finds Fun.
