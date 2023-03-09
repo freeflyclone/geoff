@@ -13,8 +13,17 @@ var spritesZombie;
 
 let initialised = false;
 
-const numberOfZombies = 10;
-const numberOfBases = 5;
+const numberOfZombies = 100;
+const numberOfBases = 100;
+
+const mapWidth = 8192;
+const mapHeight = 4096;
+
+var mapOffsetX = 0;
+var mapOffsetY = 0;
+
+const radarDisplayWidth = 200;
+var radarSize; 
 
 class SpriteSheet
 {
@@ -38,8 +47,17 @@ class SpriteSheet
 	draw(x, y, sx, sy)
 	{
 		if (this.Initialised == true)
-			ctx.drawImage(this.sheetImage, 2 + (sx * (this.spriteWidth + 1)), 2 + (sy * (this.spriteHeight + 1)), this.spriteWidth - 2, this.spriteHeight - 2, x - (this.spriteWidth >> 1), y - (this.spriteHeight >> 1), this.spriteWidth, this.spriteHeight);
+			ctx.drawImage(this.sheetImage, 2 + (sx * (this.spriteWidth + 1)), 2 + (sy * (this.spriteHeight + 1)), this.spriteWidth - 2, this.spriteHeight - 2, (x - mapOffsetX) - (this.spriteWidth >> 1), (y - mapOffsetY) - (this.spriteHeight >> 1), this.spriteWidth, this.spriteHeight);
 	}
+}
+
+class Size
+{
+	constructor(w, h)
+	{
+		this.width = w;
+		this.height = h;
+    }
 }
 
 class Location
@@ -48,6 +66,12 @@ class Location
 	{
 		this.xPos = x;
 		this.yPos = y;
+	}
+
+	getScaledLocation(s)
+	{
+		var l = new Location((this.xPos * s.width) / mapWidth, (this.yPos * s.height) / mapHeight);
+		return l;
 	}
 
 	setLocation(x, y)
@@ -206,23 +230,26 @@ class Base
 
 	draw()
 	{
+		var x = this.position.xPos - mapOffsetX;
+		var y = this.position.yPos - mapOffsetY;
+
 		if (this.occupied)
 		{
 			ctx.beginPath();
-			ctx.arc(this.position.xPos, this.position.yPos, this.radius, 0, 2 * Math.PI);
+			ctx.arc(x, y, this.radius, 0, 2 * Math.PI);
 			ctx.fillStyle = '#cf0000';
 			ctx.fill();
 		}
 
 		ctx.beginPath();
 		ctx.lineWidth = 2;
-		ctx.arc(this.position.xPos, this.position.yPos, this.radius, 0, 2 * Math.PI);
+		ctx.arc(x, y, this.radius, 0, 2 * Math.PI);
 		ctx.strokeStyle = '#0000ff';
 		ctx.stroke();
 
 		ctx.beginPath();
 		ctx.lineWidth = (this.occupied) ? 6 : 2;
-		ctx.arc(this.position.xPos, this.position.yPos, this.radius, 0, this.arcspan);
+		ctx.arc(x, y, this.radius, 0, this.arcspan);
 		ctx.strokeStyle = '#ffffff';
 		ctx.stroke();
 	}
@@ -252,7 +279,7 @@ function timed_movementupdate()
 	// If player is in base AND zombie is moving, check it's not within < 50, if so, stop
 	if (player.isInBase)
 	{
-		// Go through all zombies, 
+		// Go through all zombies 
 		for (let i = 0; i < zombies.length; i++)
 		{
 			// Within distance? If so, stop it
@@ -314,14 +341,14 @@ function timed_zombiedestinationandcreatebaseupdate()
 	for (let i = 0; i < zombies.length; i++)
 	{
 
-		// If not moving, check for new destination
-		if (zombies[i].IsMoving == false)
+		// If not moving, (or random) check for new destination
+		if (zombies[i].IsMoving == false || (Math.random() > 0.9))
 		{
 			if (Math.random() > 0.5)
 				zombies[i].movement.destination.setLocation(player.position.xPos + ((Math.random() * 100) - 50), player.position.yPos + ((Math.random() * 100) - 50));
 			else
 				if (Math.random() > 0.9)
-					zombies[i].movement.destination.setLocation(Math.random() * canvas.width, Math.random() * canvas.height);
+					zombies[i].movement.destination.setLocation(Math.random() * mapWidth, Math.random() * mapHeight);
 		}
 	}
 
@@ -330,7 +357,7 @@ function timed_zombiedestinationandcreatebaseupdate()
 	{
 		if (Math.random() > 0.6)
 		{
-			let base = new Base(Math.random() * canvas.width, Math.random() * canvas.height, 50);
+			let base = new Base(Math.random() * mapWidth, Math.random() * mapHeight, 50);
 			bases.push(base);
 		}
 	}
@@ -338,9 +365,12 @@ function timed_zombiedestinationandcreatebaseupdate()
 
 function init()
 {
+	// Set rader size
+	radarSize = new Size(radarDisplayWidth, (radarDisplayWidth * mapHeight) / mapWidth);
+
 	// Create sprite sheets
-	spritesHuman = new SpriteSheet(40, 54, 6, 2, 'SSheet_Man.gif');
-	spritesZombie = new SpriteSheet(40, 54, 6, 2, 'SSheet_Zombie.gif');
+	spritesHuman = new SpriteSheet(40, 54, 6, 2, 'images/SSheet_Man.gif');
+	spritesZombie = new SpriteSheet(40, 54, 6, 2, 'images/SSheet_Zombie.gif');
 
 	// Setup resize
 	window.onresize = on_resize;
@@ -349,16 +379,18 @@ function init()
 	// Create zombies and add to beings list
 	for (let i = 0; i < numberOfZombies; i++)
 	{
-		let zombie = new Zombie(Math.random() * canvas.width, Math.random() * canvas.height);
+		let zombie = new Zombie(Math.random() * mapWidth, Math.random() * mapHeight);
 		zombies.push(zombie);
 		beings.push(zombie);
 	}
 
-	// Create 1 base
-	let base = new Base(Math.random() * canvas.width, Math.random() * canvas.height, 50);
-	bases.push(base);
+	// Create half the max no. of bases
+	for (let i = 0; i < numberOfBases >> 1; i++)
+	{
+		let base = new Base(Math.random() * mapWidth, Math.random() * mapHeight, 50);
+		bases.push(base);
+	}
 	
-
 	// Create player and add to beings list
 	this.player = new Human(bases[0].position.xPos, bases[0].position.yPos);
 	beings.push(player);
@@ -372,6 +404,7 @@ function init()
 
 	// Initialised OK
 	initialised = true;
+	viewToCenter(player.position.xPos, player.position.yPos);
 	draw();
 }
 
@@ -388,8 +421,38 @@ function draw()
 	if (!initialised)
 		return;
 
+	// Adjust view offset
+	var offsetByX = 0;
+	var offsetByY = 0;
+
+	var offBy = player.position.xPos - mapOffsetX;
+	var mapScrollBorder = canvas.width / 3;
+
+	if (offBy < mapScrollBorder)
+		offsetByX = offBy - mapScrollBorder;
+	if (offBy > (canvas.width - mapScrollBorder))
+		offsetByX = offBy - (canvas.width - mapScrollBorder);
+
+	offBy = player.position.yPos - mapOffsetY;
+	mapScrollBorder = canvas.height / 3;
+
+	if (offBy < mapScrollBorder)
+		offsetByY = offBy - mapScrollBorder;
+	if (offBy > (canvas.height - mapScrollBorder))
+		offsetByY = offBy - (canvas.height - mapScrollBorder);
+
+	if (offsetByX != 0 || offsetByY != 0)
+		viewMoveOffset(offsetByX, offsetByY);
+
 	// Clear background
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+	// Draw map extent border
+	ctx.beginPath();
+	ctx.lineWidth = 16;
+	ctx.rect(-mapOffsetX, -mapOffsetY, mapWidth, mapHeight);
+	ctx.strokeStyle = '#0000ff';
+	ctx.stroke();
 
 	// Render all bases
 	for (let i = 0; i < bases.length; i++)
@@ -398,9 +461,72 @@ function draw()
 	// Draw all beings
 	for (let i = 0; i < beings.length; i++)
 		beings[i].draw();
+
+	// draw radar
+	var radarX = (canvas.width - 20) - radarSize.width;
+	var radarY = 20;
+
+	ctx.clearRect(radarX, radarY, radarSize.width, radarSize.height);
+
+	ctx.beginPath();
+	ctx.fillStyle = '#ff0000';
+	for (let i = 0; i < bases.length; i++) {
+		var l = bases[i].position.getScaledLocation(radarSize);
+		ctx.fillRect(radarX + l.xPos - 1, radarY + l.yPos - 1, 3, 3);
+	}
+	ctx.stroke();
+
+	ctx.beginPath();
+	ctx.fillStyle = '#00ff00';
+	for (let i = 0; i < zombies.length; i++)
+	{
+		var l = zombies[i].position.getScaledLocation(radarSize);
+		ctx.fillRect(radarX + l.xPos, radarY + l.yPos, 1, 1);
+	}
+	ctx.stroke();
+
+	ctx.beginPath();
+	ctx.lineWidth = 1;
+	var l = player.position.getScaledLocation(radarSize);
+	ctx.fillStyle = '#ffffff';
+	ctx.fillRect(radarX + l.xPos - 2, radarY + l.yPos - 2, 5, 5);
+	ctx.stroke();
+
+	ctx.beginPath();
+	ctx.lineWidth = 1;
+	ctx.rect (radarX, radarY, radarSize.width, radarSize.height);
+	ctx.strokeStyle = '#0000ff';
+	ctx.stroke();
+
 }
 
 function on_click(event)
 {
-	player.movement.destination.setLocation(event.clientX, event.clientY);
+	player.movement.destination.setLocation(mapOffsetX + event.clientX, mapOffsetY + event.clientY);
+}
+
+function viewToCenter(x, y)
+{
+	viewSetOffset(x - (canvas.width >> 1), y - (canvas.height >> 1));
+}
+
+function viewMoveOffset(x, y)
+{
+	viewSetOffset(mapOffsetX + x, mapOffsetY + y);
+}
+
+function viewSetOffset(x, y)
+{
+	if (x < 0)
+		x = 0;
+	if (x > (mapWidth - canvas.width))
+		x = mapWidth - canvas.width;
+
+	if (y < 0)
+		y = 0;
+	if (y > (mapHeight - canvas.height))
+		y = mapHeight - canvas.height;
+
+	mapOffsetX = x;
+	mapOffsetY = y;
 }
