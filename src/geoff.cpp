@@ -15,6 +15,7 @@
 
 #include "server_certificate.hpp"
 #include "geoff.h"
+#include "SSLContext.h"
 
 // Return a reasonable mime type based on the extension of a file.
 beast::string_view
@@ -941,6 +942,7 @@ private:
 
 int main(int argc, char* argv[])
 {
+    boost::system::error_code ec;
     // Check command line arguments.
     if (argc != 5)
     {
@@ -958,12 +960,13 @@ int main(int argc, char* argv[])
     // The io_context is required for all I/O
     net::io_context ioc{threads};
 
-    // The SSL context is required, and holds certificates
-    ssl::context ctx{ssl::context::tlsv12};
-
-    // This holds the self-signed certificate used by the server
-    load_server_certificate(ctx);
-
+    auto ctx = SSLContext("hq.e-man.tv", ec);
+    if(ec)
+    {
+        fail(ec, "SSLContext");
+        return -1;
+    }
+    
     // Create and launch a listening port
     std::make_shared<listener>(
         ioc,

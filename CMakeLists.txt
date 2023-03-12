@@ -35,7 +35,8 @@ file(GLOB_RECURSE BEAST_FILES
 source_group(TREE ${Boost_INCLUDE_DIRS}/boost/beast PREFIX beast FILES ${BEAST_FILES})
 
 file(GLOB APP_FILES
-	src/geoff.cpp)
+	src/geoff.cpp
+  src/SSLContext.cpp)
 
 source_group("" FILES ${APP_FILES})
 
