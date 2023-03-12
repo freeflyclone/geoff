@@ -13,7 +13,7 @@
 //
 //------------------------------------------------------------------------------
 
-#include "geoff_certificate.hpp"
+#include "server_certificate.hpp"
 #include "geoff.h"
 
 // Return a reasonable mime type based on the extension of a file.
