@@ -2,12 +2,50 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-	<title>hq.e-man.tv chat</title>
+	<title>hq.e-man.tv WebSock Echo</title>
 	<link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <script type="text/javascript">
+        function WebSocketTest()
+        {
+            if ("WebSocket" in window)
+            {
+                var ws = new WebSocket("wss://hq.e-man.tv/");
+            }
+            else
+            {
+                alert("WebSocket is not supported in this browser.");
+                return;
+            }
+
+            ws.onopen = function()
+            {
+                ws.send("This is a test.");
+                alert("Message Sent");
+            }
+
+            ws.onmessage = function(event)
+            {
+                var received_msg = event.data;
+                alert("Message receieved: " + received_msg);
+                ws.close();
+            }
+
+            ws.onclose = function()
+            {
+                alert("Connection closed.");
+            }
+        }
+    </script>
 </head>
 
 <body>
-<h1>Chat Window</h1>
-</body>
+    <h2>WebSocket Echo Test</h2>
+    <p>This is a very simple test of GEoFF's WebSocket functionality.  All the server does at this point is echo back what was sent to it.</p>
+    <p>Use view page source to see the javascript.</p>
+    <div id = "sse">
+        <a href = "javascript:WebSocketTest()">Run WebSocket</a>
+     </div>
 
+
+</body>
 </html> 
