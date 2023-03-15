@@ -8,7 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set (Boost_USE_STATIC_LIBS ON)
 
 if(MSVC)
-  set (Boost_USE_STATIC_RUNTIME ON)
+  set (Boost_USE_STATIC_RUNTIME OFF)
   add_definitions(-D_WIN32_WINNT=0x0601)
   add_definitions(-D_SCL_SECURE_NO_WARNINGS=1)
   add_definitions(-D_CRT_SECURE_NO_WARNINGS=1)
@@ -24,6 +24,7 @@ set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER build)
 
 find_package(OpenSSL REQUIRED)
 
+cmake_policy(SET CMP0074 NEW)
 find_package(Boost REQUIRED COMPONENTS system)
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
