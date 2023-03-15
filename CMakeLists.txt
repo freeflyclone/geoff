@@ -35,14 +35,17 @@ file(GLOB_RECURSE BEAST_FILES
 
 source_group(TREE ${Boost_INCLUDE_DIRS}/boost/beast PREFIX beast FILES ${BEAST_FILES})
 
-file(GLOB APP_FILES
+file(GLOB APP_SRC_FILES
 	src/geoff.cpp
-  src/SSLContext.cpp)
+	src/SSLContext.cpp)
 
-source_group("" FILES ${APP_FILES})
+file(GLOB APP_INC_FILES
+	src/SSLContext.h)
 
+source_group(src FILES ${APP_SRC_FILES})
+source_group(inc FILES ${APP_INC_FILES})
 
-add_executable(geoff ${APP_FILES} ${BEAST_FILES})
+add_executable(geoff ${APP_SRC_FILES} ${APP_INC_FILES} ${BEAST_FILES})
 
 if(NOT WIN32)
   find_package(Threads)
