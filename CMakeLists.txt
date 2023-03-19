@@ -22,9 +22,12 @@ endif()
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER build)
 
-find_package(OpenSSL REQUIRED)
-
 cmake_policy(SET CMP0074 NEW)
+
+find_package(OpenSSL REQUIRED)
+include_directories(${OpenSSL_INCLUDE_DIRS})
+link_directories(${OpenSSL_LIBRARY_DIRS})
+
 find_package(Boost REQUIRED COMPONENTS system)
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
