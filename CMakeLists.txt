@@ -20,11 +20,14 @@ set(CMAKE_PROJECT_DEBUG OFF)
 # Files you want to appear in the "Source Files" project folder are explicitly listed here
 file(GLOB APP_SRC_FILES
 	src/geoff.cpp
-	src/SSLContext.cpp)
+	src/SSLContext.cpp
+	src/ServerUtils.cpp)
 
 # Files to appear in "Header Files" project folder are explicitly listed here
 file(GLOB APP_INC_FILES
-	src/SSLContext.h)
+	src/geoff.h
+	src/SSLContext.h
+	src/ServerUtils.h)
 
 # Files within the source tree "www" tree are all implicitly (automatically) added.
 # Things like .html, .js, .gif, etc. The tree structure is preserved. 
