@@ -1,5 +1,13 @@
 # CMake project file for GEOFF
 # Adding files to the project should be done in this file, to preserve cross-platform building
+#
+# Note: proper functioning of this file depends on two environment variables:
+#
+#  BOOST_ROOT:			set to the root folder of the installed Boost library
+#						MSVC example: D:\DevLibs\boost_1_81_0
+#
+#  OPENSSL_ROOT_DIR:	set to root folder of installed OpenSSL libraries
+#						MSVC example: D:\DevLibs\OpenSSL-WIN64  
 #---------------------------------------------------------------------------------------------
 cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 project (geoff VERSION 0.1.0 LANGUAGES CXX)
@@ -19,6 +27,7 @@ file(GLOB APP_INC_FILES
 	src/SSLContext.h)
 
 # Files within the source tree "www" tree are all implicitly (automatically) added.
+# Things like .html, .js, .gif, etc. The tree structure is preserved. 
 file(GLOB_RECURSE APP_WWW_FILES
 	www/*)
 
