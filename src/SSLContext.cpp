@@ -1,5 +1,12 @@
 #include "SSLContext.h"
 #include "ServerUtils.h"
+#include "server_certificate.hpp"
+
+SSLContext::SSLContext(boost::system::error_code& ec)
+    : ssl::context(ssl::context::tlsv12) 
+{
+    load_server_certificate(static_cast<ssl::context&>(*this), ec);
+}
 
 SSLContext::SSLContext(const std::string & certs_folder, boost::system::error_code & ec)
     : ssl::context(ssl::context::tlsv12)

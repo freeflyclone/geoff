@@ -2,6 +2,7 @@
 #define HTTP_SESSION_H
 
 #include "geoff.h"
+#include "HttpRequest.h"
 
 // Handles an HTTP server connection.
 // This uses the Curiously Recurring Template Pattern so that

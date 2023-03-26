@@ -440,7 +440,12 @@ int main(int argc, char* argv[])
     // The io_context is required for all I/O
     net::io_context ioc{threads};
 
+#ifdef _WIN64
+    auto ctx = SSLContext(ec);
+#elif __linux__
     auto ctx = SSLContext("hq.e-man.tv", ec);
+#endif
+
     if(ec)
     {
         fail(ec, "SSLContext");
