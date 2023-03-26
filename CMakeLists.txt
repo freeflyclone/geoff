@@ -16,6 +16,9 @@ project (geoff VERSION 0.1.0 LANGUAGES CXX)
 # that display various cmake path variable evaluations
 set(CMAKE_PROJECT_DEBUG OFF)
 
+# This is MSVC specific
+set(CMAKE_CONFIGURATION_TYPES Debug;Release)
+
 # These are relative to ${PROJECT_SOURCE_DIR}, that is, where it was cloned to.
 # Files you want to appear in the "Source Files" project folder are explicitly listed here
 file(GLOB APP_SRC_FILES
@@ -26,8 +29,10 @@ file(GLOB APP_SRC_FILES
 # Files to appear in "Header Files" project folder are explicitly listed here
 file(GLOB APP_INC_FILES
 	src/geoff.h
+	src/HttpSession.h
 	src/SSLContext.h
-	src/ServerUtils.h)
+	src/ServerUtils.h
+	src/WebsocketSession.h)
 
 # Files within the source tree "www" tree are all implicitly (automatically) added.
 # Things like .html, .js, .gif, etc. The tree structure is preserved. 
@@ -110,8 +115,7 @@ if(MSVC)
   target_link_libraries(${PROJECT_NAME} PRIVATE Crypt32)
 endif()
 
-set_target_properties(${PROJECT_NAME} PROPERTIES
-  VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_COMMAND_ARGUMENTS "0.0.0.0 8080 www 4")
 
-set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY
-  VS_STARTUP_PROJECT ${PROJECT_NAME})
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
