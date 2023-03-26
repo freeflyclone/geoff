@@ -212,4 +212,79 @@ public:
 };
 
 
+// Handles a plain WebSocket connection
+class plain_websocket_session
+    : public websocket_session<plain_websocket_session>
+    , public std::enable_shared_from_this<plain_websocket_session>
+{
+    websocket::stream<beast::tcp_stream> ws_;
+
+public:
+    // Create the session
+    explicit
+        plain_websocket_session(
+            beast::tcp_stream&& stream)
+        : ws_(std::move(stream))
+    {
+    }
+
+    // Called by the base class
+    websocket::stream<beast::tcp_stream>&
+        ws()
+    {
+        return ws_;
+    }
+};
+
+//------------------------------------------------------------------------------
+
+// Handles an SSL WebSocket connection
+class ssl_websocket_session
+    : public websocket_session<ssl_websocket_session>
+    , public std::enable_shared_from_this<ssl_websocket_session>
+{
+    websocket::stream<
+        beast::ssl_stream<beast::tcp_stream>> ws_;
+
+public:
+    // Create the ssl_websocket_session
+    explicit
+        ssl_websocket_session(
+            beast::ssl_stream<beast::tcp_stream>&& stream)
+        : ws_(std::move(stream))
+    {
+    }
+
+    // Called by the base class
+    websocket::stream<
+        beast::ssl_stream<beast::tcp_stream>>&
+        ws()
+    {
+        return ws_;
+    }
+};
+
+//------------------------------------------------------------------------------
+
+template<class Body, class Allocator>
+void
+make_websocket_session(
+    beast::tcp_stream stream,
+    http::request<Body, http::basic_fields<Allocator>> req)
+{
+    std::make_shared<plain_websocket_session>(
+        std::move(stream))->run(std::move(req));
+}
+
+template<class Body, class Allocator>
+void
+make_websocket_session(
+    beast::ssl_stream<beast::tcp_stream> stream,
+    http::request<Body, http::basic_fields<Allocator>> req)
+{
+    std::make_shared<ssl_websocket_session>(
+        std::move(stream))->run(std::move(req));
+}
+
+
 #endif
