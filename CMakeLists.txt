@@ -30,8 +30,9 @@ file(GLOB APP_SRC_FILES
 file(GLOB APP_INC_FILES
 	src/geoff.h
 	src/HttpSession.h
-	src/SSLContext.h
+	src/server_certificate.hpp
 	src/ServerUtils.h
+	src/SSLContext.h
 	src/WebsocketSession.h)
 
 # Files within the source tree "www" tree are all implicitly (automatically) added.
