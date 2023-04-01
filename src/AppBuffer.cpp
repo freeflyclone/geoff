@@ -2,9 +2,8 @@
 
 AppBuffer::AppBuffer(std::size_t bufferLength, int isLittleEndian)
     :
-    bufferLength(bufferLength),
-    m_isLittleEndian(isLittleEndian)
-
+    m_isLittleEndian(isLittleEndian),
+    bufferLength(bufferLength)
 {
     tempBuf = new uint8_t[bufferLength];
     writeOffset = 0;
