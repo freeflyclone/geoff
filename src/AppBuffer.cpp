@@ -25,12 +25,12 @@ std::size_t AppBuffer::bytesRemaining()
     return (bufferLength - readOffset);
 }
 
-UINT8 AppBuffer::get_uint8()
+uint8_t AppBuffer::get_uint8()
 {
     return (tempBuf[readOffset++]);
 }
 
-UINT16 AppBuffer::get_uint16()
+uint16_t AppBuffer::get_uint16()
 {
     uint8_t* tempBufPtr = &tempBuf[readOffset];
     uint16_t v = !m_isLittleEndian ? *(uint16_t*)tempBufPtr : (tempBufPtr[1] << 0) | (tempBufPtr[0] << 8);
@@ -38,7 +38,7 @@ UINT16 AppBuffer::get_uint16()
     return (v);
 }
 
-UINT32 AppBuffer::get_uint32()
+uint32_t AppBuffer::get_uint32()
 {
     uint8_t* tempBufPtr = &tempBuf[readOffset];
     uint32_t v = !m_isLittleEndian ? *(uint32_t*)tempBufPtr : (tempBufPtr[3] << 0) | (tempBufPtr[2] << 8) | (tempBufPtr[1] << 16) | (tempBufPtr[0] << 24);
