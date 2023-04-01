@@ -95,5 +95,5 @@ void AppBuffer::set_uint32(int byteOffset, uint32_t v)
         v = (vp[3] << 0) | (vp[2] << 8) | (vp[1] << 16) | (vp[0] << 24);
     }
 
-    *((uint16_t*)tempBufPtr) = v;
+    *((uint32_t*)tempBufPtr) = v;
 }
