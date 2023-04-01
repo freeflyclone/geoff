@@ -35,7 +35,7 @@ file(GLOB APP_INC_FILES
 	src/ClientNet.h
 	src/Game.h
 	src/geoff.h
-	src/HttpSession.h
+  src/handle_request.h
 	src/server_certificate.hpp
 	src/ServerUtils.h
 	src/SSLContext.h
