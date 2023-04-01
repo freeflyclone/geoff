@@ -1,6 +1,8 @@
 #ifndef WEBSOCKET_SESSION_H
 #define WEBSOCKET_SESSION_H
 
+#include "geoff.h"
+
 // Echoes back all received WebSocket messages.
 // This uses the Curiously Recurring Template Pattern so that
 // the same code works with both SSL streams and regular sockets.
@@ -34,7 +36,7 @@ class websocket_session
         {
             res.set(http::field::server,
                 std::string(BOOST_BEAST_VERSION_STRING) +
-                " advanced-server-flex");
+                " GEOFF version " + GEOFF_Version);
         }));
 
         // Accept the websocket handshake
