@@ -1,6 +1,8 @@
 #ifndef HANDLE_REQUEST_H
 #define HANDLE_REQUEST_H
 
+#include "geoff.h"
+
 // This function produces an HTTP response for the given
 // request. The type of the response object depends on the
 // contents of the request, so the interface requires the
