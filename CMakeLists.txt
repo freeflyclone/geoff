@@ -39,7 +39,7 @@ file(GLOB APP_INC_FILES
 	src/server_certificate.hpp
 	src/ServerUtils.h
 	src/SSLContext.h
-	src/WebsocketSession.h)
+	src/websocket_session.h)
 
 # Files within the source tree "www" tree are all implicitly (automatically) added.
 # Things like .html, .js, .gif, etc. The tree structure is preserved. 
