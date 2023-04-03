@@ -10,7 +10,7 @@ class Game
 public:
 	static Game& GetInstance();
 
-	AppBuffer* CommsHandler(net::any_io_executor ex, beast::flat_buffer buffer);
+	std::size_t CommsHandler(beast::flat_buffer buffer, std::size_t bytes_transferred);
 
 private:
 	// I know what you're thinking: WTF is this?  It's Magic Statics!

@@ -12,11 +12,11 @@ Game::~Game()
 {
 }
 
-AppBuffer* Game::CommsHandler(net::any_io_executor ex, beast::flat_buffer buffer)
+std::size_t Game::CommsHandler(beast::flat_buffer buffer, std::size_t bytes_transferred)
 {
-	std::cout << __FILE__ << ":" << __LINE__ << std::endl;
+	std::cout << "bytes_transferred: " << bytes_transferred << ", buffer.size(): " << buffer.size() << std::endl;
 
-	return (nullptr);
+	return bytes_transferred;
 }
 
 // https://blog.mbedded.ninja/programming/languages/c-plus-plus/magic-statics/

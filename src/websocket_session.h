@@ -83,7 +83,7 @@ class websocket_session
             return fail(ec, "read");
 
         // Invoke the Game comms handler.
-        Game::GetInstance().CommsHandler(derived().ws().get_executor(), buffer_);
+        Game::GetInstance().CommsHandler(buffer_, bytes_transferred);
 
         // Echo the message
         derived().ws().text(derived().ws().got_text());
