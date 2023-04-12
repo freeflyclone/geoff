@@ -25,8 +25,6 @@ using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 class ClientNet
 {
 public:
-
-	//websocket::stream<beast::tcp_stream>* ws_;
 	int isLittleEndian;
 	int framesWithoutContact;
 

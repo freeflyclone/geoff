@@ -2,7 +2,6 @@
 
 ClientNet::ClientNet()
 {
-    //this->ws_ = ws_;
 }
 
 void ClientNet::initialise(int isLittleEndian)
