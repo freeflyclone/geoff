@@ -5,13 +5,18 @@
 	<meta charset="utf-8">
 	<title>hq.e-man.tv WebSock GameTest</title>
 	<link rel="icon" type="image/x-icon" href="/favicon.ico">
+	<style>
+		html, body {margin: 0; height: 100%; overflow: hidden; background: black; }
+		canvas { border: 2px solid blue; display: block; }
+	</style>
 </head>
 
 <body>
-	<h2>WebSocket GameTest</h2>
+	<canvas id="gameCanvas">
+		Your browser does not support the HTML canvas tag.
+	</canvas>
+
 	<script type="text/javascript" src="/js/GameFace.js"></script>
-	<script>
-		Init();
-	</script>
+	<script> Init(); </script>
 </body>
 </html> 

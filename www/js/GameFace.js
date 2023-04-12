@@ -8,6 +8,12 @@ var serverConnectionState = ConnectionState.Disconnected;
 var timerLoop;
 var websock;
 
+var canvas = document.getElementById('gameCanvas');
+var ctx = canvas.getContext("2d");
+var borderWidth = 4;
+var centerX;
+var centerY;
+
 // allow for multiple keys down simultaneously.
 var keysPressed = {};
 
@@ -131,7 +137,21 @@ function on_keyup(event) {
     keysPressed[event.key] = false;
 }
 
+function on_resize() {
+    ctx.canvas.width = window.innerWidth - borderWidth;
+    ctx.canvas.height = window.innerHeight - borderWidth;
+
+    centerX = ctx.canvas.width / 2;
+    centerY = ctx.canvas.height / 2;
+
+    console.log("center: " + centerX + "," + centerY);
+}
+
 function Init() {
+    // Setup resize
+    window.onresize = on_resize;
+    on_resize();
+
     timerLoop = new Timer();
     timerLoop.start(timerLoopTick, 50);
 }
