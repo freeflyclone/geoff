@@ -1,12 +1,6 @@
-const ConnectionState = {
-    Disconnected: 0,
-    Connecting: 1,
-    Connected: 2
-}
-var serverConnectionState = ConnectionState.Disconnected;
-
 var timerLoop;
 var websock;
+var myWebSock;
 
 var canvas = document.getElementById('gameCanvas');
 var ctx = canvas.getContext("2d");
@@ -21,6 +15,12 @@ var keysPressed = {};
 document.addEventListener("click", on_click);
 document.addEventListener("keydown", on_keydown);
 document.addEventListener("keyup", on_keyup);
+
+const littleEndian = ((() => {
+    const buffer = new ArrayBuffer(2);
+    new DataView(buffer).setInt16(0, 256, true);
+    return new Int16Array(buffer)[0] === 256;
+})() == 0) ? 0xAA : 0xAB;
 
 class Timer {
     contructor() {
@@ -54,52 +54,84 @@ class Timer {
     }
 }
 
-function make_websocket_url() {
-    var protocol;
-    if (window.location.protocol == "https:")
-        protocol = "wss:"
-    else if (window.location.protocol == "http:")
-        protocol = "ws:"
+class WebSock {
+    constructor() {
+        this.sock = new WebSocket(this.MakeWebSockUrl());
+        this.sock.binaryType = 'arraybuffer';
 
-    var url = protocol + "//" + window.location.hostname + ":" + window.location.port + "/";
+        this.sock.onopen = this.OnOpen;
+        this.sock.onmessage = this.OnMessage;
+        this.sock.onclose = this.OnClose;
+        this.sock.onerror = this.OnError;
+    }
 
-    return url;
-}
+    OnOpen(event) {
+        console.log("Connected");
+    }
 
-function websock_onopen(event) {
-    serverConnectionState = ConnectionState.Connected;
-}
+    OnMessage(event) {
+        console.log("WebSock.OnMessage: " + event.data);
+    }
 
-function websock_onmessage(event) {
-    console.log("websock_onmessage: " + event.data);
-}
+    OnClose(event) {
+        console.log("Disconnected");
+    }
 
-function websock_onclose(event) {
-    serverConnectionState = ConnectionState.Disconnected;
-}
+    OnError(event) {
+        console.log("Error: " + event.data);
+    }
 
-function websock_onerror(event) {
+    MakeWebSockUrl() {
+        var protocol;
+        if (window.location.protocol == "https:")
+            protocol = "wss:"
+        else if (window.location.protocol == "http:")
+            protocol = "ws:"
 
-}
+        var url = protocol + "//" + window.location.hostname + ":" + window.location.port + "/";
 
-function WebsocketConnect()
-{
-    console.log("Connection initiated");
+        return url;
+    }
 
-    serverConnectionState = ConnectionState.Connecting;
-    websock = new WebSocket(make_websocket_url());
+    Send(what) {
+        this.sock.send(what);
+    }
 
-    websock.binaryType = 'arraybuffer';
+    Tick() {
+        switch (this.sock.readyState) {
+            case 0:
+                console.log("CONNECTING...");
+                break;
 
-    websock.onopen = websock_onopen;
-    websock.onmessage = websock_onmessage;
-    websock.onclose = websock_onclose;
-    websock.onerror = websock_onerror;
-}
+            case 1:
+                this.Connected();
+                break;
 
-function WebsocketConnected()
-{
-    websock.send("This is a test.");
+            case 2:
+                console.log("CLOSING...");
+                break;
+
+            case 3:
+                console.log("CLOSED.");
+                break;
+        }
+    }
+
+    Connected() {
+        if (keysPressed['a']) {
+            var buff = new ArrayBuffer(4);
+            var view = new DataView(buff);
+            view.setUint8(0, littleEndian);
+            view.setUint8(1, 0x12);
+            view.setUint8(2, 0x61);
+            view.set
+            this.Send(buff);
+        }
+
+        if (keysPressed['d']) {
+            this.Send("d");
+        }
+    }
 }
 
 // This runs at the main timerLoop interval to run client-side periodic events.
@@ -109,19 +141,11 @@ function WebsocketConnected()
 // Took me a bit to figure out why Tim did it this way.
 function timerLoopTick()
 {
-    switch (serverConnectionState)
-    {
-        case ConnectionState.Disconnected:
-            WebsocketConnect();
-            break;
-
-        case ConnectionState.Connecting:
-            console.log("Awaiting connect completion.");
-            break;
-
-        case ConnectionState.Connected:
-            WebsocketConnected();
-            break;
+    if (typeof myWebSock === 'undefined') {
+        myWebSock = new WebSock();
+    }
+    else {
+        myWebSock.Tick();
     }
 }
 

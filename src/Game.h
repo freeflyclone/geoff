@@ -21,6 +21,9 @@ private:
 	Game();
 	~Game();
 
+	std::mutex m_playersMutex;
+
+	// You can only get a Game instance through Game::GetInstance(), all default constructors hereby deleted.
 	Game(const Game&) = delete;
 	Game& operator=(const Game&) = delete;
 	Game(Game&&) = delete;

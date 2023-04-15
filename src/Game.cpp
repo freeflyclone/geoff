@@ -1,5 +1,8 @@
 #include "Game.h"
 
+#include <ios>
+#include <iostream>
+
 Game::Game()
 {
 
@@ -12,11 +15,21 @@ Game::~Game()
 {
 }
 
-std::size_t Game::CommsHandler(beast::flat_buffer buffer, std::size_t bytes_transferred)
+std::size_t Game::CommsHandler(beast::flat_buffer in_buffer, std::size_t in_length)
 {
-	std::cout << "bytes_transferred: " << bytes_transferred << ", buffer.size(): " << buffer.size() << std::endl;
+	const std::lock_guard<std::mutex> lock(m_playersMutex);
 
-	return bytes_transferred;
+	if (in_length < 2)
+		return 0;
+
+	auto buff = (unsigned char*)static_cast<net::const_buffer>(in_buffer.data()).data();
+
+	std::cout << "1st byte: " << std::hex << (int)buff[0] << ", ";
+	std::cout << "2nd byte: " << std::hex << (int)buff[1] << ", ";
+	std::cout << "3rd byte: '" << buff[2] << "'" << std::endl;
+	//std::cout << "in_length: " << in_length << ", in_buffer.size(): " << in_buffer.size() << std::endl;
+
+	return in_length;
 }
 
 // https://blog.mbedded.ninja/programming/languages/c-plus-plus/magic-statics/
