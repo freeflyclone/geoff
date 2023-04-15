@@ -27,7 +27,6 @@ std::size_t Game::CommsHandler(beast::flat_buffer in_buffer, std::size_t in_leng
 	std::cout << "1st byte: " << std::hex << (int)buff[0] << ", ";
 	std::cout << "2nd byte: " << std::hex << (int)buff[1] << ", ";
 	std::cout << "3rd byte: '" << buff[2] << "'" << std::endl;
-	//std::cout << "in_length: " << in_length << ", in_buffer.size(): " << in_buffer.size() << std::endl;
 
 	return in_length;
 }

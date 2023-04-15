@@ -1,5 +1,4 @@
-var timerLoop;
-var websock;
+var loopTimer;
 var myWebSock;
 
 var canvas = document.getElementById('gameCanvas');
@@ -57,6 +56,7 @@ class Timer {
 class WebSock {
     constructor() {
         this.sock = new WebSocket(this.MakeWebSockUrl());
+        this.isConnected = false;
         this.sock.binaryType = 'arraybuffer';
 
         this.sock.onopen = this.OnOpen;
@@ -104,37 +104,23 @@ class WebSock {
                 break;
 
             case 1:
-                this.Connected();
+                this.isConnected = true;
                 break;
 
             case 2:
                 console.log("CLOSING...");
+                this.isConnected = false;
                 break;
 
             case 3:
                 console.log("CLOSED.");
+                this.isConnected = false;
                 break;
-        }
-    }
-
-    Connected() {
-        if (keysPressed['a']) {
-            var buff = new ArrayBuffer(4);
-            var view = new DataView(buff);
-            view.setUint8(0, littleEndian);
-            view.setUint8(1, 0x12);
-            view.setUint8(2, 0x61);
-            view.set
-            this.Send(buff);
-        }
-
-        if (keysPressed['d']) {
-            this.Send("d");
         }
     }
 }
 
-// This runs at the main timerLoop interval to run client-side periodic events.
+// This runs at the main loopTimer interval to run client-side periodic events.
 // Because javascript is loaded asynchronously, and in random order, this
 // function maintains a state machine for the WebSocket connection.
 //
@@ -146,6 +132,10 @@ function timerLoopTick()
     }
     else {
         myWebSock.Tick();
+        if (myWebSock.isConnected) {
+            if (typeof OnConnectedTimerTick != 'undefined')
+                OnConnectedTimerTick();
+        }
     }
 }
 
@@ -176,6 +166,24 @@ function Init() {
     window.onresize = on_resize;
     on_resize();
 
-    timerLoop = new Timer();
-    timerLoop.start(timerLoopTick, 50);
+    loopTimer = new Timer();
+    loopTimer.start(timerLoopTick, 50);
 }
+
+// Called every timer interval, once the Websocket connection is established.
+function OnConnectedTimerTick() {
+    if (keysPressed['a']) {
+        var buff = new ArrayBuffer(4);
+        var view = new DataView(buff);
+        view.setUint8(0, littleEndian);
+        view.setUint8(1, 0x12);
+        view.setUint8(2, 0x61);
+        view.set
+        myWebSock.Send(buff);
+    }
+
+    if (keysPressed['d']) {
+        myWebSock.Send("d");
+    }
+}
+
