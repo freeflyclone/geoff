@@ -1,6 +1,7 @@
 var loopTimer;
-var myWebSock;
+var webSock;
 
+var appVersion = 3;
 var canvas = document.getElementById('gameCanvas');
 var ctx = canvas.getContext("2d");
 var borderWidth = 4;
@@ -67,6 +68,7 @@ class WebSock {
     constructor() {
         this.sock = new WebSocket(this.MakeWebSockUrl());
         this.isConnected = false;
+        this.isRegistered = false;
         this.sock.binaryType = 'arraybuffer';
 
         this.sock.onopen = this.OnOpen;
@@ -76,11 +78,15 @@ class WebSock {
     }
 
     OnOpen(event) {
-        console.log("Connected");
+        if (typeof RegisterClient != 'undefined') {
+            RegisterClient();
+        }
     }
 
     OnMessage(event) {
-        console.log("WebSock.OnMessage: " + event.data);
+        if (typeof HandleMessageEvent != 'undefined') {
+            HandleMessageEvent(event.data);
+        }
     }
 
     OnClose(event) {
@@ -137,12 +143,12 @@ class WebSock {
 // Took me a bit to figure out why Tim did it this way.
 function timerLoopTick()
 {
-    if (typeof myWebSock === 'undefined') {
-        myWebSock = new WebSock();
+    if (typeof webSock === 'undefined') {
+        webSock = new WebSock();
     }
     else {
-        myWebSock.Tick();
-        if (myWebSock.isConnected) {
+        webSock.Tick();
+        if (webSock.isConnected) {
             if (typeof OnConnectedTimerTick != 'undefined')
                 OnConnectedTimerTick();
         }
@@ -161,7 +167,7 @@ function ProcessKeyEvent(key, isDown) {
     view[1] = 0x12;
     view[2] = isDown;
     view[3] = (typeof keyMap[key] === 'undefined') ? textEncoder.encode(key) : keyMap[key];
-    myWebSock.Send(buff);
+    webSock.Send(buff);
 }
 
 // filter multiple key down's (keyboard repeat)
@@ -200,5 +206,20 @@ function Init() {
 
 // Called every timer interval, once the Websocket connection is established.
 function OnConnectedTimerTick() {
+}
+
+function RegisterClient() {
+    console.log("RegisterClient");
+
+    var buffer = new ArrayBuffer(4);
+    var view = new DataView(buffer);
+    view.setUint8(0, (littleEndian == 0) ? 0xAA : 0xAB);
+    view.setUint8(1, 0x08);
+    view.setUint16(2, appVersion);
+    webSock.Send(buffer);
+}
+
+function HandleMessageEvent(data) {
+    console.log("HandleMessageEvent");
 }
 

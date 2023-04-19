@@ -1,6 +1,17 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include <boost/beast/core.hpp>
+#include <boost/beast/websocket.hpp>
+#include <boost/asio/dispatch.hpp>
+#include <boost/asio/strand.hpp>
+
+namespace beast = boost::beast;         // from <boost/beast.hpp>
+namespace http = beast::http;           // from <boost/beast/http.hpp>
+namespace websocket = beast::websocket; // from <boost/beast/websocket.hpp>
+namespace net = boost::asio;            // from <boost/asio.hpp>
+using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
+
 #include "AppBuffer.h"
 
 #define gameAppVersion 2
@@ -36,9 +47,9 @@ private:
 	void HandleKeyEvent(AppBuffer & rxBuffer);
 
 	std::mutex m_playersMutex;
+
 	uint16_t m_clientID;
-
-
+	uint16_t m_mapWidth, m_mapHeight;
 };
 
 #endif

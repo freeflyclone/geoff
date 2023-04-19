@@ -85,6 +85,8 @@ class websocket_session
         // Invoke the Game comms handler.
         Game::GetInstance().CommsHandler(buffer_, bytes_transferred);
 
+
+        // TODO: query Game instance for Tx buffers to be sent to client
         // Echo the message
         derived().ws().text(derived().ws().got_text());
         derived().ws().async_write(
