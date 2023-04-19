@@ -8,6 +8,11 @@
 class Game
 {
 public:
+	enum RequestType_t
+	{
+		RegisterClient = 0x08,
+		KeyEvent = 0x12
+	};
 	static Game& GetInstance();
 
 	std::size_t CommsHandler(beast::flat_buffer buffer, std::size_t bytes_transferred);
@@ -21,13 +26,19 @@ private:
 	Game();
 	~Game();
 
-	std::mutex m_playersMutex;
-
 	// You can only get a Game instance through Game::GetInstance(), all default constructors hereby deleted.
 	Game(const Game&) = delete;
 	Game& operator=(const Game&) = delete;
 	Game(Game&&) = delete;
 	Game& operator=(Game&&) = delete;
+
+	void RegisterNewClientConnection(AppBuffer & rxBuffer);
+	void HandleKeyEvent(AppBuffer & rxBuffer);
+
+	std::mutex m_playersMutex;
+	uint16_t m_clientID;
+
+
 };
 
 #endif
