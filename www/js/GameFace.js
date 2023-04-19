@@ -9,6 +9,8 @@ var centerY;
 
 // allow for multiple keys down simultaneously.
 var keysPressed = {};
+const textEncoder = new TextEncoder();
+
 
 // DOM object events we care about.
 document.addEventListener("click", on_click);
@@ -143,12 +145,31 @@ function on_click(event) {
     console.log("click: " + event.clientX + ", " + event.clientY);
 }
 
+function ProcessKeyEvent(key, isDown) {
+    console.log("key: " + key);
+    var buff = new ArrayBuffer(4);
+    var view = new Uint8Array(buff);
+    view[0] = littleEndian;
+    view[1] = 0x12;
+    view[2] = isDown;
+    var foo = textEncoder.encode(key);
+    view[3] = foo;
+    myWebSock.Send(buff);
+}
+
+// filter multiple key down's (keyboard repeat)
 function on_keydown(event) {
-    keysPressed[event.key] = true;
+    if (!keysPressed[event.key]) {
+        keysPressed[event.key] = true;
+        ProcessKeyEvent(event.key, true)
+    }
 }
 
 function on_keyup(event) {
-    keysPressed[event.key] = false;
+    if (keysPressed[event.key]) {
+        keysPressed[event.key] = false;
+        ProcessKeyEvent(event.key, false)
+    }
 }
 
 function on_resize() {
@@ -172,18 +193,5 @@ function Init() {
 
 // Called every timer interval, once the Websocket connection is established.
 function OnConnectedTimerTick() {
-    if (keysPressed['a']) {
-        var buff = new ArrayBuffer(4);
-        var view = new DataView(buff);
-        view.setUint8(0, littleEndian);
-        view.setUint8(1, 0x12);
-        view.setUint8(2, 0x61);
-        view.set
-        myWebSock.Send(buff);
-    }
-
-    if (keysPressed['d']) {
-        myWebSock.Send("d");
-    }
 }
 
