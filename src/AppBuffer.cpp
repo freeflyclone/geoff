@@ -3,15 +3,23 @@
 AppBuffer::AppBuffer(std::size_t bufferLength, int isLittleEndian)
     :
     m_isLittleEndian(isLittleEndian),
-    bufferLength(bufferLength)
+    m_length(bufferLength),
+    m_writeOffset(0),
+    m_readOffset(0)
 {
-    tempBuf = new uint8_t[bufferLength];
-    writeOffset = 0;
+    m_buff = new uint8_t[bufferLength];
+}
+
+AppBuffer::AppBuffer(uint8_t *buffer, std::size_t bufferLength, int isLittleEndian)
+    :
+    AppBuffer(bufferLength, isLittleEndian)
+{
+    std::memcpy(m_buff, buffer, m_length);
 }
 
 AppBuffer::~AppBuffer()
 {
-    delete[] tempBuf;
+    delete[] m_buff;
 }
 
 void AppBuffer::setLittleEndian(bool isLittleEndian)
@@ -21,62 +29,62 @@ void AppBuffer::setLittleEndian(bool isLittleEndian)
 
 std::size_t AppBuffer::bytesRemaining()
 {
-    return (bufferLength - readOffset);
+    return (m_length - m_readOffset);
 }
 
 uint8_t AppBuffer::get_uint8()
 {
-    return (tempBuf[readOffset++]);
+    return (m_buff[m_readOffset++]);
 }
 
 uint16_t AppBuffer::get_uint16()
 {
-    uint8_t* tempBufPtr = &tempBuf[readOffset];
+    uint8_t* tempBufPtr = &m_buff[m_readOffset];
     uint16_t v = !m_isLittleEndian ? *(uint16_t*)tempBufPtr : (tempBufPtr[1] << 0) | (tempBufPtr[0] << 8);
-    readOffset += 2;
+    m_readOffset += 2;
     return (v);
 }
 
 uint32_t AppBuffer::get_uint32()
 {
-    uint8_t* tempBufPtr = &tempBuf[readOffset];
+    uint8_t* tempBufPtr = &m_buff[m_readOffset];
     uint32_t v = !m_isLittleEndian ? *(uint32_t*)tempBufPtr : (tempBufPtr[3] << 0) | (tempBufPtr[2] << 8) | (tempBufPtr[1] << 16) | (tempBufPtr[0] << 24);
-    readOffset += 4;
+    m_readOffset += 4;
     return (v);
 }
 
 int AppBuffer::allocate(int bytes)
 {
-    int loc = writeOffset;
-    writeOffset += bytes;
+    int loc = m_writeOffset;
+    m_writeOffset += bytes;
     return (loc);
 }
 
 void AppBuffer::set_uint8(uint8_t v)
 {
-    set_uint8(writeOffset++, v);
+    set_uint8(m_writeOffset++, v);
 }
 
 void AppBuffer::set_uint16(uint16_t v)
 {
-    set_uint16(writeOffset, v);
-    writeOffset += 2;
+    set_uint16(m_writeOffset, v);
+    m_writeOffset += 2;
 }
 
 void AppBuffer::set_uint32(uint32_t v)
 {
-    set_uint32(writeOffset, v);
-    writeOffset += 4;
+    set_uint32(m_writeOffset, v);
+    m_writeOffset += 4;
 }
 
 void AppBuffer::set_uint8(int byteOffset, uint8_t v)
 {
-    tempBuf[byteOffset] = v;
+    m_buff[byteOffset] = v;
 }
 
 void AppBuffer::set_uint16(int byteOffset, uint16_t v)
 {
-    uint8_t* tempBufPtr = &tempBuf[byteOffset];
+    uint8_t* tempBufPtr = &m_buff[byteOffset];
     if (m_isLittleEndian)
     {
         uint8_t* vp = (uint8_t*)&v;
@@ -88,7 +96,7 @@ void AppBuffer::set_uint16(int byteOffset, uint16_t v)
 
 void AppBuffer::set_uint32(int byteOffset, uint32_t v)
 {
-    uint8_t* tempBufPtr = &tempBuf[byteOffset];
+    uint8_t* tempBufPtr = &m_buff[byteOffset];
     if (m_isLittleEndian)
     {
         uint8_t* vp = (uint8_t*)&v;

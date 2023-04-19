@@ -25,6 +25,7 @@ class AppBuffer
 {
 public:
     AppBuffer(std::size_t bufferLength, int isLittleEndian);
+    AppBuffer(uint8_t* buffer, std::size_t bufferLength, int isLittleEndian);
     ~AppBuffer();
 
     std::size_t bytesRemaining();
@@ -45,11 +46,11 @@ public:
 
     void setLittleEndian(bool isLittleEndian);
 
-    uint8_t* tempBuf;
+private:
+    uint8_t* m_buff;
+    std::size_t    m_length;
     bool  m_isLittleEndian;
 
-    std::size_t    bufferLength;
-
-    int    readOffset = 0;
-    int    writeOffset = 0;
+    int    m_readOffset = 0;
+    int    m_writeOffset = 0;
 };
