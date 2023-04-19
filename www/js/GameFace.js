@@ -9,8 +9,16 @@ var centerY;
 
 // allow for multiple keys down simultaneously.
 var keysPressed = {};
-const textEncoder = new TextEncoder();
 
+// map non-ASCII keys to single byte values for comms
+var keyMap = {
+    "ArrowLeft": 128,
+    "ArrowUp" : 129,
+    "ArrowRight": 130,
+    "ArrowDown": 131,
+};
+
+const textEncoder = new TextEncoder();
 
 // DOM object events we care about.
 document.addEventListener("click", on_click);
@@ -152,8 +160,7 @@ function ProcessKeyEvent(key, isDown) {
     view[0] = littleEndian;
     view[1] = 0x12;
     view[2] = isDown;
-    var foo = textEncoder.encode(key);
-    view[3] = foo;
+    view[3] = (typeof keyMap[key] === 'undefined') ? textEncoder.encode(key) : keyMap[key];
     myWebSock.Send(buff);
 }
 
