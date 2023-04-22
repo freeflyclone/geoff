@@ -85,15 +85,28 @@ class websocket_session
         // Invoke the Game comms handler.
         Game::GetInstance().CommsHandler(buffer_, bytes_transferred);
 
-
-        // TODO: query Game instance for Tx buffers to be sent to client
-        // Echo the message
-        derived().ws().text(derived().ws().got_text());
-        derived().ws().async_write(
-            buffer_.data(),
-            beast::bind_front_handler(
-                &websocket_session::on_write,
-                derived().shared_from_this()));
+        beast::flat_buffer txBuff;
+        if (Game::GetInstance().GetNextTxBuffer(txBuff))
+        {
+            std::cout << "txBuff.size(): " << txBuff.size() << std::endl;
+/*
+            derived().ws().async_write(
+                txBuff.data(),
+                beast::bind_front_handler(
+                    &websocket_session::on_write,
+                    derived().shared_from_this()));
+*/
+        }
+        //else
+        {
+            // Echo the message
+            derived().ws().text(derived().ws().got_text());
+            derived().ws().async_write(
+                buffer_.data(),
+                beast::bind_front_handler(
+                    &websocket_session::on_write,
+                    derived().shared_from_this()));
+        }
     }
 
     void

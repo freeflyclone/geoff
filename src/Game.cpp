@@ -17,11 +17,19 @@ Game::~Game()
 {
 }
 
+// https://blog.mbedded.ninja/programming/languages/c-plus-plus/magic-statics/
+Game& Game::GetInstance()
+{
+	static Game g;
+	return g;
+}
+
 void Game::RegisterNewClientConnection(AppBuffer & rxBuffer)
 {
 	uint16_t clientAppVersion = rxBuffer.get_uint16();
 
-	AppBuffer* txBuffer = new AppBuffer(10, rxBuffer.isLittleEndian());
+	auto txBuffer = std::make_shared<AppBuffer>(10, rxBuffer.isLittleEndian());
+
 	txBuffer->set_uint8(0xBB);
 	txBuffer->set_uint8(0x09);
 	txBuffer->set_uint16(m_clientID);
@@ -33,6 +41,7 @@ void Game::RegisterNewClientConnection(AppBuffer & rxBuffer)
 	std::cout << "   Client Ver: " << clientAppVersion << " connected, assigned #" << m_clientID << "\n";
 
 	// TODO: figure out proper send sequence with Beast code.
+	m_txQue.push_back(txBuffer);
 }
 
 void Game::HandleKeyEvent(AppBuffer & rxBuffer)
@@ -44,12 +53,12 @@ void Game::HandleKeyEvent(AppBuffer & rxBuffer)
 	std::cout << "keyCode: 0x" << std::hex << keyCode << std::endl;
 }
 
-std::size_t Game::CommsHandler(beast::flat_buffer in_buffer, std::size_t in_length)
+void Game::CommsHandler(beast::flat_buffer in_buffer, std::size_t in_length)
 {
 	const std::lock_guard<std::mutex> lock(m_playersMutex);
 
 	if (in_length < 2)
-		return 0;
+		return;
 
 	uint8_t* buff = (uint8_t*)static_cast<net::const_buffer>(in_buffer.data()).data();
 
@@ -75,13 +84,27 @@ std::size_t Game::CommsHandler(beast::flat_buffer in_buffer, std::size_t in_leng
 				break;
 		}
 	}
-
-	return in_length;
 }
 
-// https://blog.mbedded.ninja/programming/languages/c-plus-plus/magic-statics/
-Game& Game::GetInstance()
+bool Game::GetNextTxBuffer(beast::flat_buffer& txBuffer)
 {
-	static Game g;
-	return g;
+	if (m_txQue.empty())
+		return false;
+
+	// Get next AppBuffer from TX que
+	std::shared_ptr<AppBuffer> buff = m_txQue.front();
+	m_txQue.pop_front();
+
+	// adjust size of input flat_buffer, copy AppBuffer to flat_buffer
+	// and commit flat_buffer so caller will see the data
+	txBuffer.reserve(buff->bytesWritten());
+	boost::asio::buffer_copy(
+		boost::asio::buffer(buff->data(), buff->bytesWritten()), 
+		txBuffer.data(), 
+		buff->bytesWritten()
+	);
+	txBuffer.commit(buff->bytesWritten());
+
+	// facilitate caller looping until m_txQue is empty
+	return true;
 }

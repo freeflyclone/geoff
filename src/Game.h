@@ -1,6 +1,8 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include <deque>
+
 #include <boost/beast/core.hpp>
 #include <boost/beast/websocket.hpp>
 #include <boost/asio/dispatch.hpp>
@@ -26,7 +28,8 @@ public:
 	};
 	static Game& GetInstance();
 
-	std::size_t CommsHandler(beast::flat_buffer buffer, std::size_t bytes_transferred);
+	void CommsHandler(beast::flat_buffer buffer, std::size_t bytes_transferred);
+	bool GetNextTxBuffer(beast::flat_buffer& buffer);
 
 private:
 	// I know what you're thinking: WTF is this?  It's Magic Statics!
@@ -45,6 +48,9 @@ private:
 
 	void RegisterNewClientConnection(AppBuffer & rxBuffer);
 	void HandleKeyEvent(AppBuffer & rxBuffer);
+
+	// std::deque *might* be overkill, std::queue would probably suffice here.
+	std::deque<std::shared_ptr<AppBuffer>> m_txQue;
 
 	std::mutex m_playersMutex;
 

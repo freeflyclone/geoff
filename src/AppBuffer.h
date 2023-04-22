@@ -18,6 +18,8 @@ public:
     ~AppBuffer();
 
     std::size_t bytesRemaining();
+    std::size_t bytesWritten();
+    uint8_t* data();
 
     uint8_t get_uint8();
     uint16_t get_uint16();

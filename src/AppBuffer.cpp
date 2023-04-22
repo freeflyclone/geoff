@@ -19,6 +19,7 @@ AppBuffer::AppBuffer(uint8_t *buffer, std::size_t bufferLength, int isLittleEndi
 
 AppBuffer::~AppBuffer()
 {
+    std::cout << __FILE__ << ":" << __FUNCTION__ << std::endl;
     delete[] m_buff;
 }
 
@@ -30,6 +31,16 @@ void AppBuffer::setLittleEndian(bool isLittleEndian)
 std::size_t AppBuffer::bytesRemaining()
 {
     return (m_length - m_readOffset);
+}
+
+std::size_t AppBuffer::bytesWritten()
+{
+    return (m_writeOffset);
+}
+
+uint8_t* AppBuffer::data()
+{
+    return m_buff;
 }
 
 uint8_t AppBuffer::get_uint8()

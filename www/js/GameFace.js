@@ -87,6 +87,9 @@ class WebSock {
         if (typeof HandleMessageEvent != 'undefined') {
             HandleMessageEvent(event.data);
         }
+        else {
+            console.log("OnMessage but HandleMessageEvent is not defined");
+        }
     }
 
     OnClose(event) {
