@@ -33,11 +33,13 @@ void Game::RegisterNewClientConnection(AppBuffer & rxBuffer)
 	txBuffer->set_uint8(0xBB);
 	txBuffer->set_uint8(0x09);
 	txBuffer->set_uint16(m_clientID);
-	txBuffer->set_uint16((UINT16)gameAppVersion);
+	txBuffer->set_uint16((uint16_t)gameAppVersion);
 	txBuffer->set_uint16(m_mapWidth);
 	txBuffer->set_uint16(m_mapHeight);
 
-	m_clientID = (++m_clientID) & 32767;
+	m_clientID++;
+	m_clientID &= 32767;
+	
 	std::cout << "   Client Ver: " << clientAppVersion << " connected, assigned #" << m_clientID << "\n";
 
 	m_txQue.push_back(txBuffer);

@@ -1,11 +1,14 @@
+#include <cstring>
+#include <cstdint>
+
 #include "AppBuffer.h"
 
 AppBuffer::AppBuffer(std::size_t bufferLength, int isLittleEndian)
     :
-    m_isLittleEndian(isLittleEndian),
     m_length(bufferLength),
-    m_writeOffset(0),
-    m_readOffset(0)
+    m_isLittleEndian(isLittleEndian),
+    m_readOffset(0),
+    m_writeOffset(0)
 {
     m_buff = new uint8_t[bufferLength];
 }

@@ -155,7 +155,7 @@ public:
     explicit ssl_websocket_session(beast::ssl_stream<beast::tcp_stream>&& stream) : 
         ws_(std::move(stream))
     {
-        ws_.binary();
+        ws_.binary(true);
     }
 
     // Called by the base class

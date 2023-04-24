@@ -1,14 +1,6 @@
 #pragma once
 
-
-#include <algorithm>
 #include <cstdlib>
-#include <functional>
-#include <iostream>
-#include <memory>
-#include <string>
-#include <thread>
-#include <vector>
 
 class AppBuffer
 {
@@ -17,8 +9,8 @@ public:
     AppBuffer(uint8_t* buffer, std::size_t bufferLength, int isLittleEndian);
     ~AppBuffer();
 
-    std::size_t bytesRemaining();
-    std::size_t bytesWritten();
+    size_t bytesRemaining();
+    size_t bytesWritten();
     uint8_t* data();
 
     uint8_t get_uint8();
