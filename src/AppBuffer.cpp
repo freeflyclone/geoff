@@ -19,7 +19,6 @@ AppBuffer::AppBuffer(uint8_t *buffer, std::size_t bufferLength, int isLittleEndi
 
 AppBuffer::~AppBuffer()
 {
-    std::cout << __FILE__ << ":" << __FUNCTION__ << std::endl;
     delete[] m_buff;
 }
 

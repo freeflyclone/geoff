@@ -86,25 +86,13 @@ void Game::CommsHandler(beast::flat_buffer in_buffer, std::size_t in_length)
 	}
 }
 
-bool Game::GetNextTxBuffer(beast::flat_buffer& txBuffer)
+bool Game::GetNextTxBuffer(std::shared_ptr<AppBuffer> & buff)
 {
 	if (m_txQue.empty())
 		return false;
 
 	// Get next AppBuffer from TX que
-	std::shared_ptr<AppBuffer> buff = m_txQue.front();
-	m_txQue.pop_front();
+	buff = m_txQue.front();
 
-	// adjust size of input flat_buffer, copy AppBuffer to flat_buffer
-	// and commit flat_buffer so caller will see the data
-	txBuffer.reserve(buff->bytesWritten());
-	boost::asio::buffer_copy(
-		boost::asio::buffer(buff->data(), buff->bytesWritten()), 
-		txBuffer.data(), 
-		buff->bytesWritten()
-	);
-	txBuffer.commit(buff->bytesWritten());
-
-	// facilitate caller looping until m_txQue is empty
 	return true;
 }

@@ -29,7 +29,7 @@ public:
 	static Game& GetInstance();
 
 	void CommsHandler(beast::flat_buffer buffer, std::size_t bytes_transferred);
-	bool GetNextTxBuffer(beast::flat_buffer& buffer);
+	bool GetNextTxBuffer(std::shared_ptr<AppBuffer>& buffer);
 
 private:
 	// I know what you're thinking: WTF is this?  It's Magic Statics!

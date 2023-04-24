@@ -3,7 +3,6 @@
 
 #include "geoff.h"
 
-// Echoes back all received WebSocket messages.
 // This uses the Curiously Recurring Template Pattern so that
 // the same code works with both SSL streams and regular sockets.
 template<class Derived>
@@ -21,8 +20,7 @@ class websocket_session
 
     // Start the asynchronous operation
     template<class Body, class Allocator>
-    void
-        do_accept(http::request<Body, http::basic_fields<Allocator>> req)
+    void do_accept(http::request<Body, http::basic_fields<Allocator>> req)
     {
         // Set suggested timeout settings for the websocket
         derived().ws().set_option(
@@ -47,18 +45,15 @@ class websocket_session
                 derived().shared_from_this()));
     }
 
-    void
-        on_accept(beast::error_code ec)
+    void on_accept(beast::error_code ec)
     {
         if (ec)
             return fail(ec, "accept");
 
-        // Read a message
         do_read();
     }
 
-    void
-        do_read()
+    void do_read()
     {
         // Read a message into our buffer
         derived().ws().async_read(
@@ -68,10 +63,7 @@ class websocket_session
                 derived().shared_from_this()));
     }
 
-    void
-        on_read(
-            beast::error_code ec,
-            std::size_t bytes_transferred)
+    void on_read(beast::error_code ec, std::size_t bytes_transferred)
     {
         boost::ignore_unused(bytes_transferred);
 
@@ -85,34 +77,20 @@ class websocket_session
         // Invoke the Game comms handler.
         Game::GetInstance().CommsHandler(buffer_, bytes_transferred);
 
-        beast::flat_buffer txBuff;
+        std::shared_ptr<AppBuffer> txBuff;
+
         if (Game::GetInstance().GetNextTxBuffer(txBuff))
         {
-            std::cout << "txBuff.size(): " << txBuff.size() << std::endl;
-/*
+            // make sure binary mode is set.  (see constructor)
             derived().ws().async_write(
-                txBuff.data(),
-                beast::bind_front_handler(
-                    &websocket_session::on_write,
-                    derived().shared_from_this()));
-*/
-        }
-        //else
-        {
-            // Echo the message
-            derived().ws().text(derived().ws().got_text());
-            derived().ws().async_write(
-                buffer_.data(),
+                boost::asio::buffer(txBuff->data(), txBuff->bytesWritten()),
                 beast::bind_front_handler(
                     &websocket_session::on_write,
                     derived().shared_from_this()));
         }
     }
 
-    void
-        on_write(
-            beast::error_code ec,
-            std::size_t bytes_transferred)
+    void on_write(beast::error_code ec, std::size_t bytes_transferred)
     {
         boost::ignore_unused(bytes_transferred);
 
@@ -129,8 +107,7 @@ class websocket_session
 public:
     // Start the asynchronous operation
     template<class Body, class Allocator>
-    void
-        run(http::request<Body, http::basic_fields<Allocator>> req)
+    void run(http::request<Body, http::basic_fields<Allocator>> req)
     {
         // Accept the WebSocket upgrade request
         do_accept(std::move(req));
@@ -140,24 +117,25 @@ public:
 //------------------------------------------------------------------------------
 
 // Handles a plain WebSocket connection
-class plain_websocket_session
-    : public websocket_session<plain_websocket_session>
-    , public std::enable_shared_from_this<plain_websocket_session>
+class plain_websocket_session : 
+    public websocket_session<plain_websocket_session> , 
+    public std::enable_shared_from_this<plain_websocket_session>
 {
     websocket::stream<beast::tcp_stream> ws_;
 
 public:
     // Create the session
-    explicit
-        plain_websocket_session(
-            beast::tcp_stream&& stream)
+    explicit plain_websocket_session(beast::tcp_stream&& stream)
         : ws_(std::move(stream))
     {
+        // This line is a requirement for binary data!
+        // I was missing it in looking at Tim's code, but Wireshark showed me the
+        // packet was in text mode. (Note to Self: Wireshark is your friend!)
+        ws_.binary(true);
     }
 
     // Called by the base class
-    websocket::stream<beast::tcp_stream>&
-        ws()
+    websocket::stream<beast::tcp_stream>& ws()
     {
         return ws_;
     }
@@ -166,26 +144,22 @@ public:
 //------------------------------------------------------------------------------
 
 // Handles an SSL WebSocket connection
-class ssl_websocket_session
-    : public websocket_session<ssl_websocket_session>
-    , public std::enable_shared_from_this<ssl_websocket_session>
+class ssl_websocket_session : 
+    public websocket_session<ssl_websocket_session> ,
+    public std::enable_shared_from_this<ssl_websocket_session>
 {
-    websocket::stream<
-        beast::ssl_stream<beast::tcp_stream>> ws_;
+    websocket::stream<beast::ssl_stream<beast::tcp_stream>> ws_;
 
 public:
     // Create the ssl_websocket_session
-    explicit
-        ssl_websocket_session(
-            beast::ssl_stream<beast::tcp_stream>&& stream)
-        : ws_(std::move(stream))
+    explicit ssl_websocket_session(beast::ssl_stream<beast::tcp_stream>&& stream) : 
+        ws_(std::move(stream))
     {
+        ws_.binary();
     }
 
     // Called by the base class
-    websocket::stream<
-        beast::ssl_stream<beast::tcp_stream>>&
-        ws()
+    websocket::stream<beast::ssl_stream<beast::tcp_stream>>& ws()
     {
         return ws_;
     }
