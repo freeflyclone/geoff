@@ -74,14 +74,14 @@ class websocket_session
         if (ec)
             return fail(ec, "read");
 
-        // Invoke the Game comms handler.
-        Game::GetInstance().CommsHandler(buffer_, bytes_transferred);
-
         std::shared_ptr<AppBuffer> txBuff;
 
+        // Invoke the Game comms handler...
+        Game::GetInstance().CommsHandler(buffer_, bytes_transferred);
+
+        // ... and return results (if any) to client
         if (Game::GetInstance().GetNextTxBuffer(txBuff))
         {
-            // make sure binary mode is set.  (see constructor)
             derived().ws().async_write(
                 boost::asio::buffer(txBuff->data(), txBuff->bytesWritten()),
                 beast::bind_front_handler(

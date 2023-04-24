@@ -40,7 +40,6 @@ void Game::RegisterNewClientConnection(AppBuffer & rxBuffer)
 	m_clientID = (++m_clientID) & 32767;
 	std::cout << "   Client Ver: " << clientAppVersion << " connected, assigned #" << m_clientID << "\n";
 
-	// TODO: figure out proper send sequence with Beast code.
 	m_txQue.push_back(txBuffer);
 }
 
