@@ -15,6 +15,7 @@ namespace net = boost::asio;            // from <boost/asio.hpp>
 using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 
 #include "AppBuffer.h"
+#include "Client.h"
 
 #define gameAppVersion 2
 
@@ -63,6 +64,8 @@ private:
 
 	uint16_t m_clientID;
 	uint16_t m_mapWidth, m_mapHeight;
+
+	std::list<std::shared_ptr<Client>> m_clients;
 };
 
 #endif

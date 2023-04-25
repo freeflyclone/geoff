@@ -5,7 +5,8 @@
 
 Game::Game() :
 	m_playersMutex(),
-	m_clientID(0)
+	m_clientID(0),
+	m_clients()
 {
 
 	srand(12345);
@@ -37,12 +38,13 @@ void Game::RegisterNewClientConnection(AppBuffer & rxBuffer)
 	txBuffer->set_uint16(m_mapWidth);
 	txBuffer->set_uint16(m_mapHeight);
 
-	m_clientID++;
-	m_clientID &= 32767;
-	
+	m_clients.push_back(std::make_shared<Client>(m_clientID, rxBuffer.isLittleEndian()));
+	m_txQue.push_back(txBuffer);
+
 	std::cout << "   Client Ver: " << clientAppVersion << " connected, assigned #" << m_clientID << "\n";
 
-	m_txQue.push_back(txBuffer);
+	m_clientID++;
+	m_clientID &= 32767;	
 }
 
 void Game::HandleKeyEvent(AppBuffer & rxBuffer)
