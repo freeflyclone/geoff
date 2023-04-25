@@ -5,6 +5,7 @@
 
 Game::Game() :
 	m_playersMutex(),
+	m_sessionID(0),
 	m_clientID(0),
 	m_clients()
 {
@@ -25,15 +26,28 @@ Game& Game::GetInstance()
 	return g;
 }
 
+void Game::OnAccept(OnAcceptCallback_t fn)
+{
+	std::cout << __FUNCTION__ << ", m_sessionID: " << m_sessionID << std::endl;
+	fn(m_sessionID++);
+	m_sessionID &= 0xFFFFFFFF;
+}
+
+void Game::OnClose(uint32_t sessionID)
+{
+	// TODO: remove this sessionID from shared state
+	std::cout << __FUNCTION__ << ", m_sessionID: " << sessionID << std::endl;
+}
+
 void Game::RegisterNewClientConnection(AppBuffer & rxBuffer)
 {
 	uint16_t clientAppVersion = rxBuffer.get_uint16();
 
-	auto txBuffer = std::make_shared<AppBuffer>(10, rxBuffer.isLittleEndian());
+	auto txBuffer = std::make_shared<AppBuffer>(12, rxBuffer.isLittleEndian());
 
 	txBuffer->set_uint8(0xBB);
 	txBuffer->set_uint8(0x09);
-	txBuffer->set_uint16(m_clientID);
+	txBuffer->set_uint32(m_clientID);
 	txBuffer->set_uint16((uint16_t)gameAppVersion);
 	txBuffer->set_uint16(m_mapWidth);
 	txBuffer->set_uint16(m_mapHeight);
@@ -41,10 +55,10 @@ void Game::RegisterNewClientConnection(AppBuffer & rxBuffer)
 	m_clients.push_back(std::make_shared<Client>(m_clientID, rxBuffer.isLittleEndian()));
 	m_txQue.push_back(txBuffer);
 
-	std::cout << "   Client Ver: " << clientAppVersion << " connected, assigned #" << m_clientID << "\n";
-
 	m_clientID++;
-	m_clientID &= 32767;	
+	m_clientID &= 0xFFFFFFFF;
+
+	assert(m_clientID == m_sessionID);
 }
 
 void Game::HandleKeyEvent(AppBuffer & rxBuffer)

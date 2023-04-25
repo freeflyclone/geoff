@@ -18,6 +18,10 @@ class websocket_session
 
     beast::flat_buffer buffer_;
 
+    // Set by Game::OnAccept() callback, so that when we detect
+    // a websocket_session close, we know which Game client to clean up.
+    uint32_t m_sessionID;
+
     // Start the asynchronous operation
     template<class Body, class Allocator>
     void do_accept(http::request<Body, http::basic_fields<Allocator>> req)
@@ -50,6 +54,10 @@ class websocket_session
         if (ec)
             return fail(ec, "accept");
 
+        Game::GetInstance().OnAccept([&](uint32_t sessionID) {
+            m_sessionID = sessionID;
+        });
+
         do_read();
     }
 
@@ -69,7 +77,10 @@ class websocket_session
 
         // This indicates that the websocket_session was closed
         if (ec == websocket::error::closed)
+        {
+            Game::GetInstance().OnClose(m_sessionID);
             return;
+        }
 
         if (ec)
             return fail(ec, "read");

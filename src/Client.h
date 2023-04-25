@@ -4,11 +4,11 @@
 class Client
 {
 public:
-	Client(uint16_t clientID, bool isLittleEndian);
+	Client(uint32_t clientID, bool isLittleEndian);
 	~Client();
 
 private:
-	uint16_t m_clientID;
+	uint32_t m_clientID;
 	bool m_isLittleEndian;
 };
 

@@ -28,6 +28,10 @@ public:
 		KeyEvent = 0x12
 	};
 	static Game& GetInstance();
+	typedef std::function<void(uint32_t sessionId)> OnAcceptCallback_t;
+
+	void OnAccept(OnAcceptCallback_t);
+	void OnClose(uint32_t sessionID);
 
 	void CommsHandler(beast::flat_buffer buffer, std::size_t bytes_transferred);
 	bool GetNextTxBuffer(std::shared_ptr<AppBuffer>& buffer);
@@ -62,7 +66,8 @@ private:
 
 	std::mutex m_playersMutex;
 
-	uint16_t m_clientID;
+	uint32_t m_sessionID;
+	uint32_t m_clientID;
 	uint16_t m_mapWidth, m_mapHeight;
 
 	std::list<std::shared_ptr<Client>> m_clients;

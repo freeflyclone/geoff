@@ -581,9 +581,9 @@ int main(int argc, char* argv[])
     if (argc != 5)
     {
         std::cerr <<
-            "Usage: advanced-server-flex <address> <port> <doc_root> <threads>\n" <<
+            "Usage: geoff <address> <port> <doc_root> <threads>\n" <<
             "Example:\n" <<
-            "    advanced-server-flex 0.0.0.0 8080 . 1\n";
+            "    geoff 0.0.0.0 8080 . 1\n";
         return EXIT_FAILURE;
     }
     auto const address = net::ip::make_address(argv[1]);
