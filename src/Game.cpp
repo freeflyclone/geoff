@@ -7,6 +7,8 @@ Game::Game() :
 	m_playersMutex(),
 	m_sessionID(0),
 	m_clientID(0),
+	m_mapWidth(4096),
+	m_mapHeight(2048),
 	m_clients()
 {
 
@@ -42,6 +44,7 @@ void Game::OnClose(uint32_t sessionID)
 void Game::RegisterNewClientConnection(AppBuffer & rxBuffer)
 {
 	uint16_t clientAppVersion = rxBuffer.get_uint16();
+	m_clients.push_back(std::make_shared<Client>(m_clientID, rxBuffer.isLittleEndian()));
 
 	auto txBuffer = std::make_shared<AppBuffer>(12, rxBuffer.isLittleEndian());
 
@@ -52,7 +55,6 @@ void Game::RegisterNewClientConnection(AppBuffer & rxBuffer)
 	txBuffer->set_uint16(m_mapWidth);
 	txBuffer->set_uint16(m_mapHeight);
 
-	m_clients.push_back(std::make_shared<Client>(m_clientID, rxBuffer.isLittleEndian()));
 	m_txQue.push_back(txBuffer);
 
 	m_clientID++;

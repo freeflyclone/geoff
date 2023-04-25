@@ -2,6 +2,11 @@ var loopTimer;
 var webSock;
 
 var appVersion = 3;
+var clientAssignmentNumber = 0;
+var serverAppVersion = 0;
+var mapWidth = 0;
+var mapHeight = 0;
+
 var canvas = document.getElementById('gameCanvas');
 var ctx = canvas.getContext("2d");
 var borderWidth = 4;
@@ -223,6 +228,21 @@ function RegisterClient() {
 }
 
 function HandleMessageEvent(data) {
-    console.log("HandleMessageEvent");
+    view = new DataView(data);
+    if (view.getUint8(0) == 0xBB)
+    {
+        var serverCommand = view.getUint8(1);
+        if (serverCommand == 0x09)
+        {
+            if (view.byteLength >= 12)
+            {
+                clientAssignmentNumber = view.getUint32(2);
+                serverAppVersion = view.getUint16(6);
+                mapWidth = view.getUint16(8);
+                mapHeight = view.getUint16(10);
+            }
+        }
+        console.log("HandleMessageEvent, typeof view: " + typeof (view));
+    }
 }
 
