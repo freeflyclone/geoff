@@ -33,5 +33,5 @@ namespace ssl = boost::asio::ssl;               // from <boost/asio/ssl.hpp>
 using tcp = boost::asio::ip::tcp;               // from <boost/asio/ip/tcp.hpp>
 
 #define GEOFF_Version "1.0"
-#define MARKER() {std::cerr << __FILE__ << ":" << __FUNCTION__ << ", " << __LINE__ << std::endl;}
+#define TRACE(...) {std::cerr << __FILE__ << ":" << __FUNCTION__ << "(" << __LINE__ << ")" << ", " << __VA_ARGS__ << std::endl;}
 #endif

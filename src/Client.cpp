@@ -5,10 +5,10 @@ Client::Client(uint16_t clientID, bool isLittleEndian) :
 	m_clientID(clientID),
 	m_isLittleEndian(isLittleEndian)
 {
-	MARKER();
+	TRACE("");
 }
 
 Client::~Client()
 {
-	MARKER();
+	TRACE("");
 }
