@@ -29,21 +29,20 @@ Game& Game::GetInstance()
 
 void Game::OnAccept(OnAcceptCallback_t fn)
 {
-	std::cout << __FUNCTION__ << ", m_sessionID: " << m_sessionID << std::endl;
 	fn(m_sessionID++);
 	m_sessionID &= 0xFFFFFFFF;
 }
 
 void Game::OnClose(uint32_t sessionID)
 {
-	// TODO: remove this sessionID from shared state
-	std::cout << __FUNCTION__ << ", m_sessionID: " << sessionID << std::endl;
+	m_clients.delete_client_by_session(sessionID);
 }
 
 void Game::RegisterNewClientConnection(uint32_t sessionID, AppBuffer & rxBuffer)
 {
 	uint16_t clientAppVersion = rxBuffer.get_uint16();
-	m_clients.push_back(std::make_shared<Client>(sessionID, rxBuffer.isLittleEndian(), clientAppVersion));
+
+	m_clients.add_client(sessionID, rxBuffer.isLittleEndian(), clientAppVersion);
 
 	auto txBuffer = std::make_shared<AppBuffer>(12, rxBuffer.isLittleEndian());
 
