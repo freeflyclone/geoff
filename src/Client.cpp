@@ -30,11 +30,15 @@ ClientManager::~ClientManager()
 
 void ClientManager::add_client(uint32_t sessionID, bool isLittleEndian, uint16_t clientAppVersion)
 {
+	const std::lock_guard<std::mutex> lock(m_clients_mutex);
+
 	m_clients.push_back(std::make_shared<Client>(sessionID, isLittleEndian, clientAppVersion));
 }
 
 void ClientManager::delete_client_by_session(uint32_t sessionID)
 {
+	const std::lock_guard<std::mutex> lock(m_clients_mutex);
+
 	auto client = find_client_by_session(sessionID);
 
 	if (client)

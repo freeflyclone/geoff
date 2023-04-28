@@ -27,6 +27,7 @@ public:
 	void delete_client_by_session(uint32_t sessionID);
 
 private:
+	std::mutex m_clients_mutex;
 	std::list<std::shared_ptr<Client>> m_clients;
 };
 
