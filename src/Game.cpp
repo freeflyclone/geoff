@@ -70,7 +70,7 @@ void Game::HandleKeyEvent(uint32_t sessionID, AppBuffer & rxBuffer)
 	txBuffer->set_uint8(0xBB);
 	txBuffer->set_uint8(0x15);
 	txBuffer->set_uint8(isDown ? 1 : 0);
-	txBuffer->set_uint8(keyCode);
+	txBuffer->set_uint8(static_cast<uint8_t>(keyCode));
 
 	m_txQue.push_back(txBuffer);
 }
