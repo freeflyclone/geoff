@@ -66,14 +66,38 @@ void Game::HandleKeyEvent(uint32_t sessionID, AppBuffer & rxBuffer)
 	if (keyCode == 0)
 		return;
 
-	std::cout << "SessionID: " << sessionID << ", ";
-	std::cout << "Action: " << (isDown ? "Down" : "Up") <<  ", ";
-	std::cout << "keyCode: 0x" << std::hex << keyCode << std::endl;
+	auto txBuffer = std::make_shared <AppBuffer>(4, rxBuffer.isLittleEndian());
+
+	txBuffer->set_uint8(0xBB);
+	txBuffer->set_uint8(0x15);
+	txBuffer->set_uint8(isDown ? 1 : 0);
+	txBuffer->set_uint8(keyCode);
+
+	m_txQue.push_back(txBuffer);
 }
 
 void Game::HandleClickEvent(uint32_t sessionID, AppBuffer& rxBuffer)
 {
-	std::cout << __FUNCTION__ << std::endl;
+	uint32_t rxSessionID = rxBuffer.get_uint32();
+	uint16_t playerID = rxBuffer.get_uint16();
+	uint16_t clickX = rxBuffer.get_uint16();
+	uint16_t clickY = rxBuffer.get_uint16();
+
+	if (rxSessionID != sessionID)
+	{
+		std::cout << "Oops: rxSessionID != sessionID: " << rxSessionID << " vs " << sessionID << std::endl;
+		return;
+	}
+
+	auto txBuffer = std::make_shared <AppBuffer>(10, rxBuffer.isLittleEndian());
+
+	txBuffer->set_uint8(0xBB);
+	txBuffer->set_uint8(0x13);
+	txBuffer->set_uint32(sessionID);
+	txBuffer->set_uint16(clickX);
+	txBuffer->set_uint16(clickY);
+
+	m_txQue.push_back(txBuffer);
 }
 
 void Game::CommsHandler(uint32_t sessionID, beast::flat_buffer in_buffer, std::size_t in_length)
