@@ -33,7 +33,7 @@ public:
 	void OnAccept(OnAcceptCallback_t);
 	void OnClose(uint32_t sessionID);
 
-	void CommsHandler(beast::flat_buffer buffer, std::size_t bytes_transferred);
+	void CommsHandler(uint32_t sessionID, beast::flat_buffer buffer, std::size_t bytes_transferred);
 	bool GetNextTxBuffer(std::shared_ptr<AppBuffer>& buffer);
 
 private:
@@ -51,8 +51,8 @@ private:
 	Game(Game&&) = delete;
 	Game& operator=(Game&&) = delete;
 
-	void RegisterNewClientConnection(AppBuffer & rxBuffer);
-	void HandleKeyEvent(AppBuffer & rxBuffer);
+	void RegisterNewClientConnection(uint32_t sessionID, AppBuffer & rxBuffer);
+	void HandleKeyEvent(uint32_t sessionID, AppBuffer & rxBuffer);
 
 	// std::deque *might* be overkill, std::queue would probably suffice here.
 	// 
@@ -67,7 +67,6 @@ private:
 	std::mutex m_playersMutex;
 
 	uint32_t m_sessionID;
-	uint32_t m_clientID;
 	uint16_t m_mapWidth, m_mapHeight;
 
 	std::list<std::shared_ptr<Client>> m_clients;

@@ -6,7 +6,6 @@
 Game::Game() :
 	m_playersMutex(),
 	m_sessionID(0),
-	m_clientID(0),
 	m_mapWidth(4096),
 	m_mapHeight(2048),
 	m_clients()
@@ -41,38 +40,38 @@ void Game::OnClose(uint32_t sessionID)
 	std::cout << __FUNCTION__ << ", m_sessionID: " << sessionID << std::endl;
 }
 
-void Game::RegisterNewClientConnection(AppBuffer & rxBuffer)
+void Game::RegisterNewClientConnection(uint32_t sessionID, AppBuffer & rxBuffer)
 {
 	uint16_t clientAppVersion = rxBuffer.get_uint16();
-	m_clients.push_back(std::make_shared<Client>(m_clientID, rxBuffer.isLittleEndian()));
+	m_clients.push_back(std::make_shared<Client>(sessionID, rxBuffer.isLittleEndian(), clientAppVersion));
 
 	auto txBuffer = std::make_shared<AppBuffer>(12, rxBuffer.isLittleEndian());
 
 	txBuffer->set_uint8(0xBB);
 	txBuffer->set_uint8(0x09);
-	txBuffer->set_uint32(m_clientID);
+	txBuffer->set_uint32(sessionID);
 	txBuffer->set_uint16((uint16_t)gameAppVersion);
 	txBuffer->set_uint16(m_mapWidth);
 	txBuffer->set_uint16(m_mapHeight);
 
 	m_txQue.push_back(txBuffer);
-
-	m_clientID++;
-	m_clientID &= 0xFFFFFFFF;
-
-	assert(m_clientID == m_sessionID);
 }
 
-void Game::HandleKeyEvent(AppBuffer & rxBuffer)
+void Game::HandleKeyEvent(uint32_t sessionID, AppBuffer & rxBuffer)
 {
 	bool isDown = (rxBuffer.get_uint8() == 1) ? true : false;
 	int keyCode = rxBuffer.get_uint8();
 
+	// don't respond to unmapped keys. See "keyMap" in GameFace.js
+	if (keyCode == 0)
+		return;
+
+	std::cout << "SessionID: " << sessionID << ", ";
 	std::cout << "Action: " << (isDown ? "Down" : "Up") <<  ", ";
 	std::cout << "keyCode: 0x" << std::hex << keyCode << std::endl;
 }
 
-void Game::CommsHandler(beast::flat_buffer in_buffer, std::size_t in_length)
+void Game::CommsHandler(uint32_t sessionID, beast::flat_buffer in_buffer, std::size_t in_length)
 {
 	const std::lock_guard<std::mutex> lock(m_playersMutex);
 
@@ -95,11 +94,11 @@ void Game::CommsHandler(beast::flat_buffer in_buffer, std::size_t in_length)
 		switch (request)
 		{
 			case RegisterClient:
-				RegisterNewClientConnection(rxBuffer);
+				RegisterNewClientConnection(sessionID, rxBuffer);
 				break;
 
 			case KeyEvent:
-				HandleKeyEvent(rxBuffer);
+				HandleKeyEvent(sessionID, rxBuffer);
 				break;
 		}
 	}

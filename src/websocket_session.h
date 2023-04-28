@@ -88,7 +88,7 @@ class websocket_session
         std::shared_ptr<AppBuffer> txBuff;
 
         // Invoke the Game comms handler...
-        Game::GetInstance().CommsHandler(buffer_, bytes_transferred);
+        Game::GetInstance().CommsHandler(m_sessionID, buffer_, bytes_transferred);
 
         // ... and return results (if any) to client
         if (Game::GetInstance().GetNextTxBuffer(txBuff))
