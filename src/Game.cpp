@@ -71,6 +71,11 @@ void Game::HandleKeyEvent(uint32_t sessionID, AppBuffer & rxBuffer)
 	std::cout << "keyCode: 0x" << std::hex << keyCode << std::endl;
 }
 
+void Game::HandleClickEvent(uint32_t sessionID, AppBuffer& rxBuffer)
+{
+	std::cout << __FUNCTION__ << std::endl;
+}
+
 void Game::CommsHandler(uint32_t sessionID, beast::flat_buffer in_buffer, std::size_t in_length)
 {
 	const std::lock_guard<std::mutex> lock(m_playersMutex);
@@ -95,6 +100,10 @@ void Game::CommsHandler(uint32_t sessionID, beast::flat_buffer in_buffer, std::s
 		{
 			case RegisterClient:
 				RegisterNewClientConnection(sessionID, rxBuffer);
+				break;
+
+			case ClickEvent:
+				HandleClickEvent(sessionID, rxBuffer);
 				break;
 
 			case KeyEvent:

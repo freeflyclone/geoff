@@ -25,7 +25,8 @@ public:
 	enum RequestType_t
 	{
 		RegisterClient = 0x08,
-		KeyEvent = 0x12
+		ClickEvent = 0x12,
+		KeyEvent = 0x14
 	};
 	static Game& GetInstance();
 	typedef std::function<void(uint32_t sessionId)> OnAcceptCallback_t;
@@ -52,6 +53,7 @@ private:
 	Game& operator=(Game&&) = delete;
 
 	void RegisterNewClientConnection(uint32_t sessionID, AppBuffer & rxBuffer);
+	void HandleClickEvent(uint32_t sessionID, AppBuffer& rxBuffer);
 	void HandleKeyEvent(uint32_t sessionID, AppBuffer & rxBuffer);
 
 	// std::deque *might* be overkill, std::queue would probably suffice here.

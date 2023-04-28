@@ -2,10 +2,13 @@ var loopTimer;
 var webSock;
 
 var appVersion = 3;
-var clientAssignmentNumber = 0;
+var sessionID;
+var playerID = 0;
 var serverAppVersion = 0;
 var mapWidth = 0;
 var mapHeight = 0;
+var mapOffsetX = 0;
+var mapOffsetY = 0;
 
 var canvas = document.getElementById('gameCanvas');
 var ctx = canvas.getContext("2d");
@@ -164,7 +167,17 @@ function timerLoopTick()
 }
 
 function on_click(event) {
-    console.log("click: " + event.clientX + ", " + event.clientY);
+    var buffer = new ArrayBuffer(12);
+    var view = new DataView(buffer);
+
+    view.setUint8(0, (littleEndian == 0) ? 0xAA : 0xAB);
+    view.setUint8(1, 0x12);
+    view.setUint32(2, sessionID);
+    view.setUint16(6, playerID);
+    view.setUint16(8, mapOffsetX + event.clientX);
+    view.setUint16(10, mapOffsetY + event.clientY);
+
+    webSock.Send(buffer);
 }
 
 function ProcessKeyEvent(key, isDown) {
@@ -172,7 +185,7 @@ function ProcessKeyEvent(key, isDown) {
     var view = new Uint8Array(buff);
 
     view[0] = littleEndian;
-    view[1] = 0x12;
+    view[1] = 0x14;
     view[2] = isDown;
     view[3] = (typeof keyMap[key] === 'undefined') ? textEncoder.encode(key) : keyMap[key];
 
@@ -216,13 +229,13 @@ function OnConnectedTimerTick() {
 }
 
 function RegisterClient() {
-    console.log("RegisterClient");
-
     var buffer = new ArrayBuffer(4);
     var view = new DataView(buffer);
+
     view.setUint8(0, (littleEndian == 0) ? 0xAA : 0xAB);
     view.setUint8(1, 0x08);
     view.setUint16(2, appVersion);
+
     webSock.Send(buffer);
 }
 
@@ -235,7 +248,7 @@ function HandleMessageEvent(data) {
         {
             if (view.byteLength >= 12)
             {
-                clientAssignmentNumber = view.getUint32(2);
+                sessionID = view.getUint32(2);
                 serverAppVersion = view.getUint16(6);
                 mapWidth = view.getUint16(8);
                 mapHeight = view.getUint16(10);
