@@ -152,10 +152,6 @@ function Init() {
     }
 }
 
-// Called every timer interval, once the Websocket connection is established.
-function OnConnectedTimerTick() {
-}
-
 function RegisterClient() {
     var buffer = new ArrayBuffer(4);
     var view = new DataView(buffer);
