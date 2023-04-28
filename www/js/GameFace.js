@@ -168,13 +168,14 @@ function on_click(event) {
 }
 
 function ProcessKeyEvent(key, isDown) {
-    console.log("key: " + key);
     var buff = new ArrayBuffer(4);
     var view = new Uint8Array(buff);
+
     view[0] = littleEndian;
     view[1] = 0x12;
     view[2] = isDown;
     view[3] = (typeof keyMap[key] === 'undefined') ? textEncoder.encode(key) : keyMap[key];
+
     webSock.Send(buff);
 }
 
@@ -199,8 +200,6 @@ function on_resize() {
 
     centerX = ctx.canvas.width / 2;
     centerY = ctx.canvas.height / 2;
-
-    console.log("center: " + centerX + "," + centerY);
 }
 
 function Init() {
