@@ -254,7 +254,7 @@ function HandleMessageEvent(data) {
                 mapHeight = view.getUint16(10);
             }
         }
-        console.log("HandleMessageEvent, typeof view: " + typeof (view));
+        console.log("HandleMessageEvent, serverCommand: " + serverCommand);
     }
 }
 

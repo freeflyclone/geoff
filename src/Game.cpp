@@ -120,6 +120,7 @@ bool Game::GetNextTxBuffer(std::shared_ptr<AppBuffer> & buff)
 
 	// Get next AppBuffer from TX que
 	buff = m_txQue.front();
+	m_txQue.pop_front();
 
 	return true;
 }

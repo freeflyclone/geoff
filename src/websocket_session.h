@@ -99,6 +99,13 @@ class websocket_session
                     &websocket_session::on_write,
                     derived().shared_from_this()));
         }
+        else
+        {
+            // Since no async_write() has been initiated, on_write() won't be called.
+            // We still need do_read() to be called though.
+            buffer_.consume(buffer_.size());
+            do_read();
+        }
     }
 
     void on_write(beast::error_code ec, std::size_t bytes_transferred)
