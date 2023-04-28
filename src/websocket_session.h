@@ -99,13 +99,10 @@ class websocket_session
                     &websocket_session::on_write,
                     derived().shared_from_this()));
         }
-        else
-        {
-            // Since no async_write() has been initiated, on_write() won't be called.
-            // We still need do_read() to be called though.
-            buffer_.consume(buffer_.size());
-            do_read();
-        }
+
+        // start another async_read() no matter what.
+        buffer_.consume(buffer_.size());
+        do_read();
     }
 
     void on_write(beast::error_code ec, std::size_t bytes_transferred)
@@ -115,11 +112,20 @@ class websocket_session
         if (ec)
             return fail(ec, "write");
 
-        // Clear the buffer
-        buffer_.consume(buffer_.size());
-
-        // Do another read
-        do_read();
+        // Server side is now allowed to send multiple messages back-to-back,
+        // independently of input from the client.
+        // 
+        // Thus the async_write() / on_write() chain is managed based on
+        // whether Game has tx buffers queued or not.
+        std::shared_ptr<AppBuffer> txBuff;
+        if (Game::GetInstance().GetNextTxBuffer(txBuff))
+        {
+            derived().ws().async_write(
+                boost::asio::buffer(txBuff->data(), txBuff->bytesWritten()),
+                beast::bind_front_handler(
+                    &websocket_session::on_write,
+                    derived().shared_from_this()));
+        }
     }
 
 public:
