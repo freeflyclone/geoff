@@ -40,38 +40,6 @@ const littleEndian = ((() => {
     return new Int16Array(buffer)[0] === 256;
 })() == 0) ? 0xAA : 0xAB;
 
-class Timer {
-    contructor() {
-        this.isRunning = false;
-        this.interval = 0;
-        var functionToCall;
-    }
-
-    adjust(intervalmS) {
-        this.interval = intervalmS;
-        this.restart();
-    }
-
-    start(callbackFunction, intervalmS) {
-        this.functionToCall = callbackFunction;
-        this.adjust(intervalmS);
-    }
-
-    restart() {
-        if (this.isRunning)
-            this.stop();
-
-        this.timerID = setInterval(this.functionToCall, this.interval);
-        this.isRunning = true;
-    }
-
-    stop() {
-        if (this.isRunning)
-            clearInterval(this.timerID);
-        this.isRunning = false;
-    }
-}
-
 class WebSock {
     constructor() {
         this.sock = new WebSocket(this.MakeWebSockUrl());
@@ -122,47 +90,6 @@ class WebSock {
 
     Send(what) {
         this.sock.send(what);
-    }
-
-    Tick() {
-        switch (this.sock.readyState) {
-            case 0:
-                console.log("CONNECTING...");
-                break;
-
-            case 1:
-                this.isConnected = true;
-                break;
-
-            case 2:
-                console.log("CLOSING...");
-                this.isConnected = false;
-                break;
-
-            case 3:
-                console.log("CLOSED.");
-                this.isConnected = false;
-                break;
-        }
-    }
-}
-
-// This runs at the main loopTimer interval to run client-side periodic events.
-// Because javascript is loaded asynchronously, and in random order, this
-// function maintains a state machine for the WebSocket connection.
-//
-// Took me a bit to figure out why Tim did it this way.
-function timerLoopTick()
-{
-    if (typeof webSock === 'undefined') {
-        webSock = new WebSock();
-    }
-    else {
-        webSock.Tick();
-        if (webSock.isConnected) {
-            if (typeof OnConnectedTimerTick != 'undefined')
-                OnConnectedTimerTick();
-        }
     }
 }
 
@@ -220,8 +147,9 @@ function Init() {
     window.onresize = on_resize;
     on_resize();
 
-    loopTimer = new Timer();
-    loopTimer.start(timerLoopTick, 50);
+    if (typeof webSock === 'undefined') {
+        webSock = new WebSock();
+    }
 }
 
 // Called every timer interval, once the Websocket connection is established.
@@ -252,6 +180,7 @@ function HandleMessageEvent(data) {
                 serverAppVersion = view.getUint16(6);
                 mapWidth = view.getUint16(8);
                 mapHeight = view.getUint16(10);
+                this.isConnected = true;
             }
         }
         console.log("HandleMessageEvent, serverCommand: " + serverCommand);
