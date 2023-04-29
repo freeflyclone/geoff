@@ -1,11 +1,12 @@
 const FPS = 60; // frames per second
 const FRICTION = 0.7; // friction coefficient of space (0 = no friction, 1 = lots of friction)
+const GAME_LIVES = 3; // starting number of lives
 const LASER_DIST = 0.6; // max distance laser can travel as fraction of screen width
 const LASER_EXPLODE_DUR = 0.1; // duration of the lasers' explosion in seconds
 const LASER_MAX = 10; // maximum number of lasers on screen at once
 const LASER_SPD = 500; // speed of lasers in pixels per second
 const ROID_JAG = 0.15; // jaggedness of the asteroids (0 = none, 1 = lots)
-const ROID_NUM = 8; // starting number of asteroids
+const ROID_NUM = 1; // starting number of asteroids
 const ROID_SIZE = 100; // starting size of asteroids in pixels
 const ROID_SPD = 50; // max starting speed of asteroids in pixels per second
 const ROID_VERT = 20; // average number of vertices on each asteroid
@@ -16,6 +17,28 @@ const SHIP_SIZE = 20; // ship height in pixels
 const SHIP_THRUST = 10; // acceleration of the ship in pixels per second per second
 const SHIP_TURN_SPEED = 360; // turn speed in degrees per second
 const SHOW_BOUNDING = false; // show or hide collision bounding
+const TEXT_FADE_TIME = 2.5; // text fade time in seconds
+const TEXT_SIZE = 40; // text font height in pixels
+
+var level, lives, roids, ship, text, textAlpha;
+
+setInterval(update, 1000 / FPS);
+
+document.addEventListener("keydown", on_game_keydown);
+document.addEventListener("keyup", on_game_keyup);
+
+function newGame() {
+    level = 0;
+    lives = GAME_LIVES;
+    ship = newShip();
+    newLevel();
+}
+
+function newLevel() {
+    text = "Level " + (level + 1);
+    textAlpha = 1.0;
+    createAsteroidBelt();
+}
 
 function newShip() {
     return {
@@ -26,6 +49,7 @@ function newShip() {
         blinkNum: Math.ceil(SHIP_INV_DUR / SHIP_BLINK_DUR),
         blinkTime: Math.ceil(SHIP_BLINK_DUR * FPS),
         canShoot: true,
+        dead: false,
         explodeTime: 0,
         lasers: [],
         rot: 0,
@@ -37,16 +61,11 @@ function newShip() {
     }
 }
 
-var ship = newShip();
-
-// set up asteroids
-var roids = [];
-
 function createAsteroidBelt() {
     console.log("createAsteroidBelt");
     roids = [];
     var x, y;
-    for (var i = 0; i < ROID_NUM; i++) {
+    for (var i = 0; i < ROID_NUM + level; i++) {
         // random asteroid location (not touching spaceship)
         do {
             x = Math.floor(Math.random() * canv.width);
@@ -72,18 +91,56 @@ function destroyAsteroid(index) {
 
     // destroy the asteroid
     roids.splice(index, 1);
-}
+
+    // new level when no more asteroids
+    if (roids.length == 0) {
+        level++;
+        newLevel();
+    }
+ }
 
 
 function distBetweenPoints(x1, y1, x2, y2) {
     return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
 }
 
+function drawShip(x, y, a, color = "white") {
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo( // nose of the ship
+        x + 4 / 3 * ship.r * Math.cos(a),
+        y - 4 / 3 * ship.r * Math.sin(a)
+    );
+    ctx.lineTo( // rear left
+        x - ship.r * (2 / 3 * Math.cos(a) + Math.sin(a)),
+        y + ship.r * (2 / 3 * Math.sin(a) - Math.cos(a))
+    );
+    ctx.lineTo( // rear center
+        x,
+        y
+    );
+    ctx.lineTo( // rear right
+        x - ship.r * (2 / 3 * Math.cos(a) - Math.sin(a)),
+        y + ship.r * (2 / 3 * Math.sin(a) + Math.cos(a))
+    );
+    ctx.closePath();
+    ctx.stroke();
+
+}
+
 function explodeShip() {
     ship.explodeTime = Math.ceil(SHIP_EXPLODE_DUR * FPS);
 }
 
+function gameOver() {
+    ship.dead = true;
+    text = "Game Over";
+    textAlpha = 1.0;
+}
+
 function newAsteroid(x, y, r) {
+    var lvlMult = 1 + 0.1 * level;
     var roid = {
         a: Math.random() * Math.PI * 2, // in radians
         offs: [],
@@ -91,8 +148,8 @@ function newAsteroid(x, y, r) {
         vert: Math.floor(Math.random() * (ROID_VERT + 1) + ROID_VERT / 2),
         x: x,
         y: y,
-        xv: Math.random() * ROID_SPD / FPS * (Math.random() < 0.5 ? 1 : -1),
-        yv: Math.random() * ROID_SPD / FPS * (Math.random() < 0.5 ? 1 : -1)
+        xv: Math.random() * ROID_SPD * lvlMult / FPS * (Math.random() < 0.5 ? 1 : -1),
+        yv: Math.random() * ROID_SPD * lvlMult / FPS * (Math.random() < 0.5 ? 1 : -1)
     };
 
     // populate the offsets array
@@ -102,11 +159,6 @@ function newAsteroid(x, y, r) {
 
     return roid;
 }
-
-setInterval(update, 1000 / FPS);
-
-document.addEventListener("keydown", on_game_keydown);
-document.addEventListener("keyup", on_game_keyup);
 
 function on_game_keydown(ev) {
     ProcessGameKeys(ev.keyCode, true);
@@ -206,7 +258,7 @@ function update() {
     }
 
     // thrust the ship
-    if (ship.thrusting) {
+    if (ship.thrusting && !ship.dead) {
         ship.thrust.x += SHIP_THRUST * Math.cos(ship.a) / FPS;
         ship.thrust.y -= SHIP_THRUST * Math.sin(ship.a) / FPS;
 
@@ -243,28 +295,8 @@ function update() {
 
     // draw the triangular ship
     if (!exploding) {
-        if (blinkOn) {
-            ctx.strokeStyle = "white";
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo( // nose of the ship
-                ship.x + 4 / 3 * ship.r * Math.cos(ship.a),
-                ship.y - 4 / 3 * ship.r * Math.sin(ship.a)
-            );
-            ctx.lineTo( // rear left
-                ship.x - ship.r * (2 / 3 * Math.cos(ship.a) + Math.sin(ship.a)),
-                ship.y + ship.r * (2 / 3 * Math.sin(ship.a) - Math.cos(ship.a))
-            );
-            ctx.lineTo( // rear center
-                ship.x,
-                ship.y
-            );
-            ctx.lineTo( // rear right
-                ship.x - ship.r * (2 / 3 * Math.cos(ship.a) - Math.sin(ship.a)),
-                ship.y + ship.r * (2 / 3 * Math.sin(ship.a) + Math.cos(ship.a))
-            );
-            ctx.closePath();
-            ctx.stroke();
+        if (blinkOn && !ship.dead) {
+            drawShip(ship.x, ship.y, ship.a)
         }
 
         // handle blinking
@@ -335,6 +367,27 @@ function update() {
         }
     }
 
+    // draw the game text
+    if (textAlpha >= 0) {
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = "rgba(255, 255, 255, " + textAlpha + ")";
+        ctx.font = "small-caps " + TEXT_SIZE + "px dejavu sans mono";
+        ctx.fillText(text, canv.width / 2, canv.height * 0.75);
+        textAlpha -= (1.0 / TEXT_FADE_TIME / FPS);
+    } else if (ship.dead) {
+        // after "game over" fades, start a new game
+        newGame();
+    }
+
+    // draw the lives
+    var lifeColour;
+    for (var i = 0; i < lives; i++) {
+        lifeColour = exploding && i == lives - 1 ? "red" : "white";
+        drawShip(SHIP_SIZE + i * SHIP_SIZE * 1.2, SHIP_SIZE, 0.5 * Math.PI, lifeColour);
+    }
+
+
     // detect laser hits on asteroids
     var ax, ay, ar, lx, ly;
     for (var i = roids.length - 1; i >= 0; i--) {
@@ -386,7 +439,13 @@ function update() {
 
         // reset the ship after the explosion has finished
         if (ship.explodeTime == 0) {
-            ship = newShip();
+            lives--;
+            if (lives <= 0) {
+                gameOver();
+            }
+            else {
+                ship = newShip();
+            }
         }
     }
 

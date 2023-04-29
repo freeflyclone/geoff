@@ -91,9 +91,6 @@ function on_resize() {
 
     centerX = ctx.canvas.width / 2;
     centerY = ctx.canvas.height / 2;
-
-    ship.x = centerX;
-    ship.y = centerY;
 }
 
 function ProcessKeyEvent(keyCode, isDown) {
