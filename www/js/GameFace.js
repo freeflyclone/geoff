@@ -1,3 +1,5 @@
+var gameFace;
+
 var loopTimer;
 var webSock;
 
@@ -29,11 +31,6 @@ var keyMap = {
 
 const textEncoder = new TextEncoder();
 
-// DOM object events we care about.
-document.addEventListener("click", on_click);
-document.addEventListener("keydown", on_keydown);
-document.addEventListener("keyup", on_keyup);
-
 const littleEndian = ((() => {
     const buffer = new ArrayBuffer(2);
     new DataView(buffer).setInt16(0, 256, true);
@@ -54,14 +51,14 @@ class WebSock {
     }
 
     OnOpen(event) {
-        if (typeof RegisterClient != 'undefined') {
-            RegisterClient();
+        if (typeof gameFace.RegisterClient != 'undefined') {
+            gameFace.RegisterClient();
         }
     }
 
     OnMessage(event) {
-        if (typeof HandleMessageEvent != 'undefined') {
-            HandleMessageEvent(event.data);
+        if (typeof gameFace.HandleMessageEvent != 'undefined') {
+            gameFace.HandleMessageEvent(event.data);
         }
         else {
             console.log("OnMessage but HandleMessageEvent is not defined");
@@ -93,18 +90,12 @@ class WebSock {
     }
 }
 
-function on_click(event) {
-    var buffer = new ArrayBuffer(12);
-    var view = new DataView(buffer);
+function on_resize() {
+    ctx.canvas.width = window.innerWidth - borderWidth;
+    ctx.canvas.height = window.innerHeight - borderWidth;
 
-    view.setUint8(0, (littleEndian == 0) ? 0xAA : 0xAB);
-    view.setUint8(1, 0x12);
-    view.setUint32(2, sessionID);
-    view.setUint16(6, playerID);
-    view.setUint16(8, mapOffsetX + event.clientX);
-    view.setUint16(10, mapOffsetY + event.clientY);
-
-    webSock.Send(buffer);
+    centerX = ctx.canvas.width / 2;
+    centerY = ctx.canvas.height / 2;
 }
 
 function ProcessKeyEvent(key, isDown) {
@@ -119,67 +110,85 @@ function ProcessKeyEvent(key, isDown) {
     webSock.Send(buff);
 }
 
-// filter multiple key down's (keyboard repeat)
-function on_keydown(event) {
-    if (!keysPressed[event.key]) {
-        keysPressed[event.key] = true;
-        ProcessKeyEvent(event.key, true)
+class GameFace {
+    constructor() {
+        // DOM object events we care about.
+        document.addEventListener("click", this.on_click);
+        document.addEventListener("keydown", this.on_keydown);
+        document.addEventListener("keyup", this.on_keyup);
     }
-}
 
-function on_keyup(event) {
-    if (keysPressed[event.key]) {
-        keysPressed[event.key] = false;
-        ProcessKeyEvent(event.key, false)
+    Init() {
+        // Setup resize
+        window.onresize = on_resize;
+        on_resize();
+
+        if (typeof webSock === 'undefined') {
+            webSock = new WebSock();
+        }
     }
-}
 
-function on_resize() {
-    ctx.canvas.width = window.innerWidth - borderWidth;
-    ctx.canvas.height = window.innerHeight - borderWidth;
+    on_click(event) {
+        var buffer = new ArrayBuffer(12);
+        var view = new DataView(buffer);
 
-    centerX = ctx.canvas.width / 2;
-    centerY = ctx.canvas.height / 2;
+        view.setUint8(0, (littleEndian == 0) ? 0xAA : 0xAB);
+        view.setUint8(1, 0x12);
+        view.setUint32(2, sessionID);
+        view.setUint16(6, playerID);
+        view.setUint16(8, mapOffsetX + event.clientX);
+        view.setUint16(10, mapOffsetY + event.clientY);
+
+        webSock.Send(buffer);
+    }
+
+    // filter multiple key down's (keyboard repeat)
+    on_keydown(event) {
+        if (!keysPressed[event.key]) {
+            keysPressed[event.key] = true;
+            ProcessKeyEvent(event.key, true)
+        }
+    }
+
+    on_keyup(event) {
+        if (keysPressed[event.key]) {
+            keysPressed[event.key] = false;
+            ProcessKeyEvent(event.key, false)
+        }
+    }
+
+    RegisterClient() {
+        var buffer = new ArrayBuffer(4);
+        var view = new DataView(buffer);
+
+        view.setUint8(0, (littleEndian == 0) ? 0xAA : 0xAB);
+        view.setUint8(1, 0x08);
+        view.setUint16(2, appVersion);
+
+        webSock.Send(buffer);
+    }
+
+    HandleMessageEvent(data) {
+        var view = new DataView(data);
+        if (view.getUint8(0) == 0xBB) {
+            var serverCommand = view.getUint8(1);
+            if (serverCommand == 0x09) {
+                if (view.byteLength >= 12) {
+                    sessionID = view.getUint32(2);
+                    serverAppVersion = view.getUint16(6);
+                    mapWidth = view.getUint16(8);
+                    mapHeight = view.getUint16(10);
+                    this.isConnected = true;
+                }
+            }
+            console.log("HandleMessageEvent, serverCommand: " + serverCommand);
+        }
+    }
 }
 
 function Init() {
-    // Setup resize
-    window.onresize = on_resize;
-    on_resize();
-
-    if (typeof webSock === 'undefined') {
-        webSock = new WebSock();
+    if (typeof gameFace === 'undefined') {
+        gameFace = new GameFace();
+        gameFace.Init();
     }
 }
-
-function RegisterClient() {
-    var buffer = new ArrayBuffer(4);
-    var view = new DataView(buffer);
-
-    view.setUint8(0, (littleEndian == 0) ? 0xAA : 0xAB);
-    view.setUint8(1, 0x08);
-    view.setUint16(2, appVersion);
-
-    webSock.Send(buffer);
-}
-
-function HandleMessageEvent(data) {
-    view = new DataView(data);
-    if (view.getUint8(0) == 0xBB)
-    {
-        var serverCommand = view.getUint8(1);
-        if (serverCommand == 0x09)
-        {
-            if (view.byteLength >= 12)
-            {
-                sessionID = view.getUint32(2);
-                serverAppVersion = view.getUint16(6);
-                mapWidth = view.getUint16(8);
-                mapHeight = view.getUint16(10);
-                this.isConnected = true;
-            }
-        }
-        console.log("HandleMessageEvent, serverCommand: " + serverCommand);
-    }
-}
-
