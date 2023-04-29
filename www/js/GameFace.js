@@ -12,8 +12,8 @@ var mapHeight = 0;
 var mapOffsetX = 0;
 var mapOffsetY = 0;
 
-var canvas = document.getElementById('gameCanvas');
-var ctx = canvas.getContext("2d");
+var canv = document.getElementById('gameCanvas');
+var ctx = canv.getContext("2d");
 var borderWidth = 4;
 var centerX;
 var centerY;
@@ -21,20 +21,10 @@ var centerY;
 // allow for multiple keys down simultaneously.
 var keysPressed = {};
 
-// map non-ASCII keys to single byte values for comms
-var keyMap = {
-    "ArrowLeft": 128,
-    "ArrowUp" : 129,
-    "ArrowRight": 130,
-    "ArrowDown": 131,
-};
-
 // DOM object events we care about.
 document.addEventListener("click", on_click);
 document.addEventListener("keydown", on_keydown);
 document.addEventListener("keyup", on_keyup);
-
-const textEncoder = new TextEncoder();
 
 const littleEndian = ((() => {
     const buffer = new ArrayBuffer(2);
@@ -101,16 +91,19 @@ function on_resize() {
 
     centerX = ctx.canvas.width / 2;
     centerY = ctx.canvas.height / 2;
+
+    ship.x = centerX;
+    ship.y = centerY;
 }
 
-function ProcessKeyEvent(key, isDown) {
+function ProcessKeyEvent(keyCode, isDown) {
     var buff = new ArrayBuffer(4);
     var view = new Uint8Array(buff);
 
     view[0] = littleEndian;
     view[1] = 0x14;
     view[2] = isDown;
-    view[3] = (typeof keyMap[key] === 'undefined') ? textEncoder.encode(key) : keyMap[key];
+    view[3] = keyCode;
 
     webSock.Send(buff);
 }
@@ -129,19 +122,15 @@ function on_click(event) {
     webSock.Send(buffer);
 }
 
-// filter multiple key down's (keyboard repeat)
 function on_keydown(event) {
-    if (!keysPressed[event.key]) {
-        keysPressed[event.key] = true;
-        ProcessKeyEvent(event.key, true)
-    }
+    keysPressed[event.keyCode] = true;
+    if (!event.repeat)
+        ProcessKeyEvent(event.keyCode, false);
 }
 
 function on_keyup(event) {
-    if (keysPressed[event.key]) {
-        keysPressed[event.key] = false;
-        ProcessKeyEvent(event.key, false)
-    }
+    keysPressed[event.keyCode] = false;
+    ProcessKeyEvent(event.keyCode, false);
 }
 
 function RegisterClient() {
