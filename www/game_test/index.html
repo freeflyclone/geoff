@@ -19,8 +19,20 @@
 	<script type="text/javascript" src="/js/GameFace.js"></script>
 	<script type="text/javascript" src="/js/asteroids.js"></script>
 	<script type="text/javascript">
-		GameFaceInit();
-		AsteroidsInit();
+		if (typeof GameFaceInit != 'undefined') {
+			GameFaceInit();
+		}
+		else {
+			console.log("GameFaceInit is undefined.");
+			setTimeout(GameFaceInit, 100);
+		}
+		if (typeof AsteroidsInit != 'undefined') {
+			AsteroidsInit();
+		}
+		else {
+			console.log("AsteroidsInit is undefined.");
+			setTimeout(AsteroidsInit, 100);
+		}
 	</script>
 </body>
 </html> 
