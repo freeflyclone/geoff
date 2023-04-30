@@ -21,11 +21,6 @@ var centerY;
 // allow for multiple keys down simultaneously.
 var keysPressed = {};
 
-// DOM object events we care about.
-document.addEventListener("click", on_click);
-document.addEventListener("keydown", on_keydown);
-document.addEventListener("keyup", on_keyup);
-
 const littleEndian = ((() => {
     const buffer = new ArrayBuffer(2);
     new DataView(buffer).setInt16(0, 256, true);
@@ -158,7 +153,7 @@ function HandleMessageEvent(data) {
     }
 }
 
-function Init() {
+function GameFaceInit() {
     // Setup resize
     window.onresize = on_resize;
     on_resize();
@@ -166,4 +161,9 @@ function Init() {
     if (typeof webSock === 'undefined') {
         webSock = new WebSock();
     }
+
+    // DOM object events we care about.
+    document.addEventListener("click", on_click);
+    document.addEventListener("keydown", on_keydown);
+    document.addEventListener("keyup", on_keyup);
 }
