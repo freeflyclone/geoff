@@ -1,6 +1,11 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
+#include <list>
+#include <cstdint>
+#include <memory>
+#include <mutex>
+
 class Client
 {
 public:
