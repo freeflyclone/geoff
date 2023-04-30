@@ -342,6 +342,20 @@ function drawShipFully() {
         ctx.beginPath();
         ctx.arc(ship.x, ship.y, ship.r * 0.5, 0, Math.PI * 2, false);
         ctx.fill();
+
+        // reduce the explode time
+        ship.explodeTime--;
+
+        // reset the ship after the explosion has finished
+        if (ship.explodeTime == 0) {
+            lives--;
+            if (lives <= 0) {
+                gameOver();
+            }
+            else {
+                ship = newShip();
+            }
+        }
     }
 
     if (SHOW_BOUNDING) {
@@ -459,31 +473,12 @@ function detectShipAsteroidHit() {
                 }
             }
         }
-
-        // rotate the ship
-        ship.a += ship.rot;
-
-        // move the ship
-        ship.x += ship.thrust.x;
-        ship.y += ship.thrust.y;
-    } else {
-        // reduce the explode time
-        ship.explodeTime--;
-
-        // reset the ship after the explosion has finished
-        if (ship.explodeTime == 0) {
-            lives--;
-            if (lives <= 0) {
-                gameOver();
-            }
-            else {
-                ship = newShip();
-            }
-        }
     }
 }
 
 function moveShip() {
+    var exploding = ship.explodeTime > 0;
+
     if (ship.thrusting && !ship.dead) {
         ship.thrust.x += SHIP_THRUST * Math.cos(ship.a) / FPS;
         ship.thrust.y -= SHIP_THRUST * Math.sin(ship.a) / FPS;
@@ -492,6 +487,15 @@ function moveShip() {
         // apply friction (slow the ship down when not thrusting)
         ship.thrust.x -= FRICTION * ship.thrust.x / FPS;
         ship.thrust.y -= FRICTION * ship.thrust.y / FPS;
+    }
+
+    if (!exploding) {
+        // rotate the ship
+        ship.a += ship.rot;
+
+        // move the ship
+        ship.x += ship.thrust.x;
+        ship.y += ship.thrust.y;
     }
 
     // handle edge of screen
@@ -571,7 +575,7 @@ function moveAsteroids() {
 function update() {
     drawSpace();
     drawAsteroids();
-    drawShipFully();
+    drawShipFully();   
     drawLasers();
     drawGameInfo();
 
@@ -588,7 +592,6 @@ function AsteroidsInit() {
 
     document.addEventListener("keydown", on_game_keydown);
     document.addEventListener("keyup", on_game_keyup);
-
 
     newGame();
 }
