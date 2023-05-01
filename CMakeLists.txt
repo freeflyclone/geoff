@@ -24,7 +24,7 @@ set(CMAKE_CONFIGURATION_TYPES Debug;Release)
 file(GLOB APP_SRC_FILES
 	src/AppBuffer.cpp
 	src/Client.cpp
-	src/Game.cpp
+	src/WebsockServer.cpp
 	src/geoff.cpp
 	src/SSLContext.cpp
 	src/ServerUtils.cpp)
@@ -33,7 +33,7 @@ file(GLOB APP_SRC_FILES
 file(GLOB APP_INC_FILES
 	src/AppBuffer.h
 	src/Client.h
-	src/Game.h
+	src/WebsockServer.h
 	src/geoff.h
     src/handle_request.h
 	src/server_certificate.hpp

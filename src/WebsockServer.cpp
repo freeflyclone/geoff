@@ -1,9 +1,9 @@
-#include "Game.h"
+#include "WebsockServer.h"
 
 #include <ios>
 #include <iostream>
 
-Game::Game() :
+WebsockServer::WebsockServer() :
 	m_playersMutex(),
 	m_sessionID(0),
 	m_mapWidth(4096),
@@ -16,29 +16,29 @@ Game::Game() :
 	std::cout << "geoff server ver " << gameAppVersion << " running\n";
 }
 
-Game::~Game()
+WebsockServer::~WebsockServer()
 {
 }
 
 // https://blog.mbedded.ninja/programming/languages/c-plus-plus/magic-statics/
-Game& Game::GetInstance()
+WebsockServer& WebsockServer::GetInstance()
 {
-	static Game g;
+	static WebsockServer g;
 	return g;
 }
 
-void Game::OnAccept(OnAcceptCallback_t fn)
+void WebsockServer::OnAccept(OnAcceptCallback_t fn)
 {
 	fn(m_sessionID++);
 	m_sessionID &= 0xFFFFFFFF;
 }
 
-void Game::OnClose(uint32_t sessionID)
+void WebsockServer::OnClose(uint32_t sessionID)
 {
 	m_clients.delete_client_by_session(sessionID);
 }
 
-void Game::RegisterNewClientConnection(uint32_t sessionID, AppBuffer & rxBuffer)
+void WebsockServer::RegisterNewClientConnection(uint32_t sessionID, AppBuffer & rxBuffer)
 {
 	uint16_t clientAppVersion = rxBuffer.get_uint16();
 
@@ -56,7 +56,7 @@ void Game::RegisterNewClientConnection(uint32_t sessionID, AppBuffer & rxBuffer)
 	m_txQue.push_back(txBuffer);
 }
 
-void Game::HandleKeyEvent(uint32_t sessionID, AppBuffer & rxBuffer)
+void WebsockServer::HandleKeyEvent(uint32_t sessionID, AppBuffer & rxBuffer)
 {
 	bool isDown = (rxBuffer.get_uint8() == 1) ? true : false;
 	int keyCode = rxBuffer.get_uint8();
@@ -76,7 +76,7 @@ void Game::HandleKeyEvent(uint32_t sessionID, AppBuffer & rxBuffer)
 	m_txQue.push_back(txBuffer);
 }
 
-void Game::HandleClickEvent(uint32_t sessionID, AppBuffer& rxBuffer)
+void WebsockServer::HandleClickEvent(uint32_t sessionID, AppBuffer& rxBuffer)
 {
 	uint32_t rxSessionID = rxBuffer.get_uint32();
 	uint16_t playerID = rxBuffer.get_uint16();
@@ -101,7 +101,7 @@ void Game::HandleClickEvent(uint32_t sessionID, AppBuffer& rxBuffer)
 	m_txQue.push_back(txBuffer);
 }
 
-void Game::CommsHandler(uint32_t sessionID, beast::flat_buffer in_buffer, std::size_t in_length)
+void WebsockServer::CommsHandler(uint32_t sessionID, beast::flat_buffer in_buffer, std::size_t in_length)
 {
 	const std::lock_guard<std::mutex> lock(m_playersMutex);
 
@@ -113,7 +113,7 @@ void Game::CommsHandler(uint32_t sessionID, beast::flat_buffer in_buffer, std::s
 	if (buff[0] == 0xAA || buff[0] == 0xAB)
 	{
 		bool isLittleEndian = buff[0] == 0xAB ? true : false;
-		Game::RequestType_t request = static_cast<Game::RequestType_t>(buff[1]);
+		WebsockServer::RequestType_t request = static_cast<WebsockServer::RequestType_t>(buff[1]);
 
 		// skip header
 		buff += 2;
@@ -138,7 +138,7 @@ void Game::CommsHandler(uint32_t sessionID, beast::flat_buffer in_buffer, std::s
 	}
 }
 
-bool Game::GetNextTxBuffer(std::shared_ptr<AppBuffer> & buff)
+bool WebsockServer::GetNextTxBuffer(std::shared_ptr<AppBuffer> & buff)
 {
 	if (m_txQue.empty())
 		return false;

@@ -18,8 +18,8 @@ class websocket_session
 
     beast::flat_buffer buffer_;
 
-    // Set by Game::OnAccept() callback, so that when we detect
-    // a websocket_session close, we know which Game client to clean up.
+    // Set by WebsockServer::OnAccept() callback, so that when we detect
+    // a websocket_session close, we know which WebsockServer client to clean up.
     uint32_t m_sessionID;
 
     // Start the asynchronous operation
@@ -54,7 +54,7 @@ class websocket_session
         if (ec)
             return fail(ec, "accept");
 
-        Game::GetInstance().OnAccept([&](uint32_t sessionID) {
+        WebsockServer::GetInstance().OnAccept([&](uint32_t sessionID) {
             m_sessionID = sessionID;
         });
 
@@ -78,7 +78,7 @@ class websocket_session
         // This indicates that the websocket_session was closed
         if (ec == websocket::error::closed)
         {
-            Game::GetInstance().OnClose(m_sessionID);
+            WebsockServer::GetInstance().OnClose(m_sessionID);
             return;
         }
 
@@ -87,11 +87,11 @@ class websocket_session
 
         std::shared_ptr<AppBuffer> txBuff;
 
-        // Invoke the Game comms handler...
-        Game::GetInstance().CommsHandler(m_sessionID, buffer_, bytes_transferred);
+        // Invoke the WebsockServer comms handler...
+        WebsockServer::GetInstance().CommsHandler(m_sessionID, buffer_, bytes_transferred);
 
         // ... and return results (if any) to client
-        if (Game::GetInstance().GetNextTxBuffer(txBuff))
+        if (WebsockServer::GetInstance().GetNextTxBuffer(txBuff))
         {
             derived().ws().async_write(
                 boost::asio::buffer(txBuff->data(), txBuff->bytesWritten()),
@@ -116,9 +116,9 @@ class websocket_session
         // independently of input from the client.
         // 
         // Thus the async_write() / on_write() chain is managed based on
-        // whether Game has tx buffers queued or not.
+        // whether WebsockServer has tx buffers queued or not.
         std::shared_ptr<AppBuffer> txBuff;
-        if (Game::GetInstance().GetNextTxBuffer(txBuff))
+        if (WebsockServer::GetInstance().GetNextTxBuffer(txBuff))
         {
             derived().ws().async_write(
                 boost::asio::buffer(txBuff->data(), txBuff->bytesWritten()),
