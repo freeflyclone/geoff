@@ -29,7 +29,10 @@ WebsockServer& WebsockServer::GetInstance()
 
 void WebsockServer::OnAccept(OnAcceptCallback_t fn)
 {
-	fn(m_sessionID++);
+	m_sessions.add_session(m_sessionID);
+	fn(m_sessionID);
+
+	m_sessionID++;
 	m_sessionID &= 0xFFFFFFFF;
 }
 
@@ -42,8 +45,6 @@ void WebsockServer::RegisterNewSession(uint32_t sessionID, AppBuffer & rxBuffer)
 {
 	// skip "clientAppVersion" for now.
 	rxBuffer.get_uint16();
-
-	m_sessions.add_session(sessionID, rxBuffer.isLittleEndian());
 
 	auto txBuffer = std::make_shared<AppBuffer>(12, rxBuffer.isLittleEndian());
 
@@ -106,6 +107,16 @@ void WebsockServer::CommsHandler(uint32_t sessionID, beast::flat_buffer in_buffe
 {
 	const std::lock_guard<std::mutex> lock(m_playersMutex);
 
+	auto session = m_sessions.find_by_id(sessionID);
+
+	if (!session)
+		return;
+
+	uint8_t* buff = (uint8_t*)static_cast<net::const_buffer>(in_buffer.data()).data();
+
+	session->comms_handler(buff, in_length);
+}
+	/*
 	if (in_length < 2)
 		return;
 
@@ -138,6 +149,7 @@ void WebsockServer::CommsHandler(uint32_t sessionID, beast::flat_buffer in_buffe
 		}
 	}
 }
+*/
 
 bool WebsockServer::GetNextTxBuffer(std::shared_ptr<AppBuffer> & buff)
 {
