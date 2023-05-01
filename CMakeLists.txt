@@ -23,23 +23,23 @@ set(CMAKE_CONFIGURATION_TYPES Debug;Release)
 # Files you want to appear in the "Source Files" project folder are explicitly listed here
 file(GLOB APP_SRC_FILES
 	src/AppBuffer.cpp
-	src/Client.cpp
-	src/WebsockServer.cpp
 	src/geoff.cpp
 	src/SSLContext.cpp
-	src/ServerUtils.cpp)
+	src/ServerUtils.cpp
+	src/WebsockServer.cpp
+	src/WebsockSession.cpp)
 
 # Files to appear in "Header Files" project folder are explicitly listed here
 file(GLOB APP_INC_FILES
 	src/AppBuffer.h
-	src/Client.h
-	src/WebsockServer.h
 	src/geoff.h
     src/handle_request.h
 	src/server_certificate.hpp
 	src/ServerUtils.h
 	src/SSLContext.h
-	src/websocket_session.h)
+	src/websocket_session.h
+	src/WebsockServer.h
+	src/WebsockSession.h)
 
 # Files within the source tree "www" tree are all implicitly (automatically) added.
 # Things like .html, .js, .gif, etc. The tree structure is preserved. 

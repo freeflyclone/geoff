@@ -8,7 +8,7 @@ WebsockServer::WebsockServer() :
 	m_sessionID(0),
 	m_mapWidth(4096),
 	m_mapHeight(2048),
-	m_clients()
+	m_sessions()
 {
 
 	srand(12345);
@@ -35,14 +35,14 @@ void WebsockServer::OnAccept(OnAcceptCallback_t fn)
 
 void WebsockServer::OnClose(uint32_t sessionID)
 {
-	m_clients.delete_client_by_session(sessionID);
+	m_sessions.delete_session_by_id(sessionID);
 }
 
 void WebsockServer::RegisterNewClientConnection(uint32_t sessionID, AppBuffer & rxBuffer)
 {
 	uint16_t clientAppVersion = rxBuffer.get_uint16();
 
-	m_clients.add_client(sessionID, rxBuffer.isLittleEndian(), clientAppVersion);
+	m_sessions.add_client(sessionID, rxBuffer.isLittleEndian(), clientAppVersion);
 
 	auto txBuffer = std::make_shared<AppBuffer>(12, rxBuffer.isLittleEndian());
 

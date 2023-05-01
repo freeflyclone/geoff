@@ -15,7 +15,7 @@ namespace net = boost::asio;            // from <boost/asio.hpp>
 using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 
 #include "AppBuffer.h"
-#include "Client.h"
+#include "WebsockSession.h"
 
 #define gameAppVersion 2
 
@@ -71,7 +71,7 @@ private:
 	uint32_t m_sessionID;
 	uint16_t m_mapWidth, m_mapHeight;
 
-	ClientManager m_clients;
+	WebsockSessionManager m_sessions;
 };
 
 #endif
