@@ -38,7 +38,7 @@ void WebsockServer::OnClose(uint32_t sessionID)
 	m_sessions.delete_by_id(sessionID);
 }
 
-void WebsockServer::RegisterNewClientConnection(uint32_t sessionID, AppBuffer & rxBuffer)
+void WebsockServer::RegisterNewSession(uint32_t sessionID, AppBuffer & rxBuffer)
 {
 	// skip "clientAppVersion" for now.
 	rxBuffer.get_uint16();
@@ -124,8 +124,8 @@ void WebsockServer::CommsHandler(uint32_t sessionID, beast::flat_buffer in_buffe
 
 		switch (request)
 		{
-			case RegisterClient:
-				RegisterNewClientConnection(sessionID, rxBuffer);
+			case RegisterSession:
+				RegisterNewSession(sessionID, rxBuffer);
 				break;
 
 			case ClickEvent:

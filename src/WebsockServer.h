@@ -24,7 +24,7 @@ class WebsockServer
 public:
 	enum RequestType_t
 	{
-		RegisterClient = 0x08,
+		RegisterSession = 0x08,
 		ClickEvent = 0x12,
 		KeyEvent = 0x14
 	};
@@ -52,7 +52,7 @@ private:
 	WebsockServer(WebsockServer&&) = delete;
 	WebsockServer& operator=(WebsockServer&&) = delete;
 
-	void RegisterNewClientConnection(uint32_t sessionID, AppBuffer & rxBuffer);
+	void RegisterNewSession(uint32_t sessionID, AppBuffer & rxBuffer);
 	void HandleClickEvent(uint32_t sessionID, AppBuffer& rxBuffer);
 	void HandleKeyEvent(uint32_t sessionID, AppBuffer & rxBuffer);
 
