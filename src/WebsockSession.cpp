@@ -1,10 +1,9 @@
 #include "geoff.h"
 #include "WebsockSession.h"
 
-WebsockSession::WebsockSession(uint32_t sessionID, bool isLittleEndian, uint16_t clientAppVersion) :
+WebsockSession::WebsockSession(uint32_t sessionID, bool isLittleEndian) :
 	m_sessionID(sessionID),
-	m_isLittleEndian(isLittleEndian),
-	m_clientAppVersion(clientAppVersion)
+	m_isLittleEndian(isLittleEndian)
 {
 	std::cout << __FUNCTION__ << "(" << __LINE__ << ") : " << m_sessionID << std::endl;
 }
@@ -28,24 +27,24 @@ WebsockSessionManager::~WebsockSessionManager()
 {
 }
 
-void WebsockSessionManager::add_client(uint32_t sessionID, bool isLittleEndian, uint16_t clientAppVersion)
+void WebsockSessionManager::add_session(uint32_t sessionID, bool isLittleEndian)
 {
 	const std::lock_guard<std::mutex> lock(m_sessions_mutex);
 
-	m_sessions.push_back(std::make_shared<WebsockSession>(sessionID, isLittleEndian, clientAppVersion));
+	m_sessions.push_back(std::make_shared<WebsockSession>(sessionID, isLittleEndian));
 }
 
-void WebsockSessionManager::delete_session_by_id(uint32_t sessionID)
+void WebsockSessionManager::delete_by_id(uint32_t sessionID)
 {
 	const std::lock_guard<std::mutex> lock(m_sessions_mutex);
 
-	auto client = find_session_by_id(sessionID);
+	auto client = find_by_id(sessionID);
 
 	if (client)
 		m_sessions.remove(client);
 }
 
-std::shared_ptr<WebsockSession> WebsockSessionManager::find_session_by_id(uint32_t sessionID)
+std::shared_ptr<WebsockSession> WebsockSessionManager::find_by_id(uint32_t sessionID)
 {
 	for (auto client : m_sessions)
 	{

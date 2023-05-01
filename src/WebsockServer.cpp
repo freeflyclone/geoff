@@ -35,14 +35,15 @@ void WebsockServer::OnAccept(OnAcceptCallback_t fn)
 
 void WebsockServer::OnClose(uint32_t sessionID)
 {
-	m_sessions.delete_session_by_id(sessionID);
+	m_sessions.delete_by_id(sessionID);
 }
 
 void WebsockServer::RegisterNewClientConnection(uint32_t sessionID, AppBuffer & rxBuffer)
 {
-	uint16_t clientAppVersion = rxBuffer.get_uint16();
+	// skip "clientAppVersion" for now.
+	rxBuffer.get_uint16();
 
-	m_sessions.add_client(sessionID, rxBuffer.isLittleEndian(), clientAppVersion);
+	m_sessions.add_session(sessionID, rxBuffer.isLittleEndian());
 
 	auto txBuffer = std::make_shared<AppBuffer>(12, rxBuffer.isLittleEndian());
 
