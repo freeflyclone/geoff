@@ -48,17 +48,9 @@ private:
 	WebsockServer(WebsockServer&&) = delete;
 	WebsockServer& operator=(WebsockServer&&) = delete;
 
-	// std::deque *might* be overkill, std::queue would probably suffice here.
-	// 
-	// Note on shared_ptr usage: GetNextTxBuffer() empties this que into a shared_ptr
-	// reference provided by it's caller.  When the caller's shared_ptr reference
-	// goes out of scope, the underlying AppBuffer is then deconstructed. (freed)
-	// 
-	// See websocket_session.h on_read() function, where the underlying data is copied into
-	// a boost::asio::buffer() object for the lifetime of the async_write() operation.
 	std::deque<std::shared_ptr<AppBuffer>> m_txQue;
 
-	std::mutex m_playersMutex;
+	std::mutex m_serverMutex;
 
 	uint32_t m_sessionID;
 

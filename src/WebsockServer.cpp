@@ -4,11 +4,10 @@
 #include <iostream>
 
 WebsockServer::WebsockServer() :
-	m_playersMutex(),
+	m_serverMutex(),
 	m_sessionID(0),
 	m_sessions()
 {
-
 	srand(12345);
 
 	std::cout << "geoff server ver " << gameAppVersion << " running\n";
@@ -41,7 +40,7 @@ void WebsockServer::OnClose(uint32_t sessionID)
 
 void WebsockServer::CommsHandler(uint32_t sessionID, beast::flat_buffer in_buffer, std::size_t in_length)
 {
-	const std::lock_guard<std::mutex> lock(m_playersMutex);
+	const std::lock_guard<std::mutex> lock(m_serverMutex);
 
 	auto session = m_sessions.find_by_id(sessionID);
 
@@ -55,11 +54,15 @@ void WebsockServer::CommsHandler(uint32_t sessionID, beast::flat_buffer in_buffe
 
 void WebsockServer::CommitTxBuffer(std::shared_ptr<AppBuffer> buffer)
 {
+	const std::lock_guard<std::mutex> lock(m_serverMutex);
+
 	m_txQue.push_back(buffer);
 }
 
 bool WebsockServer::GetNextTxBuffer(std::shared_ptr<AppBuffer> & buff)
 {
+	const std::lock_guard<std::mutex> lock(m_serverMutex);
+
 	if (m_txQue.empty())
 		return false;
 
