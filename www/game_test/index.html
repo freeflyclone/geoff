@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+	<meta charset="utf-8">
+	<title>hq.e-man.tv WebSock GameTest</title>
+	<link rel="icon" type="image/x-icon" href="/favicon.ico">
+	<style>
+		html, body {margin: 0; height: 100%; overflow: hidden; background: black; }
+		canvas { border: 2px solid blue; display: block; }
+	</style>
+</head>
+
+<body>
+	<canvas id="gameCanvas">
+		Your browser does not support the HTML canvas tag.
+	</canvas>
+
+	<script type="text/javascript" src="/js/GameFace.js"></script>
+	<script type="text/javascript" src="/js/asteroids.js"></script>
+	<script type="text/javascript">
+		if (typeof GameFaceInit != 'undefined') {
+			GameFaceInit();
+		}
+		else {
+			console.log("GameFaceInit is undefined.");
+			setTimeout(GameFaceInit, 100);
+		}
+		if (typeof AsteroidsInit != 'undefined') {
+			AsteroidsInit();
+		}
+		else {
+			console.log("AsteroidsInit is undefined.");
+			setTimeout(AsteroidsInit, 100);
+		}
+	</script>
+</body>
+</html> 

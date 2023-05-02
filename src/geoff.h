@@ -17,10 +17,13 @@
 #include <cstdlib>
 #include <functional>
 #include <iostream>
+#include <sstream>
 #include <memory>
 #include <string>
 #include <thread>
 #include <vector>
+
+#include "WebsockServer.h"
 
 // namespace aliases - less typing in source code
 namespace beast = boost::beast;                 // from <boost/beast.hpp>
@@ -30,6 +33,6 @@ namespace net = boost::asio;                    // from <boost/asio.hpp>
 namespace ssl = boost::asio::ssl;               // from <boost/asio/ssl.hpp>
 using tcp = boost::asio::ip::tcp;               // from <boost/asio/ip/tcp.hpp>
 
-void fail(beast::error_code ec, char const* what);
-
+#define GEOFF_Version "1.0"
+#define TRACE(...) {std::cerr << __FILE__ << ":" << __FUNCTION__ << "(" << __LINE__ << ")" << ", " << __VA_ARGS__ << std::endl;}
 #endif

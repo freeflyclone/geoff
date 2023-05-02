@@ -5,11 +5,26 @@
 	<title>hq.e-man.tv WebSock Echo</title>
 	<link rel="icon" type="image/x-icon" href="/favicon.ico">
     <script type="text/javascript">
+        function make_websocket_url()
+        {
+            var protocol;
+            if (window.location.protocol == "https:")
+                protocol = "wss:"
+            else if (window.location.protocol == "http:")
+                protocol = "ws:"
+
+            var url = protocol + "//" + window.location.hostname + ":" + window.location.port + "/";
+
+            return url;
+        }
+
         function WebSocketTest()
         {
             if ("WebSocket" in window)
             {
-                var ws = new WebSocket("wss://hq.e-man.tv/");
+                var url = make_websocket_url();
+                alert("URL: " + url);
+                var ws = new WebSocket(url);
             }
             else
             {
