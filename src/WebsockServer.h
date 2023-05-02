@@ -52,8 +52,6 @@ private:
 
 	std::mutex m_serverMutex;
 
-	uint32_t m_sessionID;
-
 	WebsockSessionManager m_sessions;
 };
 

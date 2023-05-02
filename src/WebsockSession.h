@@ -36,13 +36,14 @@ public:
 	WebsockSessionManager();
 	virtual ~WebsockSessionManager();
 
-	virtual void add_session(uint32_t sessionID);
+	virtual uint32_t add_session();
 
 	std::shared_ptr<WebsockSession> find_by_id(uint32_t sessionID);
 	void delete_by_id(uint32_t sessionID);
 
 private:
 	std::mutex m_sessions_mutex;
+	uint32_t m_session_id;
 	std::list<std::shared_ptr<WebsockSession>> m_sessions;
 };
 

@@ -93,7 +93,9 @@ void WebsockSession::HandleClickEvent(AppBuffer& rxBuffer)
 }
 
 WebsockSessionManager::WebsockSessionManager()
-	: m_sessions()
+	: 
+	m_session_id(0),
+	m_sessions()
 {
 }
 
@@ -101,11 +103,17 @@ WebsockSessionManager::~WebsockSessionManager()
 {
 }
 
-void WebsockSessionManager::add_session(uint32_t sessionID)
+uint32_t WebsockSessionManager::add_session()
 {
 	const std::lock_guard<std::mutex> lock(m_sessions_mutex);
 
-	m_sessions.push_back(std::make_shared<WebsockSession>(sessionID));
+	auto session_id = m_session_id;
+
+	m_sessions.push_back(std::make_shared<WebsockSession>(session_id));
+
+	m_session_id = (m_session_id + 1) & 0xFFFFFFFF;
+
+	return session_id;
 }
 
 void WebsockSessionManager::delete_by_id(uint32_t sessionID)

@@ -5,7 +5,6 @@
 
 WebsockServer::WebsockServer() :
 	m_serverMutex(),
-	m_sessionID(0),
 	m_sessions()
 {
 	srand(12345);
@@ -26,11 +25,7 @@ WebsockServer& WebsockServer::GetInstance()
 
 void WebsockServer::OnAccept(OnAcceptCallback_t fn)
 {
-	m_sessions.add_session(m_sessionID);
-	fn(m_sessionID);
-
-	m_sessionID++;
-	m_sessionID &= 0xFFFFFFFF;
+	fn(m_sessions.add_session());
 }
 
 void WebsockServer::OnClose(uint32_t sessionID)
