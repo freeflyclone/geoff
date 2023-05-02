@@ -93,7 +93,7 @@ function ProcessKeyEvent(keyCode, isDown) {
     var view = new Uint8Array(buff);
 
     view[0] = littleEndian;
-    view[1] = 0x14;
+    view[1] = 0x04;
     view[2] = isDown;
     view[3] = keyCode;
 
@@ -105,7 +105,7 @@ function on_click(event) {
     var view = new DataView(buffer);
 
     view.setUint8(0, (littleEndian == 0) ? 0xAA : 0xAB);
-    view.setUint8(1, 0x12);
+    view.setUint8(1, 0x02);
     view.setUint32(2, sessionID);
     view.setUint16(6, playerID);
     view.setUint16(8, mapOffsetX + event.clientX);
@@ -130,7 +130,7 @@ function RegisterClient() {
     var view = new DataView(buffer);
 
     view.setUint8(0, (littleEndian == 0) ? 0xAA : 0xAB);
-    view.setUint8(1, 0x08);
+    view.setUint8(1, 0x00);
     view.setUint16(2, appVersion);
 
     webSock.Send(buffer);
