@@ -22,12 +22,6 @@ using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 class WebsockServer
 {
 public:
-	enum RequestType_t
-	{
-		RegisterSession = 0x08,
-		ClickEvent = 0x12,
-		KeyEvent = 0x14
-	};
 	static WebsockServer& GetInstance();
 	typedef std::function<void(uint32_t sessionId)> OnAcceptCallback_t;
 
@@ -35,6 +29,8 @@ public:
 	void OnClose(uint32_t sessionID);
 
 	void CommsHandler(uint32_t sessionID, beast::flat_buffer buffer, std::size_t bytes_transferred);
+	void CommitTxBuffer(std::shared_ptr<AppBuffer> buffer);
+
 	bool GetNextTxBuffer(std::shared_ptr<AppBuffer>& buffer);
 
 private:
@@ -52,10 +48,6 @@ private:
 	WebsockServer(WebsockServer&&) = delete;
 	WebsockServer& operator=(WebsockServer&&) = delete;
 
-	void RegisterNewSession(uint32_t sessionID, AppBuffer & rxBuffer);
-	void HandleClickEvent(uint32_t sessionID, AppBuffer& rxBuffer);
-	void HandleKeyEvent(uint32_t sessionID, AppBuffer & rxBuffer);
-
 	// std::deque *might* be overkill, std::queue would probably suffice here.
 	// 
 	// Note on shared_ptr usage: GetNextTxBuffer() empties this que into a shared_ptr
@@ -69,7 +61,6 @@ private:
 	std::mutex m_playersMutex;
 
 	uint32_t m_sessionID;
-	uint16_t m_mapWidth, m_mapHeight;
 
 	WebsockSessionManager m_sessions;
 };

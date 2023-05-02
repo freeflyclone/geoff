@@ -13,7 +13,7 @@ AppBuffer::AppBuffer(std::size_t bufferLength, int isLittleEndian)
     m_buff = new uint8_t[bufferLength];
 }
 
-AppBuffer::AppBuffer(uint8_t *buffer, std::size_t bufferLength, int isLittleEndian)
+AppBuffer::AppBuffer(const uint8_t *buffer, const std::size_t bufferLength, int isLittleEndian)
     :
     AppBuffer(bufferLength, isLittleEndian)
 {

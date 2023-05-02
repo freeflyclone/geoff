@@ -6,7 +6,7 @@ class AppBuffer
 {
 public:
     AppBuffer(std::size_t bufferLength, int isLittleEndian);
-    AppBuffer(uint8_t* buffer, std::size_t bufferLength, int isLittleEndian);
+    AppBuffer(const uint8_t* buffer, const std::size_t bufferLength, int isLittleEndian);
     ~AppBuffer();
 
     size_t bytesRemaining();

@@ -9,26 +9,34 @@
 class WebsockSession
 {
 public:
+	enum class RequestType_t
+	{
+		RegisterSession = 0x00,
+		ClickEvent = 0x02,
+		KeyEvent = 0x04
+	};
+
 	WebsockSession(uint32_t sessionID);
-	~WebsockSession();
+	virtual ~WebsockSession();
 
-	uint32_t session_id();
-	void set_little_endian(const bool littleEndian);
-
-	void comms_handler(const uint8_t *buff, const size_t length);
+	uint32_t SessionID();
+	virtual void CommsHandler(const uint8_t *buff, const size_t length);
 
 private:
+	void RegisterNewSession(AppBuffer& rxBuffer);
+	void HandleClickEvent(AppBuffer& rxBuffer);
+	void HandleKeyEvent(AppBuffer& rxBuffer);
+
 	uint32_t m_sessionID;
-	bool m_isLittleEndian;
 };
 
 class WebsockSessionManager
 {
 public:
 	WebsockSessionManager();
-	~WebsockSessionManager();
+	virtual ~WebsockSessionManager();
 
-	void add_session(uint32_t sessionID);
+	virtual void add_session(uint32_t sessionID);
 
 	std::shared_ptr<WebsockSession> find_by_id(uint32_t sessionID);
 	void delete_by_id(uint32_t sessionID);
