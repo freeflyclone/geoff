@@ -29,9 +29,9 @@ public:
 	void OnClose(uint32_t sessionID);
 
 	void CommsHandler(uint32_t sessionID, beast::flat_buffer buffer, std::size_t bytes_transferred);
-	void CommitTxBuffer(std::shared_ptr<AppBuffer> buffer);
+	void CommitTxBuffer(std::unique_ptr<AppBuffer>& buffer);
 
-	bool GetNextTxBuffer(std::shared_ptr<AppBuffer>& buffer);
+	bool GetNextTxBuffer(std::unique_ptr<AppBuffer>& buffer);
 
 private:
 	// I know what you're thinking: WTF is this?  It's Magic Statics!
@@ -48,7 +48,7 @@ private:
 	WebsockServer(WebsockServer&&) = delete;
 	WebsockServer& operator=(WebsockServer&&) = delete;
 
-	std::deque<std::shared_ptr<AppBuffer>> m_txQue;
+	std::deque<std::unique_ptr<AppBuffer>> m_txQue;
 
 	std::recursive_mutex m_serverMutex;
 

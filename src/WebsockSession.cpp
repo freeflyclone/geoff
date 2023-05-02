@@ -47,7 +47,7 @@ void WebsockSession::RegisterNewSession(AppBuffer& rxBuffer)
 	// skip "clientAppVersion" for now.
 	rxBuffer.get_uint16();
 
-	auto txBuffer = std::make_shared<AppBuffer>(12, rxBuffer.isLittleEndian());
+	auto txBuffer = std::make_unique<AppBuffer>(12, rxBuffer.isLittleEndian());
 
 	txBuffer->set_uint8(0xBB);
 	txBuffer->set_uint8(0x01);
@@ -62,7 +62,7 @@ void WebsockSession::HandleKeyEvent(AppBuffer& rxBuffer)
 	bool isDown = (rxBuffer.get_uint8() == 1) ? true : false;
 	int keyCode = rxBuffer.get_uint8();
 
-	auto txBuffer = std::make_shared <AppBuffer>(8, rxBuffer.isLittleEndian());
+	auto txBuffer = std::make_unique <AppBuffer>(8, rxBuffer.isLittleEndian());
 
 	txBuffer->set_uint8(0xBB);
 	txBuffer->set_uint8(0x05);
@@ -80,7 +80,7 @@ void WebsockSession::HandleClickEvent(AppBuffer& rxBuffer)
 	uint16_t clickX = rxBuffer.get_uint16();
 	uint16_t clickY = rxBuffer.get_uint16();
 
-	auto txBuffer = std::make_shared <AppBuffer>(12, rxBuffer.isLittleEndian());
+	auto txBuffer = std::make_unique <AppBuffer>(12, rxBuffer.isLittleEndian());
 
 	txBuffer->set_uint8(0xBB);
 	txBuffer->set_uint8(0x03);

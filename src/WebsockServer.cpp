@@ -47,14 +47,14 @@ void WebsockServer::CommsHandler(uint32_t sessionID, beast::flat_buffer in_buffe
 	session->CommsHandler(buff, in_length);
 }
 
-void WebsockServer::CommitTxBuffer(std::shared_ptr<AppBuffer> buffer)
+void WebsockServer::CommitTxBuffer(std::unique_ptr<AppBuffer> & buffer)
 {
 	const std::lock_guard<std::recursive_mutex> lock(m_serverMutex);
 
-	m_txQue.push_back(buffer);
+	m_txQue.push_back(std::move(buffer));
 }
 
-bool WebsockServer::GetNextTxBuffer(std::shared_ptr<AppBuffer> & buff)
+bool WebsockServer::GetNextTxBuffer(std::unique_ptr<AppBuffer> & buff)
 {
 	const std::lock_guard<std::recursive_mutex> lock(m_serverMutex);
 
@@ -62,7 +62,7 @@ bool WebsockServer::GetNextTxBuffer(std::shared_ptr<AppBuffer> & buff)
 		return false;
 
 	// Get next AppBuffer from TX que
-	buff = m_txQue.front();
+	buff = std::move(m_txQue.front());
 	m_txQue.pop_front();
 
 	return true;

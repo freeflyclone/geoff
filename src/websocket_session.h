@@ -85,7 +85,7 @@ class websocket_session
         if (ec)
             return fail(ec, "read");
 
-        std::shared_ptr<AppBuffer> txBuff;
+        std::unique_ptr<AppBuffer> txBuff;
 
         // Invoke the WebsockServer comms handler...
         WebsockServer::GetInstance().CommsHandler(m_sessionID, buffer_, bytes_transferred);
@@ -117,7 +117,7 @@ class websocket_session
         // 
         // Thus the async_write() / on_write() chain is managed based on
         // whether WebsockServer has tx buffers queued or not.
-        std::shared_ptr<AppBuffer> txBuff;
+        std::unique_ptr<AppBuffer> txBuff;
         if (WebsockServer::GetInstance().GetNextTxBuffer(txBuff))
         {
             derived().ws().async_write(
