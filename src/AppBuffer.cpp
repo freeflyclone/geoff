@@ -25,11 +25,6 @@ AppBuffer::~AppBuffer()
     delete[] m_buff;
 }
 
-void AppBuffer::setLittleEndian(bool isLittleEndian)
-{
-    m_isLittleEndian = isLittleEndian;
-}
-
 std::size_t AppBuffer::bytesRemaining()
 {
     return (m_length - m_readOffset);

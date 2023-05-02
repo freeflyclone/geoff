@@ -27,7 +27,6 @@ public:
     void set_uint16(int byteOffset, uint16_t v);
     void set_uint32(int byteOffset, uint32_t v);
 
-    void setLittleEndian(bool isLittleEndian);
     bool isLittleEndian() { return m_isLittleEndian; }
 
 private:

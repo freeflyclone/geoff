@@ -21,6 +21,7 @@ void WebsockSession::CommsHandler(const uint8_t* buff, const size_t length)
 	if (!buff || length < 2)
 		return;
 
+	// 1st 2 packet header bytes: AA (bigendian) or AB (littleendian), followed by RequestType_t
 	bool isLittleEndian = buff[0] == 0xAB ? true : false;
 	auto requestType = static_cast<WebsockSession::RequestType_t>(buff[1]);
 
