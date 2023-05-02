@@ -121,18 +121,18 @@ void WebsockSessionManager::delete_by_id(uint32_t sessionID)
 {
 	const std::lock_guard<std::mutex> lock(m_sessions_mutex);
 
-	auto client = find_by_id(sessionID);
+	auto session = find_by_id(sessionID);
 
-	if (client)
-		m_sessions.remove(client);
+	if (session)
+		m_sessions.remove(session);
 }
 
 std::shared_ptr<WebsockSession> WebsockSessionManager::find_by_id(uint32_t sessionID)
 {
-	for (auto client : m_sessions)
+	for (auto session : m_sessions)
 	{
-		if (client->SessionID() == sessionID)
-			return client;
+		if (session->SessionID() == sessionID)
+			return session;
 	}
 
 	return nullptr;
