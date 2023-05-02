@@ -50,7 +50,7 @@ private:
 
 	std::deque<std::shared_ptr<AppBuffer>> m_txQue;
 
-	std::mutex m_serverMutex;
+	std::recursive_mutex m_serverMutex;
 
 	WebsockSessionManager m_sessions;
 };
