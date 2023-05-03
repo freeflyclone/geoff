@@ -17,12 +17,11 @@
 #include "geoff.h"
 #include "SSLContext.h"
 #include "ServerUtils.h"
+#include "WebsockServer.h"
 
 // With the following include files, order *may* matter
 #include "handle_request.h"
 #include "websocket_session.h"
-
-
 
 template<class Body, class Allocator>
 void

@@ -5,7 +5,8 @@
 
 WebsockServer::WebsockServer() :
 	m_serverMutex(),
-	m_sessions()
+	m_sessions(),
+	m_ioc(nullptr)
 {
 	srand(12345);
 
@@ -43,14 +44,18 @@ void WebsockServer::OnTxReady(OnTxReady_t fn)
 	m_on_tx_ready_cb = fn;
 }
 
-void WebsockServer::OnTxReady()
+void WebsockServer::OnTxReady(uint32_t sessionID)
 {
 	if (m_on_tx_ready_cb)
 	{
 		std::unique_ptr<AppBuffer> txBuff;
 
-		if (GetNextTxBuffer(txBuff))
-			m_on_tx_ready_cb(txBuff->data(), txBuff->bytesWritten());
+		auto session = m_sessions.find_by_id(sessionID);
+
+		if (!session)
+			return;
+
+		m_on_tx_ready_cb(sessionID);
 	}
 }
 void WebsockServer::OnClose(uint32_t sessionID)
@@ -67,28 +72,10 @@ void WebsockServer::CommsHandler(uint32_t sessionID, beast::flat_buffer in_buffe
 	if (!session)
 		return;
 
-	uint8_t* buff = (uint8_t*)static_cast<net::const_buffer>(in_buffer.data()).data();
-
-	session->CommsHandler(buff, in_length);
+	session->CommsHandler(in_buffer, in_length);
 }
 
-void WebsockServer::CommitTxBuffer(std::unique_ptr<AppBuffer> & buffer)
+std::shared_ptr<WebsockSession> WebsockServer::FindSessionByID(uint32_t sessionID)
 {
-	const std::lock_guard<std::recursive_mutex> lock(m_serverMutex);
-
-	m_txQue.push_back(std::move(buffer));
-}
-
-bool WebsockServer::GetNextTxBuffer(std::unique_ptr<AppBuffer> & buff)
-{
-	const std::lock_guard<std::recursive_mutex> lock(m_serverMutex);
-
-	if (m_txQue.empty())
-		return false;
-
-	// Get next AppBuffer from TX que
-	buff = std::move(m_txQue.front());
-	m_txQue.pop_front();
-
-	return true;
+	return m_sessions.find_by_id(sessionID);
 }

@@ -22,8 +22,7 @@
 #include <string>
 #include <thread>
 #include <vector>
-
-#include "WebsockServer.h"
+#include <deque>
 
 // namespace aliases - less typing in source code
 namespace beast = boost::beast;                 // from <boost/beast.hpp>

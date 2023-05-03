@@ -140,7 +140,7 @@ function HandleMessageEvent(data) {
     var view = new DataView(data);
     if (view.getUint8(0) == 0xBB) {
         var serverCommand = view.getUint8(1);
-        if (serverCommand == 0x09) {
+        if (serverCommand == 0x01) {
             if (view.byteLength >= 12) {
                 sessionID = view.getUint32(2);
                 serverAppVersion = view.getUint16(6);
@@ -149,7 +149,13 @@ function HandleMessageEvent(data) {
                 this.isConnected = true;
             }
         }
-        console.log("HandleMessageEvent, serverCommand: " + serverCommand);
+        else if (serverCommand == 0x07) {
+            sessionID = view.getUint32(2);
+            tick = view.getUint32(6);
+            console.log("session: " + sessionID + ", tick: " + tick);
+        }
+        else
+            console.log("HandleMessageEvent, serverCommand: " + serverCommand);
     }
 }
 

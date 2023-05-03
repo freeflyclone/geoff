@@ -1,6 +1,7 @@
 #ifndef WEBSOCK_SERVER_H
 #define WEBSOCK_SERVER_H
 
+/*
 #include <deque>
 
 #include <boost/beast/core.hpp>
@@ -13,7 +14,9 @@ namespace http = beast::http;           // from <boost/beast/http.hpp>
 namespace websocket = beast::websocket; // from <boost/beast/websocket.hpp>
 namespace net = boost::asio;            // from <boost/asio.hpp>
 using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
+*/
 
+#include "geoff.h"
 #include "AppBuffer.h"
 #include "WebsockSession.h"
 
@@ -24,19 +27,22 @@ class WebsockServer
 public:
 	static WebsockServer& GetInstance();
 	typedef std::function<void(uint32_t sessionId)> OnAcceptCallback_t;
-	typedef std::function<void(uint8_t *buffer, size_t length)> OnTxReady_t;
+	typedef std::function<void(uint32_t sessionID)> OnTxReady_t;
 
 	void IoContext(net::io_context* ioc);
 	net::io_context* IoContext();
+
 	void OnAccept(OnAcceptCallback_t);
 	void OnTxReady(OnTxReady_t);
-	void OnTxReady();
+	void OnTxReady(uint32_t sessionID);
 	void OnClose(uint32_t sessionID);
 
 	void CommsHandler(uint32_t sessionID, beast::flat_buffer buffer, std::size_t bytes_transferred);
+	std::shared_ptr<WebsockSession> FindSessionByID(uint32_t sessionID);
+	/*
 	void CommitTxBuffer(std::unique_ptr<AppBuffer>& buffer);
-
 	bool GetNextTxBuffer(std::unique_ptr<AppBuffer>& buffer);
+	*/
 
 private:
 	// I know what you're thinking: WTF is this?  It's Magic Statics!
@@ -52,8 +58,6 @@ private:
 	WebsockServer& operator=(const WebsockServer&) = delete;
 	WebsockServer(WebsockServer&&) = delete;
 	WebsockServer& operator=(WebsockServer&&) = delete;
-
-	std::deque<std::unique_ptr<AppBuffer>> m_txQue;
 
 	std::recursive_mutex m_serverMutex;
 

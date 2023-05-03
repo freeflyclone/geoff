@@ -59,8 +59,16 @@ class websocket_session
             m_sessionID = sessionID;
         });
 
-        WebsockServer::GetInstance().OnTxReady([&](uint8_t *buffer, size_t length) {
-            do_write(buffer, length);
+        WebsockServer::GetInstance().OnTxReady([&](uint32_t sessionID) {
+            auto session = WebsockServer::GetInstance().FindSessionByID(sessionID);
+            if (session)
+            {
+                std::unique_ptr<AppBuffer> txBuffer;
+                if (session->GetNextTxBuffer(txBuffer))
+                {
+                    do_write(txBuffer->data(), txBuffer->bytesWritten());
+                }
+            }
         });
 
         do_read();
@@ -96,9 +104,13 @@ class websocket_session
         WebsockServer::GetInstance().CommsHandler(m_sessionID, buffer_, bytes_transferred);
 
         // ... and return results (if any) to client
-        if (WebsockServer::GetInstance().GetNextTxBuffer(txBuff))
+        auto session = WebsockServer::GetInstance().FindSessionByID(m_sessionID);
+        if (session)
         {
-            do_write(txBuff->data(), txBuff->bytesWritten());
+            if (session->GetNextTxBuffer(txBuff))
+            {
+                do_write(txBuff->data(), txBuff->bytesWritten());
+            }
         }
 
         // start another async_read() no matter what.
@@ -133,9 +145,15 @@ class websocket_session
         // Thus the async_write() / on_write() chain is managed based on
         // whether WebsockServer has tx buffers queued or not.
         std::unique_ptr<AppBuffer> txBuff;
-        if (WebsockServer::GetInstance().GetNextTxBuffer(txBuff))
+        auto session = WebsockServer::GetInstance().FindSessionByID(m_sessionID);
+        if (session)
         {
-            do_write(txBuff->data(), txBuff->bytesWritten());
+            if (session->GetNextTxBuffer(txBuff))
+            {
+                do_write(txBuff->data(), txBuff->bytesWritten());
+            }
+            else
+                m_write_active = false;
         }
         else
             m_write_active = false;
