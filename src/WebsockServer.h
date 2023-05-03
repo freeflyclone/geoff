@@ -24,8 +24,11 @@ class WebsockServer
 public:
 	static WebsockServer& GetInstance();
 	typedef std::function<void(uint32_t sessionId)> OnAcceptCallback_t;
+	typedef std::function<void(uint8_t *buffer, size_t length)> OnTxReady_t;
 
 	void OnAccept(OnAcceptCallback_t);
+	void OnTxReady(OnTxReady_t);
+	void OnTxReady();
 	void OnClose(uint32_t sessionID);
 
 	void CommsHandler(uint32_t sessionID, beast::flat_buffer buffer, std::size_t bytes_transferred);
@@ -53,6 +56,7 @@ private:
 	std::recursive_mutex m_serverMutex;
 
 	WebsockSessionManager m_sessions;
+	OnTxReady_t m_on_tx_ready_cb;
 };
 
 #endif

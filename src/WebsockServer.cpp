@@ -28,6 +28,21 @@ void WebsockServer::OnAccept(OnAcceptCallback_t fn)
 	fn(m_sessions.add_session());
 }
 
+void WebsockServer::OnTxReady(OnTxReady_t fn)
+{
+	m_on_tx_ready_cb = fn;
+}
+
+void WebsockServer::OnTxReady()
+{
+	if (m_on_tx_ready_cb)
+	{
+		std::unique_ptr<AppBuffer> txBuff;
+
+		if (GetNextTxBuffer(txBuff))
+			m_on_tx_ready_cb(txBuff->data(), txBuff->bytesWritten());
+	}
+}
 void WebsockServer::OnClose(uint32_t sessionID)
 {
 	m_sessions.delete_by_id(sessionID);

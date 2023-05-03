@@ -3,12 +3,17 @@
 #include "WebsockServer.h"
 
 WebsockSession::WebsockSession(uint32_t sessionID) :
-	m_sessionID(sessionID)
+	m_sessionID(sessionID),
+	m_thread_done(false)
 {
+	m_thread = std::thread(std::bind(&WebsockSession::TimerTick, this));
 }
 
 WebsockSession::~WebsockSession()
 {
+	m_thread_done = true;
+	if (m_thread.joinable())
+		m_thread.join();
 }
 
 uint32_t WebsockSession::SessionID()
@@ -22,10 +27,10 @@ void WebsockSession::CommsHandler(const uint8_t* buff, const size_t length)
 		return;
 
 	// 1st 2 packet header bytes: AA (bigendian) or AB (littleendian), followed by RequestType_t
-	bool isLittleEndian = buff[0] == 0xAB ? true : false;
+	m_isLittleEndian = buff[0] == 0xAB ? true : false;
 	auto requestType = static_cast<WebsockSession::RequestType_t>(buff[1]);
 
-	AppBuffer rxBuffer(buff+2, length-2, isLittleEndian);
+	AppBuffer rxBuffer(buff+2, length-2, m_isLittleEndian);
 
 	switch (requestType)
 	{
@@ -48,7 +53,7 @@ void WebsockSession::RegisterNewSession(AppBuffer& rxBuffer)
 	// skip "clientAppVersion" for now.
 	rxBuffer.get_uint16();
 
-	auto txBuffer = std::make_unique<AppBuffer>(12, rxBuffer.isLittleEndian());
+	auto txBuffer = std::make_unique<AppBuffer>(12, m_isLittleEndian);
 
 	txBuffer->set_uint8(0xBB);
 	txBuffer->set_uint8(0x01);
@@ -63,7 +68,7 @@ void WebsockSession::HandleKeyEvent(AppBuffer& rxBuffer)
 	bool isDown = (rxBuffer.get_uint8() == 1) ? true : false;
 	int keyCode = rxBuffer.get_uint8();
 
-	auto txBuffer = std::make_unique <AppBuffer>(8, rxBuffer.isLittleEndian());
+	auto txBuffer = std::make_unique <AppBuffer>(8, m_isLittleEndian);
 
 	txBuffer->set_uint8(0xBB);
 	txBuffer->set_uint8(0x05);
@@ -81,7 +86,7 @@ void WebsockSession::HandleClickEvent(AppBuffer& rxBuffer)
 	uint16_t clickX = rxBuffer.get_uint16();
 	uint16_t clickY = rxBuffer.get_uint16();
 
-	auto txBuffer = std::make_unique <AppBuffer>(12, rxBuffer.isLittleEndian());
+	auto txBuffer = std::make_unique <AppBuffer>(12, m_isLittleEndian);
 
 	txBuffer->set_uint8(0xBB);
 	txBuffer->set_uint8(0x03);
@@ -91,6 +96,27 @@ void WebsockSession::HandleClickEvent(AppBuffer& rxBuffer)
 	txBuffer->set_uint16(clickY);
 
 	WebsockServer::GetInstance().CommitTxBuffer(txBuffer);
+}
+
+void WebsockSession::TimerTick()
+{
+	using namespace std::this_thread; // sleep_for, sleep_until
+	using namespace std::chrono; // nanoseconds, system_clock, seconds
+
+	while (!m_thread_done)
+	{
+		sleep_until(system_clock::now() + milliseconds(1000));
+		TRACE("");
+
+		auto txBuffer = std::make_unique <AppBuffer>(12, m_isLittleEndian);
+
+		txBuffer->set_uint8(0xBB);
+		txBuffer->set_uint8(0x03);
+		txBuffer->set_uint32(m_sessionID);
+
+		WebsockServer::GetInstance().CommitTxBuffer(txBuffer);
+		WebsockServer::GetInstance().OnTxReady();
+	}
 }
 
 WebsockSessionManager::WebsockSessionManager()

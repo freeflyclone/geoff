@@ -21,6 +21,7 @@ class websocket_session
     // Set by WebsockServer::OnAccept() callback, so that when we detect
     // a websocket_session close, we know which WebsockServer client to clean up.
     uint32_t m_sessionID;
+    bool m_write_active{ false };
 
     // Start the asynchronous operation
     template<class Body, class Allocator>
@@ -58,6 +59,11 @@ class websocket_session
             m_sessionID = sessionID;
         });
 
+        WebsockServer::GetInstance().OnTxReady([&](uint8_t *buffer, size_t length) {
+            TRACE("");
+            do_write(buffer, length);
+        });
+
         do_read();
     }
 
@@ -93,16 +99,26 @@ class websocket_session
         // ... and return results (if any) to client
         if (WebsockServer::GetInstance().GetNextTxBuffer(txBuff))
         {
-            derived().ws().async_write(
-                boost::asio::buffer(txBuff->data(), txBuff->bytesWritten()),
-                beast::bind_front_handler(
-                    &websocket_session::on_write,
-                    derived().shared_from_this()));
+            do_write(txBuff->data(), txBuff->bytesWritten());
         }
 
         // start another async_read() no matter what.
         buffer_.consume(buffer_.size());
         do_read();
+    }
+
+    void do_write(uint8_t* buffer, size_t length)
+    {
+        if (m_write_active)
+            return;
+
+        derived().ws().async_write(
+            boost::asio::buffer(buffer, length),
+            beast::bind_front_handler(
+                &websocket_session::on_write,
+                derived().shared_from_this()));
+
+        m_write_active = true;
     }
 
     void on_write(beast::error_code ec, std::size_t bytes_transferred)
@@ -120,12 +136,10 @@ class websocket_session
         std::unique_ptr<AppBuffer> txBuff;
         if (WebsockServer::GetInstance().GetNextTxBuffer(txBuff))
         {
-            derived().ws().async_write(
-                boost::asio::buffer(txBuff->data(), txBuff->bytesWritten()),
-                beast::bind_front_handler(
-                    &websocket_session::on_write,
-                    derived().shared_from_this()));
+            do_write(txBuff->data(), txBuff->bytesWritten());
         }
+        else
+            m_write_active = false;
     }
 
 public:

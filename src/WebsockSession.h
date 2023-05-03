@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <memory>
 #include <mutex>
+#include <thread>
 
 class WebsockSession
 {
@@ -27,7 +28,12 @@ private:
 	void HandleClickEvent(AppBuffer& rxBuffer);
 	void HandleKeyEvent(AppBuffer& rxBuffer);
 
+	void TimerTick();
+
 	uint32_t m_sessionID;
+	bool m_isLittleEndian;
+	std::thread m_thread;
+	bool m_thread_done;
 };
 
 class WebsockSessionManager
