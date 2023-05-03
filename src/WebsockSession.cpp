@@ -4,9 +4,9 @@
 
 WebsockSession::WebsockSession(uint32_t sessionID) :
 	m_sessionID(sessionID),
-	m_thread_done(false)
+	m_thread_done(false),
+	m_tick_count(0)
 {
-	m_thread = std::thread(std::bind(&WebsockSession::TimerTick, this));
 }
 
 WebsockSession::~WebsockSession()
@@ -61,6 +61,8 @@ void WebsockSession::RegisterNewSession(AppBuffer& rxBuffer)
 	txBuffer->set_uint16((uint16_t)gameAppVersion);
 
 	WebsockServer::GetInstance().CommitTxBuffer(txBuffer);
+
+	m_thread = std::thread(std::bind(&WebsockSession::TimerTick, this));
 }
 
 void WebsockSession::HandleKeyEvent(AppBuffer& rxBuffer)
@@ -105,14 +107,14 @@ void WebsockSession::TimerTick()
 
 	while (!m_thread_done)
 	{
-		sleep_until(system_clock::now() + milliseconds(1000));
-		TRACE("");
+		sleep_until(system_clock::now() + milliseconds(16));
 
 		auto txBuffer = std::make_unique <AppBuffer>(12, m_isLittleEndian);
 
 		txBuffer->set_uint8(0xBB);
 		txBuffer->set_uint8(0x03);
 		txBuffer->set_uint32(m_sessionID);
+		txBuffer->set_uint32(m_tick_count++);
 
 		WebsockServer::GetInstance().CommitTxBuffer(txBuffer);
 		WebsockServer::GetInstance().OnTxReady();

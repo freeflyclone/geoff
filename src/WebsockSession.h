@@ -34,6 +34,7 @@ private:
 	bool m_isLittleEndian;
 	std::thread m_thread;
 	bool m_thread_done;
+	uint32_t m_tick_count;
 };
 
 class WebsockSessionManager

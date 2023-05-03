@@ -60,7 +60,6 @@ class websocket_session
         });
 
         WebsockServer::GetInstance().OnTxReady([&](uint8_t *buffer, size_t length) {
-            TRACE("");
             do_write(buffer, length);
         });
 
