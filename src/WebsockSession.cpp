@@ -6,10 +6,12 @@ WebsockSession::WebsockSession(uint32_t sessionID) :
 	m_sessionID(sessionID),
 	m_isLittleEndian(true)
 {
+	TRACE(", sessionID: " << m_sessionID);
 }
 
 WebsockSession::~WebsockSession()
 {
+	TRACE(", sessionID: " << m_sessionID);
 }
 
 uint32_t WebsockSession::SessionID()
@@ -21,6 +23,8 @@ void WebsockSession::CommsHandler(const uint8_t* buff, const size_t length)
 {
 	if (!buff || length < 2)
 		return;
+
+	TRACE("Begin" << ", sessionID: " << m_sessionID);
 
 	// 1st 2 packet header bytes: AA (bigendian) or AB (littleendian), followed by RequestType_t
 	m_isLittleEndian = buff[0] == 0xAB ? true : false;
@@ -41,11 +45,19 @@ void WebsockSession::CommsHandler(const uint8_t* buff, const size_t length)
 		case RequestType_t::ClickEvent:
 			HandleClickEvent(rxBuffer);
 			break;
+
+		default:
+			TRACE("default invoked");
+			break;
 	}
+
+	TRACE("End" << ", sessionID: " << m_sessionID);
 }
 
 void WebsockSession::RegisterNewSession(AppBuffer& rxBuffer)
 {
+	TRACE(", sessionID: " << m_sessionID);
+
 	// skip "clientAppVersion" for now.
 	rxBuffer.get_uint16();
 
@@ -61,6 +73,8 @@ void WebsockSession::RegisterNewSession(AppBuffer& rxBuffer)
 
 void WebsockSession::HandleKeyEvent(AppBuffer& rxBuffer)
 {
+	TRACE(", sessionID: " << m_sessionID);
+
 	bool isDown = (rxBuffer.get_uint8() == 1) ? true : false;
 	int keyCode = rxBuffer.get_uint8();
 
@@ -77,6 +91,8 @@ void WebsockSession::HandleKeyEvent(AppBuffer& rxBuffer)
 
 void WebsockSession::HandleClickEvent(AppBuffer& rxBuffer)
 {
+	TRACE(", sessionID: " << m_sessionID);
+
 	uint32_t rxSessionID = rxBuffer.get_uint32();
 	uint16_t playerID = rxBuffer.get_uint16();
 	uint16_t clickX = rxBuffer.get_uint16();
@@ -96,6 +112,8 @@ void WebsockSession::HandleClickEvent(AppBuffer& rxBuffer)
 
 void WebsockSession::CommsHandler(beast::flat_buffer in_buffer, std::size_t in_length)
 {
+	TRACE(", sessionID: " << m_sessionID);
+
 	const std::lock_guard<std::recursive_mutex> lock(m_session_mutex);
 
 	uint8_t* buff = (uint8_t*)static_cast<net::const_buffer>(in_buffer.data()).data();
@@ -105,6 +123,8 @@ void WebsockSession::CommsHandler(beast::flat_buffer in_buffer, std::size_t in_l
 
 void WebsockSession::CommitTxBuffer(std::unique_ptr<AppBuffer>& buffer)
 {
+	TRACE(", sessionID: " << m_sessionID);
+
 	const std::lock_guard<std::recursive_mutex> lock(m_session_mutex);
 
 	m_txQue.push_back(std::move(buffer));
@@ -112,6 +132,8 @@ void WebsockSession::CommitTxBuffer(std::unique_ptr<AppBuffer>& buffer)
 
 bool WebsockSession::GetNextTxBuffer(std::unique_ptr<AppBuffer>& buff)
 {
+	TRACE(", sessionID: " << m_sessionID);
+
 	const std::lock_guard<std::recursive_mutex> lock(m_session_mutex);
 
 	if (m_txQue.empty())
@@ -131,10 +153,13 @@ WebsockSessionManager::WebsockSessionManager()
 	m_thread_running(false),
 	m_tick_count(0)
 {
+	TRACE("");
 }
 
 WebsockSessionManager::~WebsockSessionManager()
 {
+	TRACE("");
+
 	m_thread_running = false;
 
 	if (m_thread.joinable())
@@ -144,6 +169,7 @@ WebsockSessionManager::~WebsockSessionManager()
 uint32_t WebsockSessionManager::add_session()
 {
 	const std::lock_guard<std::mutex> lock(m_sessions_mutex);
+	TRACE("");
 
 	auto session_id = m_session_id;
 
@@ -164,11 +190,15 @@ uint32_t WebsockSessionManager::add_session()
 void WebsockSessionManager::delete_by_id(uint32_t sessionID)
 {
 	const std::lock_guard<std::mutex> lock(m_sessions_mutex);
+	TRACE("");
 
 	auto session = find_by_id(sessionID);
 
 	if (session)
+	{
+		TRACE("session id: " << sessionID);
 		m_sessions.remove(session);
+	}
 }
 
 std::shared_ptr<WebsockSession> WebsockSessionManager::find_by_id(uint32_t sessionID)
@@ -176,7 +206,10 @@ std::shared_ptr<WebsockSession> WebsockSessionManager::find_by_id(uint32_t sessi
 	for (auto session : m_sessions)
 	{
 		if (session->SessionID() == sessionID)
+		{
+			TRACE("session id: " << sessionID);
 			return session;
+		}
 	}
 
 	return nullptr;
@@ -189,9 +222,10 @@ void WebsockSessionManager::TimerTick()
 
 	while (m_thread_running)
 	{
-		TRACE("");
 		for (auto session : m_sessions)
 		{
+			TRACE(", sessionID: " << session->SessionID());
+			/*
 			net::post(*(WebsockServer::GetInstance().IoContext()), [this, session]() {
 				auto txBuffer = std::make_unique <AppBuffer>(12, session->IsLittleEndian());
 
@@ -203,6 +237,7 @@ void WebsockSessionManager::TimerTick()
 				session->CommitTxBuffer(txBuffer);
 				WebsockServer::GetInstance().OnTxReady(session->SessionID());
 			});
+			*/
 		}
 		m_tick_count++;
 		sleep_until(system_clock::now() + milliseconds(500));
