@@ -23,6 +23,16 @@ WebsockServer& WebsockServer::GetInstance()
 	return g;
 }
 
+void WebsockServer::IoContext(net::io_context* ioc)
+{
+	m_ioc = ioc;
+}
+
+net::io_context* WebsockServer::IoContext()
+{
+	return m_ioc;
+}
+
 void WebsockServer::OnAccept(OnAcceptCallback_t fn)
 {
 	fn(m_sessions.add_session());

@@ -107,17 +107,19 @@ void WebsockSession::TimerTick()
 
 	while (!m_thread_done)
 	{
+		net::post(*(WebsockServer::GetInstance().IoContext()), [&]() {
+			auto txBuffer = std::make_unique <AppBuffer>(12, m_isLittleEndian);
+
+			txBuffer->set_uint8(0xBB);
+			txBuffer->set_uint8(0x07);
+			txBuffer->set_uint32(m_sessionID);
+			txBuffer->set_uint32(m_tick_count++);
+
+			WebsockServer::GetInstance().CommitTxBuffer(txBuffer);
+			WebsockServer::GetInstance().OnTxReady();
+		});
+
 		sleep_until(system_clock::now() + milliseconds(16));
-
-		auto txBuffer = std::make_unique <AppBuffer>(12, m_isLittleEndian);
-
-		txBuffer->set_uint8(0xBB);
-		txBuffer->set_uint8(0x03);
-		txBuffer->set_uint32(m_sessionID);
-		txBuffer->set_uint32(m_tick_count++);
-
-		WebsockServer::GetInstance().CommitTxBuffer(txBuffer);
-		WebsockServer::GetInstance().OnTxReady();
 	}
 }
 

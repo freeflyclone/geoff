@@ -594,6 +594,8 @@ int main(int argc, char* argv[])
     // The io_context is required for all I/O
     net::io_context ioc{threads};
 
+    WebsockServer::GetInstance().IoContext(&ioc);
+
 #ifdef _WIN64
     auto ctx = SSLContext(ec);
 #elif __linux__

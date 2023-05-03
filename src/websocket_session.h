@@ -111,13 +111,13 @@ class websocket_session
         if (m_write_active)
             return;
 
+        m_write_active = true;
+
         derived().ws().async_write(
             boost::asio::buffer(buffer, length),
             beast::bind_front_handler(
                 &websocket_session::on_write,
                 derived().shared_from_this()));
-
-        m_write_active = true;
     }
 
     void on_write(beast::error_code ec, std::size_t bytes_transferred)

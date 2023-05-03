@@ -26,6 +26,8 @@ public:
 	typedef std::function<void(uint32_t sessionId)> OnAcceptCallback_t;
 	typedef std::function<void(uint8_t *buffer, size_t length)> OnTxReady_t;
 
+	void IoContext(net::io_context* ioc);
+	net::io_context* IoContext();
 	void OnAccept(OnAcceptCallback_t);
 	void OnTxReady(OnTxReady_t);
 	void OnTxReady();
@@ -57,6 +59,7 @@ private:
 
 	WebsockSessionManager m_sessions;
 	OnTxReady_t m_on_tx_ready_cb;
+	net::io_context *m_ioc;
 };
 
 #endif
