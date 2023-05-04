@@ -418,15 +418,28 @@ function drawGameInfo() {
     ctx.textAlign = "right";
     ctx.textBaseline = "middle";
     ctx.fillStyle = "white";
-    ctx.font = TEXT_SIZE + "px dejavu sans mono";
+    ctx.font = TEXT_SIZE + "px arial";
     ctx.fillText(score, canv.width - SHIP_SIZE / 2, SHIP_SIZE);
 
     // draw the high score
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillStyle = "white";
-    ctx.font = (TEXT_SIZE * 0.75) + "px dejavu sans mono";
+    ctx.font = (TEXT_SIZE * 0.75) + "px arial";
     ctx.fillText("High Score: " + scoreHigh, canv.width / 2, SHIP_SIZE);
+}
+
+function draw_tic_text() {
+
+    if (typeof sessionID == 'undefined' || typeof tickCount == 'undefined')
+        return;
+
+    // draw the high score
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "white";
+    ctx.font = (TEXT_SIZE * 0.375) + "px arial";
+    ctx.fillText("sessionID: " + sessionID + ", server tick: " + tickCount, canv.width / 2, SHIP_SIZE * 3);
 }
 
 function detectLaserAsteroidHit() {
@@ -578,6 +591,7 @@ function update() {
     drawShipFully();   
     drawLasers();
     drawGameInfo();
+    draw_tic_text();
 
     detectLaserAsteroidHit();
     detectShipAsteroidHit();

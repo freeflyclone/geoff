@@ -2,7 +2,7 @@
 #include "WebsockSession.h"
 #include "WebsockServer.h"
 
-#define INTERVAL_IN_MS 500
+#define INTERVAL_IN_MS 50
 
 WebsockSession::WebsockSession(uint32_t sessionID) :
 	m_sessionID(sessionID),
@@ -179,7 +179,7 @@ void WebsockSession::TimerTick()
 
 	if (!m_run_timer)
 	{
-		TRACE("")
+		//TRACE("")
 		m_timer_complete = true;
 		return;
 	}

@@ -17,6 +17,8 @@ var ctx = canv.getContext("2d");
 var borderWidth = 4;
 var centerX;
 var centerY;
+var sessionID;
+var tickCount;
 
 // allow for multiple keys down simultaneously.
 var keysPressed = {};
@@ -151,8 +153,7 @@ function HandleMessageEvent(data) {
         }
         else if (serverCommand == 0x07) {
             sessionID = view.getUint32(2);
-            tick = view.getUint32(6);
-            console.log("session: " + sessionID + ", tick: " + tick);
+            tickCount = view.getUint32(6);
         }
         else
             console.log("HandleMessageEvent, serverCommand: " + serverCommand);
