@@ -11,15 +11,14 @@ WebsockSession::WebsockSession(uint32_t sessionID) :
 	m_timer_complete(false),
 	m_timer_tick(0)
 {
-	TRACE(std::endl);
-	TRACE("sessionID: " << m_sessionID);
+	//TRACE("sessionID: " << m_sessionID);
 	
 	m_timer = std::make_unique<net::deadline_timer>(*WebsockServer::GetInstance().IoContext(), boost::posix_time::milliseconds(INTERVAL_IN_MS));
 }
 
 WebsockSession::~WebsockSession()
 {
-	TRACE("sessionID: " << m_sessionID << std::endl);
+	//TRACE("sessionID: " << m_sessionID);
 
 	m_run_timer = false;
 	m_timer_complete = 5;
@@ -41,8 +40,8 @@ void WebsockSession::CommsHandler(const uint8_t* buff, const size_t length)
 	if (!buff || length < 2)
 		return;
 
-	TRACE(std::endl);
-	TRACE("Begin" << ", sessionID: " << m_sessionID);
+	//TRACE(std::endl);
+	//TRACE("Begin" << ", sessionID: " << m_sessionID);
 
 	// 1st 2 packet header bytes: AA (bigendian) or AB (littleendian), followed by RequestType_t
 	m_isLittleEndian = buff[0] == 0xAB ? true : false;
@@ -69,12 +68,12 @@ void WebsockSession::CommsHandler(const uint8_t* buff, const size_t length)
 			break;
 	}
 
-	TRACE("End" << ", sessionID: " << m_sessionID << std::endl);
+	//TRACE("End" << ", sessionID: " << m_sessionID << std::endl);
 }
 
 void WebsockSession::RegisterNewSession(AppBuffer& rxBuffer)
 {
-	TRACE(", sessionID: " << m_sessionID);
+	//TRACE(", sessionID: " << m_sessionID);
 
 	// skip "clientAppVersion" for now.
 	rxBuffer.get_uint16();
@@ -94,7 +93,7 @@ void WebsockSession::RegisterNewSession(AppBuffer& rxBuffer)
 
 void WebsockSession::HandleKeyEvent(AppBuffer& rxBuffer)
 {
-	TRACE(", sessionID: " << m_sessionID);
+	//TRACE(", sessionID: " << m_sessionID);
 
 	bool isDown = (rxBuffer.get_uint8() == 1) ? true : false;
 	int keyCode = rxBuffer.get_uint8();
@@ -112,7 +111,7 @@ void WebsockSession::HandleKeyEvent(AppBuffer& rxBuffer)
 
 void WebsockSession::HandleClickEvent(AppBuffer& rxBuffer)
 {
-	TRACE(", sessionID: " << m_sessionID);
+	//TRACE(", sessionID: " << m_sessionID);
 
 	uint32_t rxSessionID = rxBuffer.get_uint32();
 	uint16_t playerID = rxBuffer.get_uint16();
@@ -135,7 +134,7 @@ void WebsockSession::CommsHandler(beast::flat_buffer in_buffer, std::size_t in_l
 {
 	const std::lock_guard<std::recursive_mutex> lock(m_session_mutex);
 
-	TRACE(", sessionID: " << m_sessionID);
+	//TRACE(", sessionID: " << m_sessionID);
 
 	uint8_t* buff = (uint8_t*)static_cast<net::const_buffer>(in_buffer.data()).data();
 
@@ -146,7 +145,7 @@ void WebsockSession::CommitTxBuffer(std::unique_ptr<AppBuffer>& buffer)
 {
 	const std::lock_guard<std::recursive_mutex> lock(m_session_mutex);
 
-	TRACE(", sessionID: " << m_sessionID);
+	//TRACE(", sessionID: " << m_sessionID);
 
 	m_txQue.push_back(std::move(buffer));
 }
@@ -155,7 +154,7 @@ bool WebsockSession::GetNextTxBuffer(std::unique_ptr<AppBuffer>& buff)
 {
 	const std::lock_guard<std::recursive_mutex> lock(m_session_mutex);
 
-	TRACE(", sessionID: " << m_sessionID);
+	//TRACE(", sessionID: " << m_sessionID);
 
 	if (m_txQue.empty())
 		return false;
@@ -169,7 +168,7 @@ bool WebsockSession::GetNextTxBuffer(std::unique_ptr<AppBuffer>& buff)
 
 void WebsockSession::TimerTick()
 {
-	TRACE("Timer fired, session id: " << m_sessionID);
+	//TRACE("Timer fired, session id: " << m_sessionID);
 
 	if (!m_timer)
 	{
@@ -208,7 +207,8 @@ void WebsockSession::TimerTick()
 	m_timer->async_wait([this](const boost::system::error_code& e) {
 		if (e)
 		{
-			TRACE(e);
+			if (e.value() != 995)
+				TRACE(e.message());
 			return;
 		}
 		this->TimerTick();
@@ -231,7 +231,7 @@ WebsockSessionManager::~WebsockSessionManager()
 uint32_t WebsockSessionManager::add_session()
 {
 	const std::lock_guard<std::mutex> lock(m_sessions_mutex);
-	TRACE("");
+	//TRACE("");
 
 	auto session_id = m_session_id;
 
@@ -245,13 +245,13 @@ uint32_t WebsockSessionManager::add_session()
 void WebsockSessionManager::delete_by_id(uint32_t sessionID)
 {
 	const std::lock_guard<std::mutex> lock(m_sessions_mutex);
-	TRACE("");
+	//TRACE("");
 
 	auto session = find_by_id(sessionID);
 
 	if (session)
 	{
-		TRACE("session id: " << sessionID);
+		//TRACE("session id: " << sessionID);
 		m_sessions.remove(session);
 	}
 }
@@ -262,7 +262,7 @@ std::shared_ptr<WebsockSession> WebsockSessionManager::find_by_id(uint32_t sessi
 	{
 		if (session->SessionID() == sessionID)
 		{
-			TRACE("session id: " << sessionID);
+			//TRACE("session id: " << sessionID);
 			return session;
 		}
 	}
