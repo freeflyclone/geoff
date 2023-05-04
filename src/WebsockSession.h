@@ -9,9 +9,13 @@
 
 #include "AppBuffer.h"
 
+class GameSession;
+
 class WebsockSession
 {
 public:
+	// used to initiate beast::async_write() when new TX buffer is ready
+	// that isn't a response to a query from the client side.
 	typedef std::function<void(WebsockSession &)> OnTxReadyCallback_t;
 
 	enum class RequestType_t
@@ -26,6 +30,7 @@ public:
 
 	// Allow caller to specify a callback when a new AppBuffer for TX is ready
 	void OnTxReady(OnTxReadyCallback_t);
+
 	// Call the TX ready callback specified by the caller
 	void OnTxReady(WebsockSession &);
 
@@ -37,10 +42,9 @@ public:
 	void CommitTxBuffer(std::unique_ptr<AppBuffer>& buffer);
 	bool GetNextTxBuffer(std::unique_ptr<AppBuffer>& buffer);
 
+	void StartTimer();
+
 private:
-	void RegisterNewSession(AppBuffer& rxBuffer);
-	void HandleClickEvent(AppBuffer& rxBuffer);
-	void HandleKeyEvent(AppBuffer& rxBuffer);
 
 	uint32_t m_sessionID;
 	bool m_isLittleEndian;
@@ -54,6 +58,8 @@ private:
 	uint32_t m_timer_tick;
 	void TimerTick();
 	OnTxReadyCallback_t m_tx_ready_callback;
+
+	std::unique_ptr<GameSession> m_game_session;
 };
 
 class WebsockSessionManager

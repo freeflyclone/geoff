@@ -1,6 +1,7 @@
 #include "geoff.h"
 #include "WebsockSession.h"
 #include "WebsockServer.h"
+#include "GameSession.h"
 
 #define INTERVAL_IN_US 16667
 
@@ -10,7 +11,8 @@ WebsockSession::WebsockSession(uint32_t sessionID) :
 	m_run_timer(false),
 	m_timer_complete(false),
 	m_timer_tick(0),
-	m_tx_ready_callback()
+	m_tx_ready_callback(),
+	m_game_session(std::make_unique<GameSession>(*this))
 {
 	//TRACE("sessionID: " << m_sessionID);
 	
@@ -52,94 +54,19 @@ void WebsockSession::CommsHandler(const uint8_t* buff, const size_t length)
 	if (!buff || length < 2)
 		return;
 
-	//TRACE(std::endl);
-	//TRACE("Begin" << ", sessionID: " << m_sessionID);
-
 	// 1st 2 packet header bytes: AA (bigendian) or AB (littleendian), followed by RequestType_t
 	m_isLittleEndian = buff[0] == 0xAB ? true : false;
 	auto requestType = static_cast<WebsockSession::RequestType_t>(buff[1]);
 
-	AppBuffer rxBuffer(buff+2, length-2, m_isLittleEndian);
+	AppBuffer rxBuffer(buff+1, length-1, m_isLittleEndian);
 
-	switch (requestType)
-	{
-		case RequestType_t::RegisterSession:
-			RegisterNewSession(rxBuffer);
-			break;
-
-		case RequestType_t::KeyEvent:
-			HandleKeyEvent(rxBuffer);
-			break;
-
-		case RequestType_t::ClickEvent:
-			HandleClickEvent(rxBuffer);
-			break;
-
-		default:
-			TRACE("default invoked");
-			break;
-	}
-
-	//TRACE("End" << ", sessionID: " << m_sessionID << std::endl);
+	m_game_session->CommsHandler(rxBuffer);
 }
 
-void WebsockSession::RegisterNewSession(AppBuffer& rxBuffer)
+void WebsockSession::StartTimer()
 {
-	//TRACE(", sessionID: " << m_sessionID);
-
-	// skip "clientAppVersion" for now.
-	rxBuffer.get_uint16();
-
-	auto txBuffer = std::make_unique<AppBuffer>(12, m_isLittleEndian);
-
-	txBuffer->set_uint8(0xBB);
-	txBuffer->set_uint8(0x01);
-	txBuffer->set_uint32(m_sessionID);
-	txBuffer->set_uint16((uint16_t)gameAppVersion);
-
-	CommitTxBuffer(txBuffer);
-
 	m_run_timer = true;
 	TimerTick();
-}
-
-void WebsockSession::HandleKeyEvent(AppBuffer& rxBuffer)
-{
-	//TRACE(", sessionID: " << m_sessionID);
-
-	bool isDown = (rxBuffer.get_uint8() == 1) ? true : false;
-	int keyCode = rxBuffer.get_uint8();
-
-	auto txBuffer = std::make_unique <AppBuffer>(8, m_isLittleEndian);
-
-	txBuffer->set_uint8(0xBB);
-	txBuffer->set_uint8(0x05);
-	txBuffer->set_uint32(m_sessionID);
-	txBuffer->set_uint8(isDown ? 1 : 0);
-	txBuffer->set_uint8(static_cast<uint8_t>(keyCode));
-
-	CommitTxBuffer(txBuffer);
-}
-
-void WebsockSession::HandleClickEvent(AppBuffer& rxBuffer)
-{
-	//TRACE(", sessionID: " << m_sessionID);
-
-	uint32_t rxSessionID = rxBuffer.get_uint32();
-	uint16_t playerID = rxBuffer.get_uint16();
-	uint16_t clickX = rxBuffer.get_uint16();
-	uint16_t clickY = rxBuffer.get_uint16();
-
-	auto txBuffer = std::make_unique <AppBuffer>(12, m_isLittleEndian);
-
-	txBuffer->set_uint8(0xBB);
-	txBuffer->set_uint8(0x03);
-	txBuffer->set_uint32(m_sessionID);
-	txBuffer->set_uint16(playerID);
-	txBuffer->set_uint16(clickX);
-	txBuffer->set_uint16(clickY);
-
-	CommitTxBuffer(txBuffer);
 }
 
 void WebsockSession::CommsHandler(beast::flat_buffer in_buffer, std::size_t in_length)
@@ -216,12 +143,7 @@ void WebsockSession::TimerTick()
 	}
 
 	m_timer->async_wait([this](const boost::system::error_code& e) {
-		if (e)
-		{
-			if (e.value() != 995)
-				TRACE(e.message());
-			return;
-		}
+		(void)e;
 		this->TimerTick();
 	});
 }
