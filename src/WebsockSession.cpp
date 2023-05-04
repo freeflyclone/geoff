@@ -2,16 +2,32 @@
 #include "WebsockSession.h"
 #include "WebsockServer.h"
 
+#define INTERVAL_IN_MS 500
+
 WebsockSession::WebsockSession(uint32_t sessionID) :
 	m_sessionID(sessionID),
-	m_isLittleEndian(true)
+	m_isLittleEndian(true),
+	m_run_timer(false),
+	m_timer_complete(false)
 {
-	TRACE(", sessionID: " << m_sessionID);
+	TRACE(std::endl);
+	TRACE("sessionID: " << m_sessionID);
+	
+	m_timer = std::make_unique<net::deadline_timer>(*WebsockServer::GetInstance().IoContext(), boost::posix_time::milliseconds(INTERVAL_IN_MS));
 }
 
 WebsockSession::~WebsockSession()
 {
-	TRACE(", sessionID: " << m_sessionID);
+	TRACE("sessionID: " << m_sessionID << std::endl);
+
+	m_run_timer = false;
+	m_timer_complete = 5;
+	while (m_timer_complete >= 0)
+	{
+		m_run_timer = false;
+		std::this_thread::sleep_for(std::chrono::duration(std::chrono::milliseconds(10)));
+		m_timer_complete--;
+	}
 }
 
 uint32_t WebsockSession::SessionID()
@@ -24,6 +40,7 @@ void WebsockSession::CommsHandler(const uint8_t* buff, const size_t length)
 	if (!buff || length < 2)
 		return;
 
+	TRACE(std::endl);
 	TRACE("Begin" << ", sessionID: " << m_sessionID);
 
 	// 1st 2 packet header bytes: AA (bigendian) or AB (littleendian), followed by RequestType_t
@@ -51,7 +68,7 @@ void WebsockSession::CommsHandler(const uint8_t* buff, const size_t length)
 			break;
 	}
 
-	TRACE("End" << ", sessionID: " << m_sessionID);
+	TRACE("End" << ", sessionID: " << m_sessionID << std::endl);
 }
 
 void WebsockSession::RegisterNewSession(AppBuffer& rxBuffer)
@@ -69,6 +86,9 @@ void WebsockSession::RegisterNewSession(AppBuffer& rxBuffer)
 	txBuffer->set_uint16((uint16_t)gameAppVersion);
 
 	CommitTxBuffer(txBuffer);
+
+	m_run_timer = true;
+	TimerTick();
 }
 
 void WebsockSession::HandleKeyEvent(AppBuffer& rxBuffer)
@@ -112,9 +132,9 @@ void WebsockSession::HandleClickEvent(AppBuffer& rxBuffer)
 
 void WebsockSession::CommsHandler(beast::flat_buffer in_buffer, std::size_t in_length)
 {
-	TRACE(", sessionID: " << m_sessionID);
-
 	const std::lock_guard<std::recursive_mutex> lock(m_session_mutex);
+
+	TRACE(", sessionID: " << m_sessionID);
 
 	uint8_t* buff = (uint8_t*)static_cast<net::const_buffer>(in_buffer.data()).data();
 
@@ -123,18 +143,18 @@ void WebsockSession::CommsHandler(beast::flat_buffer in_buffer, std::size_t in_l
 
 void WebsockSession::CommitTxBuffer(std::unique_ptr<AppBuffer>& buffer)
 {
-	TRACE(", sessionID: " << m_sessionID);
-
 	const std::lock_guard<std::recursive_mutex> lock(m_session_mutex);
+
+	TRACE(", sessionID: " << m_sessionID);
 
 	m_txQue.push_back(std::move(buffer));
 }
 
 bool WebsockSession::GetNextTxBuffer(std::unique_ptr<AppBuffer>& buff)
 {
-	TRACE(", sessionID: " << m_sessionID);
-
 	const std::lock_guard<std::recursive_mutex> lock(m_session_mutex);
+
+	TRACE(", sessionID: " << m_sessionID);
 
 	if (m_txQue.empty())
 		return false;
@@ -146,12 +166,47 @@ bool WebsockSession::GetNextTxBuffer(std::unique_ptr<AppBuffer>& buff)
 	return true;
 }
 
+void WebsockSession::TimerTick()
+{
+	TRACE("Timer fired, session id: " << m_sessionID);
+
+	if (!m_timer)
+	{
+		TRACE("")
+		m_timer_complete = true;
+		return;
+	}
+
+	if (!m_run_timer)
+	{
+		TRACE("")
+		m_timer_complete = true;
+		return;
+	}
+
+	boost::system::error_code ec;
+
+	m_timer->expires_from_now(boost::posix_time::milliseconds(INTERVAL_IN_MS), ec);
+	if (ec)
+	{
+		TRACE(ec);
+		return;
+	}
+
+	m_timer->async_wait([this](const boost::system::error_code& e) {
+		if (e)
+		{
+			TRACE(e);
+			return;
+		}
+		this->TimerTick();
+	});
+}
+
 WebsockSessionManager::WebsockSessionManager()
 	: 
 	m_session_id(0),
-	m_sessions(),
-	m_thread_running(false),
-	m_tick_count(0)
+	m_sessions()
 {
 	TRACE("");
 }
@@ -159,11 +214,6 @@ WebsockSessionManager::WebsockSessionManager()
 WebsockSessionManager::~WebsockSessionManager()
 {
 	TRACE("");
-
-	m_thread_running = false;
-
-	if (m_thread.joinable())
-		m_thread.join();
 }
 
 uint32_t WebsockSessionManager::add_session()
@@ -176,13 +226,6 @@ uint32_t WebsockSessionManager::add_session()
 	m_sessions.push_back(std::make_shared<WebsockSession>(session_id));
 
 	m_session_id = (m_session_id + 1) & 0xFFFFFFFF;
-
-
-	if (!m_thread_running)
-	{
-		m_thread_running = true;
-		m_thread = std::thread(std::bind(&WebsockSessionManager::TimerTick, this));
-	}
 
 	return session_id;
 }
@@ -214,33 +257,3 @@ std::shared_ptr<WebsockSession> WebsockSessionManager::find_by_id(uint32_t sessi
 
 	return nullptr;
 }
-
-void WebsockSessionManager::TimerTick()
-{
-	using namespace std::this_thread; // sleep_for, sleep_until
-	using namespace std::chrono; // nanoseconds, system_clock, seconds
-
-	while (m_thread_running)
-	{
-		for (auto session : m_sessions)
-		{
-			TRACE(", sessionID: " << session->SessionID());
-			/*
-			net::post(*(WebsockServer::GetInstance().IoContext()), [this, session]() {
-				auto txBuffer = std::make_unique <AppBuffer>(12, session->IsLittleEndian());
-
-				txBuffer->set_uint8(0xBB);
-				txBuffer->set_uint8(0x07);
-				txBuffer->set_uint32(session->SessionID());
-				txBuffer->set_uint32(m_tick_count);
-
-				session->CommitTxBuffer(txBuffer);
-				WebsockServer::GetInstance().OnTxReady(session->SessionID());
-			});
-			*/
-		}
-		m_tick_count++;
-		sleep_until(system_clock::now() + milliseconds(500));
-	}
-}
-

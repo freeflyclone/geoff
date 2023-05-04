@@ -40,6 +40,11 @@ private:
 
 	std::deque<std::unique_ptr<AppBuffer>> m_txQue;
 	std::recursive_mutex m_session_mutex;
+
+	std::unique_ptr<net::deadline_timer> m_timer;
+	bool m_run_timer;
+	int m_timer_complete;
+	void TimerTick();
 };
 
 class WebsockSessionManager
@@ -57,12 +62,6 @@ private:
 	std::mutex m_sessions_mutex;
 	uint32_t m_session_id;
 	std::list<std::shared_ptr<WebsockSession>> m_sessions;
-
-	void TimerTick();
-
-	std::thread m_thread;
-	bool m_thread_running;
-	uint32_t m_tick_count;
 };
 
 #endif // WEBSOCK_SESSION_H
