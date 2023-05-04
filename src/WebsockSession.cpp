@@ -2,14 +2,15 @@
 #include "WebsockSession.h"
 #include "WebsockServer.h"
 
-#define INTERVAL_IN_MS 50
+#define INTERVAL_IN_MS 500
 
 WebsockSession::WebsockSession(uint32_t sessionID) :
 	m_sessionID(sessionID),
 	m_isLittleEndian(true),
 	m_run_timer(false),
 	m_timer_complete(false),
-	m_timer_tick(0)
+	m_timer_tick(0),
+	m_tx_ready_callback()
 {
 	//TRACE("sessionID: " << m_sessionID);
 	
@@ -28,6 +29,17 @@ WebsockSession::~WebsockSession()
 		std::this_thread::sleep_for(std::chrono::duration(std::chrono::milliseconds(10)));
 		m_timer_complete--;
 	}
+}
+
+void WebsockSession::OnTxReady(OnTxReadyCallback_t fn)
+{
+	m_tx_ready_callback = fn;
+}
+
+void WebsockSession::OnTxReady(WebsockSession &self)
+{
+	if (m_tx_ready_callback)
+		m_tx_ready_callback(self);
 }
 
 uint32_t WebsockSession::SessionID()
@@ -193,8 +205,7 @@ void WebsockSession::TimerTick()
 
 	this->CommitTxBuffer(txBuff);
 
-	// TODO figure out where our data is going.
-	WebsockServer::GetInstance().OnTxReady(m_sessionID);
+	this->OnTxReady(*this);
 
 	boost::system::error_code ec;
 	m_timer->expires_from_now(boost::posix_time::milliseconds(INTERVAL_IN_MS), ec);

@@ -12,6 +12,8 @@
 class WebsockSession
 {
 public:
+	typedef std::function<void(WebsockSession &)> OnTxReadyCallback_t;
+
 	enum class RequestType_t
 	{
 		RegisterSession = 0x00,
@@ -21,6 +23,11 @@ public:
 
 	WebsockSession(uint32_t sessionID);
 	virtual ~WebsockSession();
+
+	// Allow caller to specify a callback when a new AppBuffer for TX is ready
+	void OnTxReady(OnTxReadyCallback_t);
+	// Call the TX ready callback specified by the caller
+	void OnTxReady(WebsockSession &);
 
 	uint32_t SessionID();
 	virtual void CommsHandler(const uint8_t *buff, const size_t length);
@@ -46,6 +53,7 @@ private:
 	int m_timer_complete;
 	uint32_t m_timer_tick;
 	void TimerTick();
+	OnTxReadyCallback_t m_tx_ready_callback;
 };
 
 class WebsockSessionManager

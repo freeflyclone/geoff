@@ -55,19 +55,19 @@ class websocket_session
         if (ec)
             return fail(ec, "accept");
 
+        // when this call returns, a new WebsockSession for "m_sessionID" has been created.
         WebsockServer::GetInstance().OnAccept([&](uint32_t sessionID) {
             m_sessionID = sessionID;
         });
 
-        WebsockServer::GetInstance().OnTxReady([&](uint32_t sessionID) {
-            auto session = WebsockServer::GetInstance().FindSessionByID(sessionID);
-            if (session)
+        // Set the OnTxReadyCallback_t function member of the WebsockSession to this lambda
+        // We get one for each session, thus each session now has its own OnTxReady interrupt
+        // for processing TimerTick() messages.
+        WebsockServer::GetInstance().FindSessionByID(m_sessionID)->OnTxReady([this](WebsockSession & session) {
+            std::unique_ptr<AppBuffer> txBuffer;
+            if (session.GetNextTxBuffer(txBuffer))
             {
-                std::unique_ptr<AppBuffer> txBuffer;
-                if (session->GetNextTxBuffer(txBuffer))
-                {
-                    do_write(txBuffer->data(), txBuffer->bytesWritten());
-                }
+                do_write(txBuffer->data(), txBuffer->bytesWritten());
             }
         });
 

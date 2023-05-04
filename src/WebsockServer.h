@@ -27,22 +27,15 @@ class WebsockServer
 public:
 	static WebsockServer& GetInstance();
 	typedef std::function<void(uint32_t sessionId)> OnAcceptCallback_t;
-	typedef std::function<void(uint32_t sessionID)> OnTxReady_t;
 
 	void IoContext(net::io_context* ioc);
 	net::io_context* IoContext();
 
 	void OnAccept(OnAcceptCallback_t);
-	void OnTxReady(OnTxReady_t);
-	void OnTxReady(uint32_t sessionID);
 	void OnClose(uint32_t sessionID);
 
 	void CommsHandler(uint32_t sessionID, beast::flat_buffer buffer, std::size_t bytes_transferred);
 	std::shared_ptr<WebsockSession> FindSessionByID(uint32_t sessionID);
-	/*
-	void CommitTxBuffer(std::unique_ptr<AppBuffer>& buffer);
-	bool GetNextTxBuffer(std::unique_ptr<AppBuffer>& buffer);
-	*/
 
 private:
 	// I know what you're thinking: WTF is this?  It's Magic Statics!
@@ -62,7 +55,6 @@ private:
 	std::recursive_mutex m_serverMutex;
 
 	WebsockSessionManager m_sessions;
-	OnTxReady_t m_on_tx_ready_cb;
 	net::io_context *m_ioc;
 };
 
