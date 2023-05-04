@@ -8,7 +8,8 @@ WebsockSession::WebsockSession(uint32_t sessionID) :
 	m_sessionID(sessionID),
 	m_isLittleEndian(true),
 	m_run_timer(false),
-	m_timer_complete(false)
+	m_timer_complete(false),
+	m_timer_tick(0)
 {
 	TRACE(std::endl);
 	TRACE("sessionID: " << m_sessionID);
@@ -184,11 +185,12 @@ void WebsockSession::TimerTick()
 		return;
 	}
 
-	auto txBuff = std::make_unique<AppBuffer>(6, m_isLittleEndian);
+	auto txBuff = std::make_unique<AppBuffer>(12, m_isLittleEndian);
 
-	txBuff->set_uint8(0, 0xBB);
-	txBuff->set_uint8(1, 0x07);
-	txBuff->set_uint32(2, m_sessionID);
+	txBuff->set_uint8(0xBB);
+	txBuff->set_uint8(0x07);
+	txBuff->set_uint32(m_sessionID);
+	txBuff->set_uint32(m_timer_tick++);
 
 	this->CommitTxBuffer(txBuff);
 

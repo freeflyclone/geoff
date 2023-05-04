@@ -44,6 +44,7 @@ private:
 	std::unique_ptr<net::deadline_timer> m_timer;
 	bool m_run_timer;
 	int m_timer_complete;
+	uint32_t m_timer_tick;
 	void TimerTick();
 };
 
