@@ -3,8 +3,6 @@
 #include "WebsockServer.h"
 #include "GameSession.h"
 
-#define INTERVAL_IN_US 16667
-
 WebsockSession::WebsockSession(uint32_t sessionID) :
 	m_sessionID(sessionID),
 	m_isLittleEndian(true),
@@ -12,11 +10,12 @@ WebsockSession::WebsockSession(uint32_t sessionID) :
 	m_timer_complete(false),
 	m_timer_tick(0),
 	m_tx_ready_callback(),
+	m_tick_interval_in_us(500000),
 	m_game_session(std::make_unique<GameSession>(*this))
 {
 	//TRACE("sessionID: " << m_sessionID);
 	
-	m_timer = std::make_unique<net::deadline_timer>(*WebsockServer::GetInstance().IoContext(), boost::posix_time::microseconds(INTERVAL_IN_US));
+	m_timer = std::make_unique<net::deadline_timer>(*WebsockServer::GetInstance().IoContext(), boost::posix_time::microseconds(m_tick_interval_in_us));
 }
 
 WebsockSession::~WebsockSession()
@@ -67,6 +66,11 @@ void WebsockSession::StartTimer()
 {
 	m_run_timer = true;
 	TimerTick();
+}
+
+void WebsockSession::SetIntervalInUs(uint32_t interval)
+{
+	m_tick_interval_in_us = interval;
 }
 
 void WebsockSession::CommsHandler(beast::flat_buffer in_buffer, std::size_t in_length)
@@ -135,7 +139,7 @@ void WebsockSession::TimerTick()
 	this->OnTxReady(*this);
 
 	boost::system::error_code ec;
-	m_timer->expires_from_now(boost::posix_time::microseconds(INTERVAL_IN_US), ec);
+	m_timer->expires_from_now(boost::posix_time::microseconds(m_tick_interval_in_us), ec);
 	if (ec)
 	{
 		TRACE(ec);

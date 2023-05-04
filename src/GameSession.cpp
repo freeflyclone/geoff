@@ -4,12 +4,12 @@ GameSession::GameSession(WebsockSession& ws)
 	:
 	m_wss(ws)
 {
-	TRACE("sessionID: " << m_wss.SessionID());
+	//TRACE("sessionID: " << m_wss.SessionID());
 }
 
 GameSession::~GameSession()
 {
-	TRACE("sessionID: " << m_wss.SessionID());
+	//TRACE("sessionID: " << m_wss.SessionID());
 }
 
 void GameSession::CommsHandler(AppBuffer & rxBuffer)

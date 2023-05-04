@@ -31,11 +31,7 @@ public:
 	// Allow caller to specify a callback when a new AppBuffer for TX is ready
 	void OnTxReady(OnTxReadyCallback_t);
 
-	// Call the TX ready callback specified by the caller
-	void OnTxReady(WebsockSession &);
-
 	uint32_t SessionID();
-	virtual void CommsHandler(const uint8_t *buff, const size_t length);
 	bool IsLittleEndian() { return m_isLittleEndian; }
 
 	void CommsHandler(beast::flat_buffer buffer, std::size_t bytes_transferred);
@@ -43,8 +39,13 @@ public:
 	bool GetNextTxBuffer(std::unique_ptr<AppBuffer>& buffer);
 
 	void StartTimer();
+	void SetIntervalInUs(uint32_t interval);
 
 private:
+	virtual void CommsHandler(const uint8_t* buff, const size_t length);
+
+	// Call the TX ready callback specified by the caller
+	void OnTxReady(WebsockSession&);
 
 	uint32_t m_sessionID;
 	bool m_isLittleEndian;
@@ -56,6 +57,7 @@ private:
 	bool m_run_timer;
 	int m_timer_complete;
 	uint32_t m_timer_tick;
+	uint32_t m_tick_interval_in_us;
 	void TimerTick();
 	OnTxReadyCallback_t m_tx_ready_callback;
 
