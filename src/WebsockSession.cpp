@@ -184,8 +184,18 @@ void WebsockSession::TimerTick()
 		return;
 	}
 
-	boost::system::error_code ec;
+	auto txBuff = std::make_unique<AppBuffer>(6, m_isLittleEndian);
 
+	txBuff->set_uint8(0, 0xBB);
+	txBuff->set_uint8(1, 0x07);
+	txBuff->set_uint32(2, m_sessionID);
+
+	this->CommitTxBuffer(txBuff);
+
+	// TODO figure out where our data is going.
+	WebsockServer::GetInstance().OnTxReady(m_sessionID);
+
+	boost::system::error_code ec;
 	m_timer->expires_from_now(boost::posix_time::milliseconds(INTERVAL_IN_MS), ec);
 	if (ec)
 	{
