@@ -2,7 +2,7 @@
 #include "WebsockSession.h"
 #include "WebsockServer.h"
 
-#define INTERVAL_IN_MS 500
+#define INTERVAL_IN_US 16667
 
 WebsockSession::WebsockSession(uint32_t sessionID) :
 	m_sessionID(sessionID),
@@ -14,7 +14,7 @@ WebsockSession::WebsockSession(uint32_t sessionID) :
 {
 	//TRACE("sessionID: " << m_sessionID);
 	
-	m_timer = std::make_unique<net::deadline_timer>(*WebsockServer::GetInstance().IoContext(), boost::posix_time::milliseconds(INTERVAL_IN_MS));
+	m_timer = std::make_unique<net::deadline_timer>(*WebsockServer::GetInstance().IoContext(), boost::posix_time::microseconds(INTERVAL_IN_US));
 }
 
 WebsockSession::~WebsockSession()
@@ -208,7 +208,7 @@ void WebsockSession::TimerTick()
 	this->OnTxReady(*this);
 
 	boost::system::error_code ec;
-	m_timer->expires_from_now(boost::posix_time::milliseconds(INTERVAL_IN_MS), ec);
+	m_timer->expires_from_now(boost::posix_time::microseconds(INTERVAL_IN_US), ec);
 	if (ec)
 	{
 		TRACE(ec);
