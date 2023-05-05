@@ -14,11 +14,12 @@ It's designed to support multiplayer web games, and nothing else.
 ## Dependencies
 On the author's Windows 10 development machine, these get installed to D:\DevLibs...
 - Boost - Download from [here](https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.7z)
-    - Read the included  **INSTALL** file 
-
+    - Read the included  **INSTALL** file
+    - Set environment variable **BOOST_ROOT=D:\DevLibs\boost_1_81_0**
 
 - OpenSSL - Download from [here](https://slproweb.com/download/Win64OpenSSL-1_1_1t.msi)
-    - Since this is a Windows Installer image, just launch the file.  Use "D:\DevLibs" as the install folder, default choices for all else.
+    - Launch the installer file,  Use **D:\DevLibs\OpenSSL-Win64** as the install folder, default choices for all else.
+    - Set environment variable **OPENSSL_ROOT_DIR=D:\DevLibs\OpenSSL-Win64**
 
 ## CMake build system
 To facilitate cross-platform development and/or deployment, the C++ parts are built with CMake.
