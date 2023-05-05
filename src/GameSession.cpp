@@ -54,6 +54,11 @@ GameSession::GameSession(uint32_t sessionID)
 		CommitTxBuffer(txBuffer);
 	});
 
+	// maybe log timer ticks
+	AddTimerTickHandler([this]() {
+		//TRACE("sessionID: " << SessionID() << ", tick: " << m_timer_tick);
+	});
+
 	// Set interval to 60FPS
 	SetIntervalInUs(16667);
 }
@@ -78,6 +83,11 @@ void GameSession::AddKeyEventHandler(AppBufferProcessor_t fn)
 	m_keyEventHandlers.push_back(fn);
 }
 
+void GameSession::AddTimerTickHandler(TimerTickCallback_t fn)
+{
+	m_timerTickHandlers.push_back(fn);
+}
+
 void GameSession::CommsHandler(AppBuffer & rxBuffer)
 {
 	auto requestType = static_cast<RequestType_t>(rxBuffer.get_uint8());
@@ -99,4 +109,11 @@ void GameSession::CommsHandler(AppBuffer & rxBuffer)
 				fn(rxBuffer);
 			break;
 	}
+}
+
+void GameSession::OnTimerTick() {
+	WebsockSession::OnTimerTick();
+
+	for (auto fn : m_timerTickHandlers)
+		fn();
 }

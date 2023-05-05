@@ -72,6 +72,12 @@ void WebsockSession::StartTimer()
 	TimerTick();
 }
 
+void WebsockSession::StopTimer()
+{
+	m_run_timer = false;
+	TimerTick();
+}
+
 void WebsockSession::SetIntervalInUs(uint32_t interval)
 {
 	m_tick_interval_in_us = interval;
@@ -113,6 +119,20 @@ bool WebsockSession::GetNextTxBuffer(std::unique_ptr<AppBuffer>& buff)
 	return true;
 }
 
+void WebsockSession::OnTimerTick()
+{
+	auto txBuff = std::make_unique<AppBuffer>(12, m_isLittleEndian);
+
+	txBuff->set_uint8(0xBB);
+	txBuff->set_uint8(0x07);
+	txBuff->set_uint32(m_sessionID);
+	txBuff->set_uint32(m_timer_tick++);
+
+	CommitTxBuffer(txBuff);
+
+	OnTxReady(*this);
+}
+
 void WebsockSession::TimerTick()
 {
 	//TRACE("Timer fired, session id: " << m_sessionID);
@@ -131,16 +151,7 @@ void WebsockSession::TimerTick()
 		return;
 	}
 
-	auto txBuff = std::make_unique<AppBuffer>(12, m_isLittleEndian);
-
-	txBuff->set_uint8(0xBB);
-	txBuff->set_uint8(0x07);
-	txBuff->set_uint32(m_sessionID);
-	txBuff->set_uint32(m_timer_tick++);
-
-	this->CommitTxBuffer(txBuff);
-
-	this->OnTxReady(*this);
+	OnTimerTick();
 
 	boost::system::error_code ec;
 	m_timer->expires_from_now(boost::posix_time::microseconds(m_tick_interval_in_us), ec);
@@ -152,6 +163,6 @@ void WebsockSession::TimerTick()
 
 	m_timer->async_wait([this](const boost::system::error_code& e) {
 		(void)e;
-		this->TimerTick();
+		TimerTick();
 	});
 }

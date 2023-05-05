@@ -69,6 +69,7 @@ public:
 	bool GetNextTxBuffer(std::unique_ptr<AppBuffer>& buffer);
 
 	void StartTimer();
+	void StopTimer();
 	void SetIntervalInUs(uint32_t interval);
 
 protected:
@@ -77,6 +78,9 @@ protected:
 
 	// Call the TX ready callback specified by the caller
 	void OnTxReady(WebsockSession&);
+
+	virtual void OnTimerTick();
+	void TimerTick();
 
 	uint32_t m_sessionID;
 	bool m_isLittleEndian;
@@ -89,7 +93,6 @@ protected:
 	int m_timer_complete;
 	uint32_t m_timer_tick;
 	uint32_t m_tick_interval_in_us;
-	void TimerTick();
 	OnTxReadyCallback_t m_tx_ready_callback;
 };
 
