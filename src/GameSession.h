@@ -1,3 +1,23 @@
+/*
+* GameSession
+* 
+* This class provides an interface to WebsockSession to facilitate its use.
+* 
+* Services provided:
+*	Maintain lists of handler functions for 
+*		RegisterSession, 
+*		KeyEvent 
+*		ClickEvent
+*	packets.  Users can add handler functions which will be called in order of
+*   addition to the list(s).
+*
+* This is intended to be the main interface a GEOFF based game would start from.
+* 
+* See WebsockServer.cpp WebsockSessionManager declaration: that's where a class derived
+* (specialized) from this one needs to be specified.
+* 
+* Changing this file does NOT reevaluate websocket_session.h.
+*/
 #ifndef GAME_SESSION_H
 #define GAME_SESSION_H
 

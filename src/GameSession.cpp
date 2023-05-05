@@ -5,6 +5,7 @@ GameSession::GameSession(uint32_t sessionID)
 {
 	//TRACE("sessionID: " << m_wss.SessionID());
 
+	// Echo New Session data back to client
 	AddRegisterNewSessionHandler([this](AppBuffer& rxBuffer) {
 		auto txBuffer = std::make_unique<AppBuffer>(12, rxBuffer.isLittleEndian());
 
@@ -18,6 +19,7 @@ GameSession::GameSession(uint32_t sessionID)
 		StartTimer();
 	});
 
+	// Echo Key events back to client
 	AddKeyEventHandler([this](AppBuffer& rxBuffer) {
 		bool isDown = (rxBuffer.get_uint8() == 1) ? true : false;
 		int keyCode = rxBuffer.get_uint8();
@@ -33,6 +35,7 @@ GameSession::GameSession(uint32_t sessionID)
 		CommitTxBuffer(txBuffer);
 	});
 
+	// Echo Click events back to client.
 	AddClickEventHandler([this](AppBuffer& rxBuffer) {
 		uint32_t rxSessionID = rxBuffer.get_uint32();
 		uint16_t playerID = rxBuffer.get_uint16();
@@ -51,6 +54,7 @@ GameSession::GameSession(uint32_t sessionID)
 		CommitTxBuffer(txBuffer);
 	});
 
+	// Set interval to 60FPS
 	SetIntervalInUs(16667);
 }
 
