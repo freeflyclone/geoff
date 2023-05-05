@@ -4,9 +4,12 @@
 #include <ios>
 #include <iostream>
 
+namespace {
+	static WebsockSessionManager<GameSession> m_sessions;
+};
+
 WebsockServer::WebsockServer() :
 	m_serverMutex(),
-	m_sessions(),
 	m_ioc(nullptr)
 {
 	srand(12345);

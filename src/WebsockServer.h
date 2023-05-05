@@ -1,25 +1,9 @@
 #ifndef WEBSOCK_SERVER_H
 #define WEBSOCK_SERVER_H
 
-/*
-#include <deque>
-
-#include <boost/beast/core.hpp>
-#include <boost/beast/websocket.hpp>
-#include <boost/asio/dispatch.hpp>
-#include <boost/asio/strand.hpp>
-
-namespace beast = boost::beast;         // from <boost/beast.hpp>
-namespace http = beast::http;           // from <boost/beast/http.hpp>
-namespace websocket = beast::websocket; // from <boost/beast/websocket.hpp>
-namespace net = boost::asio;            // from <boost/asio.hpp>
-using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
-*/
-
 #include "geoff.h"
 #include "AppBuffer.h"
 #include "WebsockSession.h"
-#include "GameSession.h"
 #include "WebsockSessionManager.h"
 #define gameAppVersion 2
 
@@ -54,8 +38,6 @@ private:
 	WebsockServer& operator=(WebsockServer&&) = delete;
 
 	std::recursive_mutex m_serverMutex;
-
-	WebsockSessionManager<GameSession> m_sessions;
 	net::io_context *m_ioc;
 };
 
