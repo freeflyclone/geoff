@@ -1,8 +1,7 @@
 #include "GameSession.h"
 
-GameSession::GameSession(WebsockSession& ws)
-	:
-	m_wss(ws)
+GameSession::GameSession(uint32_t sessionID)
+	: WebsockSession(sessionID)
 {
 	//TRACE("sessionID: " << m_wss.SessionID());
 }
@@ -14,19 +13,19 @@ GameSession::~GameSession()
 
 void GameSession::CommsHandler(AppBuffer & rxBuffer)
 {
-	auto requestType = static_cast<WebsockSession::RequestType_t>(rxBuffer.get_uint8());
+	auto requestType = static_cast<RequestType_t>(rxBuffer.get_uint8());
 
 	switch (requestType)
 	{
-		case WebsockSession::RequestType_t::RegisterSession:
+		case RequestType_t::RegisterSession:
 			RegisterNewSession(rxBuffer);
 			break;
 
-		case WebsockSession::RequestType_t::ClickEvent:
+		case RequestType_t::ClickEvent:
 			HandleClickEvent(rxBuffer);
 			break;
 
-		case WebsockSession::RequestType_t::KeyEvent:
+		case RequestType_t::KeyEvent:
 			HandleKeyEvent(rxBuffer);
 			break;
 	}
@@ -40,12 +39,12 @@ void GameSession::RegisterNewSession(AppBuffer& rxBuffer)
 
 	txBuffer->set_uint8(0xBB);
 	txBuffer->set_uint8(0x01);
-	txBuffer->set_uint32(m_wss.SessionID());
+	txBuffer->set_uint32(SessionID());
 	txBuffer->set_uint16((uint16_t)GAME_APP_VERSION);
 
-	m_wss.CommitTxBuffer(txBuffer);
+	CommitTxBuffer(txBuffer);
 
-	m_wss.StartTimer();
+	StartTimer();
 }
 
 void GameSession::HandleKeyEvent(AppBuffer& rxBuffer)
@@ -58,11 +57,11 @@ void GameSession::HandleKeyEvent(AppBuffer& rxBuffer)
 
 	txBuffer->set_uint8(0xBB);
 	txBuffer->set_uint8(0x05);
-	txBuffer->set_uint32(m_wss.SessionID());
+	txBuffer->set_uint32(SessionID());
 	txBuffer->set_uint8(isDown ? 1 : 0);
 	txBuffer->set_uint8(static_cast<uint8_t>(keyCode));
 
-	m_wss.CommitTxBuffer(txBuffer);
+	CommitTxBuffer(txBuffer);
 }
 
 void GameSession::HandleClickEvent(AppBuffer& rxBuffer)
@@ -78,10 +77,10 @@ void GameSession::HandleClickEvent(AppBuffer& rxBuffer)
 
 	txBuffer->set_uint8(0xBB);
 	txBuffer->set_uint8(0x03);
-	txBuffer->set_uint32(m_wss.SessionID());
+	txBuffer->set_uint32(SessionID());
 	txBuffer->set_uint16(playerID);
 	txBuffer->set_uint16(clickX);
 	txBuffer->set_uint16(clickY);
 
-	m_wss.CommitTxBuffer(txBuffer);
+	CommitTxBuffer(txBuffer);
 }

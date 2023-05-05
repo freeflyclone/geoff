@@ -6,21 +6,18 @@
 
 #define GAME_APP_VERSION 3
 
-class GameSession
+class GameSession : public WebsockSession
 {
 public:
-	GameSession(WebsockSession&);
+	GameSession(uint32_t sessionID);
 	~GameSession();
 
-	void CommsHandler(AppBuffer &);
-
+	void CommsHandler(AppBuffer &) override;
 
 private:
 	void RegisterNewSession(AppBuffer& rxBuffer);
 	void HandleClickEvent(AppBuffer& rxBuffer);
 	void HandleKeyEvent(AppBuffer& rxBuffer);
-
-	WebsockSession& m_wss;
 };
 
 #endif

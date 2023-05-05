@@ -10,8 +10,7 @@ WebsockSession::WebsockSession(uint32_t sessionID) :
 	m_timer_complete(false),
 	m_timer_tick(0),
 	m_tx_ready_callback(),
-	m_tick_interval_in_us(500000),
-	m_game_session(std::make_unique<GameSession>(*this))
+	m_tick_interval_in_us(500000)
 {
 	//TRACE("sessionID: " << m_sessionID);
 	
@@ -59,7 +58,12 @@ void WebsockSession::CommsHandler(const uint8_t* buff, const size_t length)
 
 	AppBuffer rxBuffer(buff+1, length-1, m_isLittleEndian);
 
-	m_game_session->CommsHandler(rxBuffer);
+	CommsHandler(rxBuffer);
+}
+
+void WebsockSession::CommsHandler(AppBuffer& buffer)
+{
+	(void)buffer;
 }
 
 void WebsockSession::StartTimer()
@@ -150,59 +154,4 @@ void WebsockSession::TimerTick()
 		(void)e;
 		this->TimerTick();
 	});
-}
-
-WebsockSessionManager::WebsockSessionManager()
-	: 
-	m_session_id(0),
-	m_sessions()
-{
-	TRACE("");
-}
-
-WebsockSessionManager::~WebsockSessionManager()
-{
-	TRACE("");
-}
-
-uint32_t WebsockSessionManager::add_session()
-{
-	const std::lock_guard<std::mutex> lock(m_sessions_mutex);
-	//TRACE("");
-
-	auto session_id = m_session_id;
-
-	m_sessions.push_back(std::make_shared<WebsockSession>(session_id));
-
-	m_session_id = (m_session_id + 1) & 0xFFFFFFFF;
-
-	return session_id;
-}
-
-void WebsockSessionManager::delete_by_id(uint32_t sessionID)
-{
-	const std::lock_guard<std::mutex> lock(m_sessions_mutex);
-	//TRACE("");
-
-	auto session = find_by_id(sessionID);
-
-	if (session)
-	{
-		//TRACE("session id: " << sessionID);
-		m_sessions.remove(session);
-	}
-}
-
-std::shared_ptr<WebsockSession> WebsockSessionManager::find_by_id(uint32_t sessionID)
-{
-	for (auto session : m_sessions)
-	{
-		if (session->SessionID() == sessionID)
-		{
-			//TRACE("session id: " << sessionID);
-			return session;
-		}
-	}
-
-	return nullptr;
 }

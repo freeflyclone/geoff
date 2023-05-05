@@ -1,4 +1,5 @@
 #include "WebsockServer.h"
+#include "GameSession.h"
 
 #include <ios>
 #include <iostream>
@@ -53,7 +54,7 @@ void WebsockServer::CommsHandler(uint32_t sessionID, beast::flat_buffer in_buffe
 	if (!session)
 		return;
 
-	session->CommsHandler(in_buffer, in_length);
+	session->WebsockSession::CommsHandler(in_buffer, in_length);
 }
 
 std::shared_ptr<WebsockSession> WebsockServer::FindSessionByID(uint32_t sessionID)

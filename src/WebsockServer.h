@@ -19,7 +19,8 @@ using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 #include "geoff.h"
 #include "AppBuffer.h"
 #include "WebsockSession.h"
-
+#include "GameSession.h"
+#include "WebsockSessionManager.h"
 #define gameAppVersion 2
 
 class WebsockServer
@@ -54,7 +55,7 @@ private:
 
 	std::recursive_mutex m_serverMutex;
 
-	WebsockSessionManager m_sessions;
+	WebsockSessionManager<GameSession> m_sessions;
 	net::io_context *m_ioc;
 };
 

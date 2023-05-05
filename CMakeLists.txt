@@ -41,7 +41,8 @@ file(GLOB APP_INC_FILES
 	src/SSLContext.h
 	src/websocket_session.h
 	src/WebsockServer.h
-	src/WebsockSession.h)
+	src/WebsockSession.h
+	src/WebsockSessionManager.h)
 
 # Files within the source tree "www" tree are all implicitly (automatically) added.
 # Things like .html, .js, .gif, etc. The tree structure is preserved. 
