@@ -11,6 +11,15 @@ multiplayer game server for HTML 5 games written in JavaScript that will accomod
 large numbers of players simultaneously.  GEoFF is NOT another Apache, IIS, or nginx.
 It's designed to support multiplayer web games, and nothing else.
 
+## Dependencies
+On the author's Windows 10 development machine, these get installed to D:\DevLibs...
+- Boost - Download from [here](https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.7z)
+    - Read the included  **INSTALL** file 
+
+
+- OpenSSL - Download from [here](https://slproweb.com/download/Win64OpenSSL-1_1_1t.msi)
+    - Since this is a Windows Installer image, just launch the file.  Use "D:\DevLibs" as the install folder, default choices for all else.
+
 ## CMake build system
 To facilitate cross-platform development and/or deployment, the C++ parts are built with CMake.
 ### Windows
