@@ -9,8 +9,6 @@
 
 #include "AppBuffer.h"
 
-class GameSession;
-
 class WebsockSession
 {
 public:

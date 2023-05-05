@@ -50,6 +50,7 @@ void GameSession::RegisterNewSession(AppBuffer& rxBuffer)
 void GameSession::HandleKeyEvent(AppBuffer& rxBuffer)
 {
 	//TRACE(", sessionID: " << m_sessionID);
+
 	bool isDown = (rxBuffer.get_uint8() == 1) ? true : false;
 	int keyCode = rxBuffer.get_uint8();
 
