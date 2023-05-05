@@ -50,6 +50,8 @@ GameSession::GameSession(uint32_t sessionID)
 
 		CommitTxBuffer(txBuffer);
 	});
+
+	SetIntervalInUs(16667);
 }
 
 GameSession::~GameSession()
@@ -57,17 +59,17 @@ GameSession::~GameSession()
 	//TRACE("sessionID: " << m_wss.SessionID());
 }
 
-void GameSession::AddRegisterNewSessionHandler(GameSessionPacketHandler_t fn)
+void GameSession::AddRegisterNewSessionHandler(AppBufferProcessor_t fn)
 {
 	m_newSessionHandlers.push_back(fn);
 }
 
-void GameSession::AddClickEventHandler(GameSessionPacketHandler_t fn)
+void GameSession::AddClickEventHandler(AppBufferProcessor_t fn)
 {
 	m_clickEventHandlers.push_back(fn);
 }
 
-void GameSession::AddKeyEventHandler(GameSessionPacketHandler_t fn)
+void GameSession::AddKeyEventHandler(AppBufferProcessor_t fn)
 {
 	m_keyEventHandlers.push_back(fn);
 }
