@@ -593,6 +593,10 @@ int main(int argc, char* argv[])
     // The io_context is required for all I/O
     net::io_context ioc{threads};
 
+    // WebsockServer needs our io_context, for running all
+    // async_read(), async_write(), and async_wait()
+    // execution chains, on a per session (client/player)
+    // basis.
     WebsockServer::GetInstance().IoContext(&ioc);
 
 #ifdef _WIN64
