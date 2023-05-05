@@ -21,8 +21,12 @@ GameSession::GameSession(uint32_t sessionID)
 
 	// Echo Key events back to client
 	AddKeyEventHandler([this](AppBuffer& rxBuffer) {
-		bool isDown = (rxBuffer.get_uint8() == 1) ? true : false;
-		int keyCode = rxBuffer.get_uint8();
+		// preserve rxBuffer state for possible additional handlers
+		// (ie read data without altering its m_readOffset)
+		assert(rxBuffer.size() >= 3);
+
+		bool isDown = rxBuffer.get_uint8(1);
+		int keyCode = rxBuffer.get_uint8(2);
 
 		auto txBuffer = std::make_unique <AppBuffer>(8, rxBuffer.isLittleEndian());
 
@@ -37,10 +41,16 @@ GameSession::GameSession(uint32_t sessionID)
 
 	// Echo Click events back to client.
 	AddClickEventHandler([this](AppBuffer& rxBuffer) {
-		uint32_t rxSessionID = rxBuffer.get_uint32();
-		uint16_t playerID = rxBuffer.get_uint16();
-		uint16_t clickX = rxBuffer.get_uint16();
-		uint16_t clickY = rxBuffer.get_uint16();
+		// preserve rxBuffer state for possible additional handlers
+		// (ie read data without altering its m_readOffset)
+		assert(rxBuffer.size() >= 11);
+
+		uint32_t rxSessionID = rxBuffer.get_uint32(1);
+		uint16_t playerID = rxBuffer.get_uint16(5);
+		uint16_t clickX = rxBuffer.get_uint16(7);
+		uint16_t clickY = rxBuffer.get_uint16(9);
+
+		assert(rxSessionID == SessionID());
 
 		auto txBuffer = std::make_unique <AppBuffer>(12, rxBuffer.isLittleEndian());
 
@@ -90,7 +100,9 @@ void GameSession::AddTimerTickHandler(TimerTickCallback_t fn)
 
 void GameSession::CommsHandler(AppBuffer & rxBuffer)
 {
-	auto requestType = static_cast<RequestType_t>(rxBuffer.get_uint8());
+	// non-destructive read of requestType, keep rxBuffer state intact
+	// for sake of additional handlers that *may* be called.
+	auto requestType = static_cast<RequestType_t>(rxBuffer.get_uint8(0));
 
 	switch (requestType)
 	{

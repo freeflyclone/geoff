@@ -11,11 +11,17 @@ public:
 
     size_t bytesRemaining();
     size_t bytesWritten();
+    size_t bytesRead();
+    size_t size();
     uint8_t* data();
 
     uint8_t get_uint8();
     uint16_t get_uint16();
     uint32_t get_uint32();
+
+    uint8_t get_uint8(int byteOffset);
+    uint16_t get_uint16(int byteOffset);
+    uint32_t get_uint32(int byteOffset);
 
     int allocate(int bytes);
 

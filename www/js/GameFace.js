@@ -119,7 +119,7 @@ function on_click(event) {
 function on_keydown(event) {
     keysPressed[event.keyCode] = true;
     if (!event.repeat)
-        ProcessKeyEvent(event.keyCode, false);
+        ProcessKeyEvent(event.keyCode, true);
 }
 
 function on_keyup(event) {
@@ -150,6 +150,13 @@ function HandleMessageEvent(data) {
                 mapHeight = view.getUint16(10);
                 this.isConnected = true;
             }
+        }
+        else if (serverCommand == 0x05) {
+            sessionID = view.getUint32(2);
+            isDown = view.getUint8(6);
+            key = view.getUint8(7);
+            
+            console.log("SessionID: " + sessionID + ", Key: " + key + ", isDown: " + isDown);
         }
         else if (serverCommand == 0x07) {
             sessionID = view.getUint32(2);
