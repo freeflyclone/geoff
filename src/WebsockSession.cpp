@@ -9,8 +9,8 @@ WebsockSession::WebsockSession(uint32_t sessionID) :
 	m_run_timer(false),
 	m_timer_complete(false),
 	m_timer_tick(0),
-	m_tx_ready_callback(),
-	m_tick_interval_in_us(500000)
+	m_tick_interval_in_us(500000),
+	m_tx_ready_callback()
 {
 	//TRACE("sessionID: " << m_sessionID);
 	
