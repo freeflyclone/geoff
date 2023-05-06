@@ -26,10 +26,10 @@ namespace Asteroids
         int m_dx, m_dy;
     };
 
-	class Ship
+	class Ship : public Context
 	{
 	public:
-		Ship(int windowWidth, int windowHeight, int x, int y, float angle);
+		Ship(int windowWidth, int windowHeight, double x, double y, double angle);
 
 		~Ship();
 
@@ -40,22 +40,22 @@ namespace Asteroids
 		void TickEvent();
 
 	private:
-        int m_width, m_height;
-        int m_x, m_y;
-        float m_angle;
-        float m_radius;
+        double m_x, m_y;
+        double m_angle;
+        double m_radius;
 
         bool m_canShoot;
         bool m_dead;
         int m_explode_time;
         std::vector<Bullet> m_bullets;
-        float m_rotation;
+        double m_rotation;
         bool m_thrusting;
         struct Thrust
         {
-            int x;
-            int y;
+            double x;
+            double y;
         } m_thrust;
+        bool m_show_position;
 	};
 };
 

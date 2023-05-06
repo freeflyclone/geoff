@@ -37,9 +37,7 @@ Bullet::~Bullet()
 {
 }
 
-Ship::Ship(int windowWidth, int windowHeight, int x, int y, float angle) :
-	m_width(windowWidth),
-	m_height(windowHeight),
+Ship::Ship(int windowWidth, int windowHeight, double x, double y, double angle) :
 	m_x(x),
 	m_y(y),
 	m_angle(angle),
@@ -49,9 +47,10 @@ Ship::Ship(int windowWidth, int windowHeight, int x, int y, float angle) :
 	m_explode_time(0),
 	m_rotation(0),
 	m_thrusting(false),
-	m_thrust({ 0,0 })
+	m_thrust({ 0,0 }),
+	m_show_position(false)
 {
-	//TRACE("");
+	Resize(windowWidth, windowHeight);
 }
 
 Ship::~Ship()
@@ -63,11 +62,49 @@ void Ship::MoveShip()
 {
 	if (m_thrusting && !m_dead)
 	{
+		// apply thrust (accelerate the ship)
 		auto tx = (double) SHIP_THRUST * cos(m_angle) / (double)FPS;
 		auto ty = (double)-SHIP_THRUST * sin(m_angle) / (double)FPS;
+
+		m_thrust.x += tx;
+		m_thrust.y += ty;
+
+		//TRACE("tx: " << m_thrust.x << "  " << m_thrust.y);
+	}
+	else 
+	{
+		// apply friction (slow the ship down when not thrusting)
+		auto tx = FRICTION * m_thrust.x / FPS;
+		auto ty = FRICTION * m_thrust.y / FPS;
+
+		m_thrust.x -= tx;
+		m_thrust.y -= ty;
 	}
 
 	m_angle += m_rotation;
+
+	m_x += m_thrust.x;
+	m_y += m_thrust.y;
+
+	// handle edge of screen
+	if (m_x < 0 - m_radius) {
+		m_x = m_width + m_radius;
+	}
+	else if (m_x > m_width + m_radius) {
+		m_x = 0 - m_radius;
+	}
+
+	if (m_y < 0 - m_radius) {
+		m_y = m_height + m_radius;
+	}
+	else if (m_y > m_height + m_radius) {
+		m_y = 0 - m_radius;
+	}
+
+	if (m_show_position)
+	{
+		TRACE("x,y: " << m_x << " " << m_y);
+	}
 }
 
 void Ship::SetPosition(int x, int y)
@@ -93,6 +130,10 @@ void Ship::KeyEvent(int key, bool isDown)
 		case 38:
 			m_thrusting = isDown;
 			TRACE("m_thrusting: " << m_thrusting);
+			break;
+
+		case 32:
+			m_show_position = isDown;
 			break;
 	}
 }

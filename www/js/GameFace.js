@@ -89,6 +89,8 @@ function on_resize() {
     centerX = ctx.canvas.width / 2;
     centerY = ctx.canvas.height / 2;
 
+    console.log("width: " + ctx.canvas.width + ", height: " + ctx.canvas.height);
+
     var buffer = new ArrayBuffer(12);
     var view = new DataView(buffer);
 

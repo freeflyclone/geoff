@@ -19,7 +19,6 @@ protected:
 	void HandleResizeEvent(AppBuffer& rxBuffer);
 	void HandleTimerTick();
 
-	std::unique_ptr<Asteroids::Context> m_context;
 	std::unique_ptr<Asteroids::Ship> m_ship;
 };
 

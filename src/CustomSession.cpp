@@ -33,9 +33,6 @@ void CustomSession::HandleNewSession(AppBuffer& rxBuffer)
 	auto w = rxBuffer.get_uint16(3);
 	auto h = rxBuffer.get_uint16(5);
 
-	m_context = std::make_unique<Asteroids::Context>();
-
-	m_context->Resize(w, h);
 	m_ship = std::make_unique<Asteroids::Ship>(w, h, w / 2, h / 2, static_cast<float>(M_PI / 2.0f));
 
 	TRACE(*this);
@@ -73,6 +70,6 @@ void CustomSession::HandleResizeEvent(AppBuffer& rxBuffer)
 
 	//TRACE("sessionID: " << sessionID << ", width: " << width << ", height: " << height);
 
-	m_context->Resize(width, height);
+	m_ship->Resize(width, height);
 }
 
