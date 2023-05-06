@@ -1,9 +1,17 @@
 #include "CustomSession.h"
 
+std::ostream& operator<<(std::ostream& os, const CustomSession& cs)
+{
+	os << std::endl << ">>> CustomSession" << std::endl;
+	os << "SessionID: " << cs.m_sessionID << std::endl;
+	os << "<<< CustomSession" << std::endl;
+	return os;
+}
+
 CustomSession::CustomSession(uint32_t sessionID)
 	: GameSession(sessionID)
 {
-	TRACE("");
+	//TRACE("");
 
 	AddRegisterNewSessionHandler(std::bind(&CustomSession::HandleNewSession, this, std::placeholders::_1));
 	AddKeyEventHandler(std::bind(&CustomSession::HandleKeyEvent, this, std::placeholders::_1));
@@ -15,26 +23,28 @@ CustomSession::CustomSession(uint32_t sessionID)
 
 CustomSession::~CustomSession()
 {
-	TRACE("");
+	//TRACE("");
 }
 
 void CustomSession::HandleNewSession(AppBuffer& rxBuffer)
 {
-	TRACE("");
+	TRACE(*this);
 }
 
 void CustomSession::HandleKeyEvent(AppBuffer& rxBuffer)
 {
-	//TRACE("");
+	bool isDown = rxBuffer.get_uint8(1);
+	int key     = (int)rxBuffer.get_uint8(2);
+	TRACE("key: (" << key << "," << (isDown ? "Down" : "Up") << ")" );
 }
 
 void CustomSession::HandleClickEvent(AppBuffer& rxBuffer)
 {
-	TRACE("");
+	//TRACE("");
 }
 
 void CustomSession::HandleTimerTick()
 {
-	TRACE("");
+	//TRACE("");
 }
 

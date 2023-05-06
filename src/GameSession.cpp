@@ -1,5 +1,13 @@
 #include "GameSession.h"
 
+std::ostream& operator<<(std::ostream& os, const GameSession& gs)
+{
+	os << std::endl << "-----------------" << std::endl;
+	os << "SessionID: " << gs.m_sessionID << std::endl;
+	os << "-----------------";
+	return os;
+}
+
 GameSession::GameSession(uint32_t sessionID)
 	: WebsockSession(sessionID)
 {

@@ -46,6 +46,9 @@ public:
 	void AddKeyEventHandler(AppBufferProcessor_t fn);
 	void AddTimerTickHandler(TimerTickCallback_t fn);
 
+	// don't invoke in constructors!
+	friend std::ostream& operator<<(std::ostream& os, const GameSession& gs);
+
 protected:
 	std::vector<AppBufferProcessor_t> m_newSessionHandlers;
 	std::vector<AppBufferProcessor_t> m_clickEventHandlers;

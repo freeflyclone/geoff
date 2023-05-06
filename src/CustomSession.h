@@ -9,6 +9,8 @@ public:
 	CustomSession(uint32_t sessionID);
 	~CustomSession();
 
+	friend std::ostream& operator<<(std::ostream& os, const CustomSession& gs);
+
 protected:
 	void HandleNewSession(AppBuffer& rxBuffer);
 	void HandleKeyEvent(AppBuffer& rxBuffer);
