@@ -73,13 +73,13 @@ public:
 	void StopTimer();
 	void SetIntervalInUs(uint32_t interval);
 
-protected:
 	virtual void CommsHandler(const uint8_t* buff, const size_t length);
 	virtual void CommsHandler(AppBuffer& buffer);
 
 	// Call the TX ready callback specified by the caller
 	void OnTxReady(WebsockSession&);
 
+protected:
 	virtual void OnTimerTick();
 	void TimerTick();
 

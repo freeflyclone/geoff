@@ -68,7 +68,28 @@ void Gun::TickTock()
 	if (bulletDone)
 		bullets.pop_front();
 
-	//TRACE("Bullets Left: " << bullets.size());
+	if (bullets.size() == 0)
+		return;
+
+	auto appBufferSize = 2 + 4 + 2 + (bullets.size() * 2 * sizeof(int16_t));
+	auto txBuff = std::make_unique<AppBuffer>(appBufferSize, gs.IsLittleEndian());
+
+	txBuff->set_uint8(0xBB);
+	txBuff->set_uint8(0x09);
+	txBuff->set_uint32(gs.SessionID());
+	txBuff->set_uint16(static_cast<uint16_t>(bullets.size()));
+
+	for (auto bullet : bullets)
+	{
+		uint16_t cx = static_cast<uint16_t>(bullet->x);
+		uint16_t cy = static_cast<uint16_t>(bullet->y);
+
+		txBuff->set_uint16(cx);
+		txBuff->set_uint16(cy);
+	}
+
+	gs.CommitTxBuffer(txBuff);
+	gs.OnTxReady(gs);
 }
 
 Ship::Ship(int windowWidth, int windowHeight, double x, double y, double angle, GameSession& gs) :
