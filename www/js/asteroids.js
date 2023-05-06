@@ -581,7 +581,7 @@ function update() {
     drawShipFully();   
     //drawLasers();
     //drawGameInfo();
-    draw_tic_text();
+    //draw_tic_text();
 
     //detectLaserAsteroidHit();
     //detectShipAsteroidHit();
