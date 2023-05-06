@@ -51,6 +51,7 @@ void CustomSession::HandleKeyEvent(AppBuffer& rxBuffer)
 
 void CustomSession::HandleClickEvent(AppBuffer& rxBuffer)
 {
+	(void)rxBuffer;
 	//TRACE("");
 }
 
@@ -82,6 +83,8 @@ void CustomSession::HandleTimerTick()
 void CustomSession::HandleResizeEvent(AppBuffer& rxBuffer)
 {
 	uint32_t sessionID = rxBuffer.get_uint32(1);
+	((sessionID));
+
 	uint16_t width = rxBuffer.get_uint16(5);
 	uint16_t height = rxBuffer.get_uint16(7);
 
