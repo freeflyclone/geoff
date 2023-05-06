@@ -58,6 +58,17 @@ Ship::~Ship()
 	//TRACE("");
 }
 
+void Ship::GetXY(int16_t& x, int16_t& y)
+{
+	x = static_cast<int16_t>(std::floor(m_x));
+	y = static_cast<int16_t>(std::floor(m_y));
+}
+
+void Ship::GetAngle(int16_t& angle)
+{
+	angle = static_cast<int16_t>(std::floor(m_angle * 4096.0));
+}
+
 void Ship::MoveShip()
 {
 	if (m_thrusting && !m_dead)
@@ -81,7 +92,14 @@ void Ship::MoveShip()
 		m_thrust.y -= ty;
 	}
 
+	auto max_angle = M_PI * 2.0;
+
 	m_angle += m_rotation;
+
+	if (m_angle >= max_angle)
+		m_angle = 0;
+	else if (m_angle < 0)
+		m_angle = max_angle;
 
 	m_x += m_thrust.x;
 	m_y += m_thrust.y;
@@ -107,12 +125,6 @@ void Ship::MoveShip()
 	}
 }
 
-void Ship::SetPosition(int x, int y)
-{
-	m_x = x;
-	m_y = y;
-}
-
 void Ship::KeyEvent(int key, bool isDown)
 {
 	//TRACE("Key: (" << key << "," << (isDown ? "down" : "up") << ")");
@@ -129,7 +141,6 @@ void Ship::KeyEvent(int key, bool isDown)
 
 		case 38:
 			m_thrusting = isDown;
-			TRACE("m_thrusting: " << m_thrusting);
 			break;
 
 		case 32:

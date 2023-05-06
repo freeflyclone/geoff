@@ -89,8 +89,6 @@ function on_resize() {
     centerX = ctx.canvas.width / 2;
     centerY = ctx.canvas.height / 2;
 
-    console.log("width: " + ctx.canvas.width + ", height: " + ctx.canvas.height);
-
     var buffer = new ArrayBuffer(12);
     var view = new DataView(buffer);
 
@@ -176,6 +174,9 @@ function HandleMessageEvent(data) {
         else if (serverCommand == 0x07) {
             sessionID = view.getUint32(2);
             tickCount = view.getUint32(6);
+            shipX     = view.getInt16(10);
+            shipY     = view.getInt16(12);
+            shipAngle = view.getInt16(14) / 4096.0;
         }
         else
             console.log("HandleMessageEvent, serverCommand: " + serverCommand);

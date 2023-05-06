@@ -60,6 +60,23 @@ void CustomSession::HandleTimerTick()
 		return;
 
 	m_ship->TickEvent();
+	int16_t shipX, shipY, shipA;
+
+	m_ship->GetXY(shipX, shipY);
+	m_ship->GetAngle(shipA);
+
+	auto txBuff = std::make_unique<AppBuffer>(16, m_isLittleEndian);
+
+	txBuff->set_uint8(0xBB);
+	txBuff->set_uint8(0x07);
+	txBuff->set_uint32(m_sessionID);
+	txBuff->set_uint32(m_timer_tick++);
+	txBuff->set_uint16(shipX);
+	txBuff->set_uint16(shipY);
+	txBuff->set_uint16(shipA);
+
+	CommitTxBuffer(txBuff);
+	OnTxReady(*this);
 }
 
 void CustomSession::HandleResizeEvent(AppBuffer& rxBuffer)

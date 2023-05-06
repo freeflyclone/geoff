@@ -120,15 +120,6 @@ bool WebsockSession::GetNextTxBuffer(std::unique_ptr<AppBuffer>& buff)
 
 void WebsockSession::OnTimerTick()
 {
-	auto txBuff = std::make_unique<AppBuffer>(12, m_isLittleEndian);
-
-	txBuff->set_uint8(0xBB);
-	txBuff->set_uint8(0x07);
-	txBuff->set_uint32(m_sessionID);
-	txBuff->set_uint32(m_timer_tick++);
-
-	CommitTxBuffer(txBuff);
-
 	OnTxReady(*this);
 }
 

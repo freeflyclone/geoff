@@ -24,7 +24,7 @@ const SHOW_BOUNDING = false;        // show or hide collision bounding
 const TEXT_FADE_TIME = 2.5;         // text fade time in seconds
 const TEXT_SIZE = 40;               // text font height in pixels
 
-var level, lives, roids, score, scoreHigh, ship, text, textAlpha;
+var level, lives, roids, score, scoreHigh, ship, shipX, shipY, shipAngle, text, textAlpha;
 
 function newGame() {
     level = 0;
@@ -439,7 +439,9 @@ function draw_tic_text() {
     ctx.textBaseline = "middle";
     ctx.fillStyle = "white";
     ctx.font = (TEXT_SIZE * 0.375) + "px arial";
-    ctx.fillText("sessionID: " + sessionID + ", server tick: " + tickCount, canv.width / 2, SHIP_SIZE * 3);
+
+    var text = "sessionID: " + sessionID + ", server tick: " + tickCount + ", x:" + shipX + " y: " + shipY + " angle: " + shipAngle;
+    ctx.fillText(text, ctx.canvas.width / 2, SHIP_SIZE * 3);
 }
 
 function detectLaserAsteroidHit() {
@@ -504,23 +506,11 @@ function moveShip() {
 
     if (!exploding) {
         // rotate the ship
-        ship.a += ship.rot;
+        ship.a = shipAngle;
 
         // move the ship
-        ship.x += ship.thrust.x;
-        ship.y += ship.thrust.y;
-    }
-
-    // handle edge of screen
-    if (ship.x < 0 - ship.r) {
-        ship.x = canv.width + ship.r;
-    } else if (ship.x > canv.width + ship.r) {
-        ship.x = 0 - ship.r;
-    }
-    if (ship.y < 0 - ship.r) {
-        ship.y = canv.height + ship.r;
-    } else if (ship.y > canv.height + ship.r) {
-        ship.y = 0 - ship.r;
+        ship.x = shipX;
+        ship.y = shipY;
     }
 }
 

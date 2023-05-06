@@ -34,8 +34,8 @@ namespace Asteroids
 		~Ship();
 
         void MoveShip();
-        void SetPosition(int x, int y);
-
+        void GetXY(int16_t& x, int16_t& y);
+        void GetAngle(int16_t& angle);
 		void KeyEvent(int key, bool isDown);
 		void TickEvent();
 
