@@ -44,6 +44,7 @@ public:
 	void AddRegisterNewSessionHandler(AppBufferProcessor_t fn);
 	void AddClickEventHandler(AppBufferProcessor_t fn);
 	void AddKeyEventHandler(AppBufferProcessor_t fn);
+	void AddResizeEventHandler(AppBufferProcessor_t fn);
 	void AddTimerTickHandler(TimerTickCallback_t fn);
 
 	// don't invoke in constructors!
@@ -53,6 +54,7 @@ protected:
 	std::vector<AppBufferProcessor_t> m_newSessionHandlers;
 	std::vector<AppBufferProcessor_t> m_clickEventHandlers;
 	std::vector<AppBufferProcessor_t> m_keyEventHandlers;
+	std::vector<AppBufferProcessor_t> m_resizeEventHandlers;
 	std::vector<TimerTickCallback_t> m_timerTickHandlers;
 };
 

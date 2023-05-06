@@ -2,8 +2,19 @@
 #define ASTEROIDS_H
 
 #include <vector>
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 namespace Asteroids
 {
+    struct Context
+    {
+        void Resize(uint16_t width, uint16_t height);
+        
+        uint16_t m_width;
+        uint16_t m_height;
+    };
+
     class Bullet
     {
     public:
@@ -18,17 +29,18 @@ namespace Asteroids
 	class Ship
 	{
 	public:
-		Ship(int x, int y, float angle);
+		Ship(int windowWidth, int windowHeight, int x, int y, float angle);
 
 		~Ship();
 
+        void MoveShip();
         void SetPosition(int x, int y);
 
 		void KeyEvent(int key, bool isDown);
-
 		void TickEvent();
 
 	private:
+        int m_width, m_height;
         int m_x, m_y;
         float m_angle;
         float m_radius;

@@ -44,7 +44,8 @@ public:
 	{
 		RegisterSession = 0x00,
 		ClickEvent = 0x02,
-		KeyEvent = 0x04
+		KeyEvent = 0x04,
+		ResizeEvent = 0x06,
 	};
 
 	WebsockSession(uint32_t sessionID);

@@ -101,6 +101,11 @@ void GameSession::AddKeyEventHandler(AppBufferProcessor_t fn)
 	m_keyEventHandlers.push_back(fn);
 }
 
+void GameSession::AddResizeEventHandler(AppBufferProcessor_t fn)
+{
+	m_resizeEventHandlers.push_back(fn);
+}
+
 void GameSession::AddTimerTickHandler(TimerTickCallback_t fn)
 {
 	m_timerTickHandlers.push_back(fn);
@@ -126,6 +131,11 @@ void GameSession::CommsHandler(AppBuffer & rxBuffer)
 
 		case RequestType_t::KeyEvent:
 			for (auto fn : m_keyEventHandlers)
+				fn(rxBuffer);
+			break;
+
+		case RequestType_t::ResizeEvent:
+			for (auto fn : m_resizeEventHandlers)
 				fn(rxBuffer);
 			break;
 	}

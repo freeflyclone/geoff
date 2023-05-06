@@ -88,6 +88,18 @@ function on_resize() {
 
     centerX = ctx.canvas.width / 2;
     centerY = ctx.canvas.height / 2;
+
+    var buffer = new ArrayBuffer(12);
+    var view = new DataView(buffer);
+
+    view.setUint8(0, (littleEndian == 0) ? 0xAA : 0xAB);
+    view.setUint8(1, 0x06);
+    view.setUint32(2, sessionID);
+    view.setUint16(6, ctx.canvas.width);
+    view.setUint16(8, ctx.canvas.height);
+
+    if (typeof webSock != 'undefined')
+        webSock.Send(buffer);
 }
 
 function ProcessKeyEvent(keyCode, isDown) {
@@ -128,12 +140,14 @@ function on_keyup(event) {
 }
 
 function RegisterClient() {
-    var buffer = new ArrayBuffer(4);
+    var buffer = new ArrayBuffer(8);
     var view = new DataView(buffer);
 
     view.setUint8(0, (littleEndian == 0) ? 0xAA : 0xAB);
     view.setUint8(1, 0x00);
     view.setUint16(2, appVersion);
+    view.setUint16(4, canv.width);
+    view.setUint16(6, canv.height);
 
     webSock.Send(buffer);
 }
@@ -155,8 +169,7 @@ function HandleMessageEvent(data) {
             sessionID = view.getUint32(2);
             isDown = view.getUint8(6);
             key = view.getUint8(7);
-            
-            console.log("SessionID: " + sessionID + ", Key: " + key + ", isDown: " + isDown);
+            //console.log("SessionID: " + sessionID + ", Key: " + key + ", isDown: " + isDown);
         }
         else if (serverCommand == 0x07) {
             sessionID = view.getUint32(2);
