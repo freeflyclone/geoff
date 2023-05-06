@@ -14,6 +14,7 @@ namespace {
 	const int SHIP_SIZE = 20;                // ship height in pixels
 	const int SHIP_THRUST = 10;              // acceleration of the ship in pixels per second per second
 	const int SHIP_TURN_SPEED = 360;         // turn speed in degrees per second
+	const float MUZZLE_VELOCITY = 100;		 // pixels per second
 }
 
 void Context::Resize(uint16_t w, uint16_t h)
@@ -24,10 +25,12 @@ void Context::Resize(uint16_t w, uint16_t h)
 	TRACE("m_width: " << width << ", m_height : " << height);
 }
 
-Bullet::Bullet(double x, double y, double dx, double dy)
-	: 
+Bullet::Bullet(GameSession &g, double x, double y, double dx, double dy)
+	:
+	gs(g),
 	Position({ x,y }),
-	Velocity({ dx,dy })
+	Velocity({ dx,dy }),
+	ticksLeft(3 * FPS)
 {
 }
 
@@ -35,10 +38,45 @@ Bullet::~Bullet()
 {
 }
 
-Ship::Ship(int windowWidth, int windowHeight, double x, double y, double angle) :
-	Context({ static_cast<uint16_t>(windowWidth), static_cast<uint16_t>(windowHeight) }),
+bool Bullet::TickTock()
+{
+	if (ticksLeft)
+		ticksLeft--;
+
+	return ticksLeft == 0;
+}
+
+void Gun::Fire(double x, double y, double dx, double dy)
+{
+	bullets.emplace_back(std::make_unique<Bullet>(gs, x, y, dx, dy));
+	TRACE("bullets.size(): " << bullets.size());
+}
+
+void Gun::TickTock()
+{
+	if (bullets.empty())
+		return;
+
+	bool bulletDone = false;
+
+	// update bullet lifetime ticks
+	for (auto bullet : bullets)
+		if (bullet->TickTock())
+			bulletDone = true;
+
+	// Remove oldest bullet if it's died.
+	if (bulletDone)
+		bullets.pop_front();
+
+	//TRACE("Bullets Left: " << bullets.size());
+}
+
+Ship::Ship(int windowWidth, int windowHeight, double x, double y, double angle, GameSession& gs) :
+	m_gs(gs),
+	Context({ static_cast<uint16_t>(windowWidth), static_cast<uint16_t>(windowHeight), gs }),
 	Position({ x,y }),
 	Velocity({ 0,0 }),
+	m_gun(std::make_unique<Gun>(m_gs)),
 	m_angle(angle),
 	m_radius(SHIP_SIZE),
 	m_canShoot(true),
@@ -72,8 +110,6 @@ void Ship::MoveShip()
 	{
 		Velocity::dx += (double) SHIP_THRUST * cos(m_angle) / (double)FPS;
 		Velocity::dy += (double)-SHIP_THRUST * sin(m_angle) / (double)FPS;
-
-		//TRACE("tx: " << m_thrust.x << "  " << m_thrust.y);
 	}
 	else 
 	{
@@ -82,7 +118,6 @@ void Ship::MoveShip()
 	}
 
 	auto max_angle = M_PI * 2.0;
-
 	m_angle += m_rotation;
 
 	if (m_angle >= max_angle)
@@ -107,11 +142,18 @@ void Ship::MoveShip()
 	else if (Position::y > Context::height + m_radius) {
 		Position::y = 0 - m_radius;
 	}
+}
 
-	if (m_show_position)
-	{
-		TRACE("x,y: " << this->y << " " << this->y);
-	}
+void Ship::FireShot()
+{
+	if (!m_gun)
+		return;
+
+	auto mvx = (double)MUZZLE_VELOCITY * cos(m_angle) / (double)FPS;
+	auto mvy = (double)MUZZLE_VELOCITY * -sin(m_angle) / (double)FPS;
+
+	// fire the gun by telling where it is and muzzle 2D velocity vector 
+	m_gun->Fire(Position::x, Position::y, Velocity::dx + mvx, Velocity::dy + mvy);
 }
 
 void Ship::KeyEvent(int key, bool isDown)
@@ -133,6 +175,9 @@ void Ship::KeyEvent(int key, bool isDown)
 			break;
 
 		case 32:
+			if (isDown)
+				FireShot();
+
 			m_show_position = isDown;
 			break;
 	}
@@ -141,4 +186,5 @@ void Ship::KeyEvent(int key, bool isDown)
 void Ship::TickEvent()
 {
 	MoveShip();
+	m_gun->TickTock();
 }
