@@ -16,20 +16,18 @@ namespace {
 	const int SHIP_TURN_SPEED = 360;         // turn speed in degrees per second
 }
 
-void Context::Resize(uint16_t width, uint16_t height)
+void Context::Resize(uint16_t w, uint16_t h)
 {
-	m_width = width;
-	m_height = height;
+	width = w;
+	height = h;
 
-	TRACE("m_width: " << m_width << ", m_height : " << m_height);
+	TRACE("m_width: " << width << ", m_height : " << height);
 }
 
-Bullet::Bullet(int x, int y, int dx, int dy)
-	:
-	m_x(x),
-	m_y(y),
-	m_dx(dx),
-	m_dy(dy)
+Bullet::Bullet(double x, double y, double dx, double dy)
+	: 
+	Position({ x,y }),
+	Velocity({ dx,dy })
 {
 }
 
@@ -38,8 +36,9 @@ Bullet::~Bullet()
 }
 
 Ship::Ship(int windowWidth, int windowHeight, double x, double y, double angle) :
-	m_x(x),
-	m_y(y),
+	Context({ static_cast<uint16_t>(windowWidth), static_cast<uint16_t>(windowHeight) }),
+	Position({ x,y }),
+	Velocity({ 0,0 }),
 	m_angle(angle),
 	m_radius(SHIP_SIZE),
 	m_canShoot(true),
@@ -47,10 +46,8 @@ Ship::Ship(int windowWidth, int windowHeight, double x, double y, double angle) 
 	m_explode_time(0),
 	m_rotation(0),
 	m_thrusting(false),
-	m_thrust({ 0,0 }),
 	m_show_position(false)
 {
-	Resize(windowWidth, windowHeight);
 }
 
 Ship::~Ship()
@@ -58,10 +55,10 @@ Ship::~Ship()
 	//TRACE("");
 }
 
-void Ship::GetXY(int16_t& x, int16_t& y)
+void Ship::GetXY(int16_t& xPos, int16_t& yPos)
 {
-	x = static_cast<int16_t>(std::floor(m_x));
-	y = static_cast<int16_t>(std::floor(m_y));
+	xPos = static_cast<int16_t>(std::floor(Position::x));
+	yPos = static_cast<int16_t>(std::floor(Position::y));
 }
 
 void Ship::GetAngle(int16_t& angle)
@@ -73,23 +70,15 @@ void Ship::MoveShip()
 {
 	if (m_thrusting && !m_dead)
 	{
-		// apply thrust (accelerate the ship)
-		auto tx = (double) SHIP_THRUST * cos(m_angle) / (double)FPS;
-		auto ty = (double)-SHIP_THRUST * sin(m_angle) / (double)FPS;
-
-		m_thrust.x += tx;
-		m_thrust.y += ty;
+		Velocity::dx += (double) SHIP_THRUST * cos(m_angle) / (double)FPS;
+		Velocity::dy += (double)-SHIP_THRUST * sin(m_angle) / (double)FPS;
 
 		//TRACE("tx: " << m_thrust.x << "  " << m_thrust.y);
 	}
 	else 
 	{
-		// apply friction (slow the ship down when not thrusting)
-		auto tx = FRICTION * m_thrust.x / FPS;
-		auto ty = FRICTION * m_thrust.y / FPS;
-
-		m_thrust.x -= tx;
-		m_thrust.y -= ty;
+		Velocity::dx -= FRICTION * this->dx / FPS;
+		Velocity::dy -= FRICTION * this->dy / FPS;
 	}
 
 	auto max_angle = M_PI * 2.0;
@@ -101,27 +90,27 @@ void Ship::MoveShip()
 	else if (m_angle < 0)
 		m_angle = max_angle;
 
-	m_x += m_thrust.x;
-	m_y += m_thrust.y;
+	Position::x += Velocity::dx;
+	Position::y += Velocity::dy;
 
 	// handle edge of screen
-	if (m_x < 0 - m_radius) {
-		m_x = m_width + m_radius;
+	if (Position::x < 0 - m_radius) {
+		Position::x = Context::width + m_radius;
 	}
-	else if (m_x > m_width + m_radius) {
-		m_x = 0 - m_radius;
+	else if (Position::x > Context::width + m_radius) {
+		Position::x = 0 - m_radius;
 	}
 
-	if (m_y < 0 - m_radius) {
-		m_y = m_height + m_radius;
+	if (Position::y < 0 - m_radius) {
+		Position::y = Context::height + m_radius;
 	}
-	else if (m_y > m_height + m_radius) {
-		m_y = 0 - m_radius;
+	else if (Position::y > Context::height + m_radius) {
+		Position::y = 0 - m_radius;
 	}
 
 	if (m_show_position)
 	{
-		TRACE("x,y: " << m_x << " " << m_y);
+		TRACE("x,y: " << this->y << " " << this->y);
 	}
 }
 

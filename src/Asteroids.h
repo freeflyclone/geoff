@@ -11,22 +11,28 @@ namespace Asteroids
     {
         void Resize(uint16_t width, uint16_t height);
         
-        uint16_t m_width;
-        uint16_t m_height;
+        uint16_t width;
+        uint16_t height;
     };
 
-    class Bullet
+    struct Position
+    {
+        double x, y;
+    };
+
+    struct Velocity
+    {
+        double dx, dy;
+    };
+
+    class Bullet : public Position, public Velocity
     {
     public:
-        Bullet(int x, int y, int dx, int dy);
+        Bullet(double x, double y, double dx, double dy);
         ~Bullet();
-
-    private:
-        int m_x, m_y;
-        int m_dx, m_dy;
     };
 
-	class Ship : public Context
+	class Ship : public Context, public Position, public Velocity
 	{
 	public:
 		Ship(int windowWidth, int windowHeight, double x, double y, double angle);
@@ -40,21 +46,16 @@ namespace Asteroids
 		void TickEvent();
 
 	private:
-        double m_x, m_y;
+        std::vector<std::unique_ptr<Bullet>> m_bullets;
+
         double m_angle;
         double m_radius;
 
         bool m_canShoot;
         bool m_dead;
         int m_explode_time;
-        std::vector<Bullet> m_bullets;
         double m_rotation;
         bool m_thrusting;
-        struct Thrust
-        {
-            double x;
-            double y;
-        } m_thrust;
         bool m_show_position;
 	};
 };
