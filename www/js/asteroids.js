@@ -587,18 +587,18 @@ function moveAsteroids() {
 
 function update() {
     drawSpace();
-    drawAsteroids();
+    //drawAsteroids();
     drawShipFully();   
-    drawLasers();
-    drawGameInfo();
+    //drawLasers();
+    //drawGameInfo();
     draw_tic_text();
 
-    detectLaserAsteroidHit();
-    detectShipAsteroidHit();
+    //detectLaserAsteroidHit();
+    //detectShipAsteroidHit();
 
     moveShip();
-    moveLasers();
-    moveAsteroids();
+    //moveLasers();
+    //moveAsteroids();
 }
 
 function AsteroidsInit() {

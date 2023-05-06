@@ -1,4 +1,5 @@
 #include "CustomSession.h"
+#include "Asteroids.h"
 
 std::ostream& operator<<(std::ostream& os, const CustomSession& cs)
 {
@@ -28,6 +29,8 @@ CustomSession::~CustomSession()
 
 void CustomSession::HandleNewSession(AppBuffer& rxBuffer)
 {
+	m_ship = std::make_unique<Asteroids::Ship>(0, 0, 0.0f);
+
 	TRACE(*this);
 }
 
@@ -35,7 +38,8 @@ void CustomSession::HandleKeyEvent(AppBuffer& rxBuffer)
 {
 	bool isDown = rxBuffer.get_uint8(1);
 	int key     = (int)rxBuffer.get_uint8(2);
-	TRACE("key: (" << key << "," << (isDown ? "Down" : "Up") << ")" );
+
+	m_ship->KeyEvent(key, isDown);
 }
 
 void CustomSession::HandleClickEvent(AppBuffer& rxBuffer)
@@ -45,6 +49,6 @@ void CustomSession::HandleClickEvent(AppBuffer& rxBuffer)
 
 void CustomSession::HandleTimerTick()
 {
-	//TRACE("");
+	m_ship->TickEvent();
 }
 

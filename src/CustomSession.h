@@ -2,6 +2,7 @@
 #define CUSTOM_SESSION_H
 
 #include "GameSession.h"
+#include "Asteroids.h"
 
 class CustomSession : public GameSession
 {
@@ -16,6 +17,8 @@ protected:
 	void HandleKeyEvent(AppBuffer& rxBuffer);
 	void HandleClickEvent(AppBuffer& rxBuffer);
 	void HandleTimerTick();
+
+	std::unique_ptr<Asteroids::Ship> m_ship;
 };
 
 #endif // CUSTOM_SESSION
