@@ -50,6 +50,7 @@ namespace Asteroids
 
         void Fire(double x, double y, double dx, double dy);
         void TickTock();
+        std::unique_ptr<AppBuffer> MakeBulletsPacket(bool isLittleEndian);
 
     private:
         GameSession& gs;
@@ -70,9 +71,10 @@ namespace Asteroids
 		void KeyEvent(int key, bool isDown);
 		void TickEvent();
 
-	private:
+        std::shared_ptr<Gun> m_gun;
+
+    private:
         GameSession& m_gs;
-        std::unique_ptr<Gun> m_gun;
 
         double m_angle;
         double m_radius;

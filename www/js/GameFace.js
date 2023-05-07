@@ -4,19 +4,13 @@ var loopTimer;
 var webSock;
 
 var appVersion = 3;
-var sessionID;
-var playerID = 0;
 var serverAppVersion = 0;
 var mapWidth = 0;
 var mapHeight = 0;
-var mapOffsetX = 0;
-var mapOffsetY = 0;
 
 var canv = document.getElementById('gameCanvas');
 var ctx = canv.getContext("2d");
 var borderWidth = 4;
-var centerX;
-var centerY;
 var sessionID;
 var tickCount;
 
@@ -86,9 +80,6 @@ function on_resize() {
     ctx.canvas.width = window.innerWidth - borderWidth;
     ctx.canvas.height = window.innerHeight - borderWidth;
 
-    centerX = ctx.canvas.width / 2;
-    centerY = ctx.canvas.height / 2;
-
     var buffer = new ArrayBuffer(12);
     var view = new DataView(buffer);
 
@@ -121,9 +112,8 @@ function on_click(event) {
     view.setUint8(0, (littleEndian == 0) ? 0xAA : 0xAB);
     view.setUint8(1, 0x02);
     view.setUint32(2, sessionID);
-    view.setUint16(6, playerID);
-    view.setUint16(8, mapOffsetX + event.clientX);
-    view.setUint16(10, mapOffsetY + event.clientY);
+    view.setUint16(6, event.clientX);
+    view.setUint16(8, event.clientY);
 
     webSock.Send(buffer);
 }
@@ -140,6 +130,7 @@ function on_keyup(event) {
 }
 
 function RegisterClient() {
+    console.log("RegisterClient()");
     var buffer = new ArrayBuffer(8);
     var view = new DataView(buffer);
 
@@ -174,12 +165,41 @@ function HandleMessageEvent(data) {
         else if (serverCommand == 0x07) {
             sessionID = view.getUint32(2);
             tickCount = view.getUint32(6);
-            shipX     = view.getInt16(10);
-            shipY     = view.getInt16(12);
-            shipAngle = view.getInt16(14) / 4096.0;
+
+            ship.Move(view.getInt16(10), view.getInt16(12), view.getInt16(14) / 4096.0);
+
+            if (view.byteLength == 16) {
+                update();
+                return;
+            }
+
+            numBullets = view.getUint16(16);
+
+            if (numBullets > 0) {
+                if (typeof bullets == 'undefined') {
+                    return;
+                    console.log("bullets is undefined");
+                }
+
+                bullets = { };
+
+                for (i = 0; i < numBullets; i++) {
+                    x = view.getUint16(18 + i * 2);
+                    y = view.getUint16(18 + 2 + i * 2);
+                    bullets[i] = { x, y };
+                }
+
+                console.log("numBullets: " + numBullets + ", " + bullets[0].x + "," + bullets[0].y);
+            }
         }
         else
             console.log("HandleMessageEvent, serverCommand: " + serverCommand);
+
+        // some JavaScript file needs to define a single update() function
+        // which is invoked after the 
+        if (typeof update != undefined) {
+            update();
+        }
     }
 }
 

@@ -24,7 +24,7 @@ const SHOW_BOUNDING = false;        // show or hide collision bounding
 const TEXT_FADE_TIME = 2.5;         // text fade time in seconds
 const TEXT_SIZE = 40;               // text font height in pixels
 
-var level, lives, roids, score, scoreHigh, ship, shipX, shipY, shipAngle, text, textAlpha;
+var level, lives, roids, score, scoreHigh, ship, text, textAlpha;
 
 function newGame() {
     level = 0;
@@ -67,11 +67,21 @@ function newShip() {
         dead: false,
         explodeTime: 0,
         lasers: [],
+        bullets: {},
         rot: 0,
         thrusting: false,
         thrust: {
             x: 0,
             y: 0
+        },
+
+        Move: function(x, y, angle)
+        {
+            if (this.explodeTime == 0) {
+                this.x = x;
+                this.y = y;
+                this.a = angle;
+            }
         }
     }
 }
@@ -169,18 +179,6 @@ function ProcessGameKeys(keycode, isDown) {
                 shootLaser();
             else
                 ship.canShoot = true;
-            break;
-
-        case 37: // left arrow (rotate ship left)
-                ship.rot = (isDown) ? SHIP_TURN_SPEED / 180 * Math.PI / FPS : 0;
-            break;
-
-        case 38: // up arrow (thrust the ship forward)
-            ship.thrusting = isDown;
-            break;
-
-        case 39: // right arrow (rotate ship right)
-            ship.rot = (isDown) ? -SHIP_TURN_SPEED / 180 * Math.PI / FPS : 0;
             break;
     }
 }
@@ -391,6 +389,19 @@ function drawLasers() {
     }
 }
 
+function drawBullets() {
+    var numberOfBullets = Object.keys(ship.bullets).length;
+    if (typeof ship.bullets == 'undefined')
+        return;
+
+    for (i = 0; i < numberOfBullets; i++) {
+        ctx.fillStyle = "cyan";
+        ctx.beginPath();
+        ctx.arc(ship.bullets[i].x, ship.bullets[i].y, SHIP_SIZE / 15, 0, Math.PI * 2, false);
+        ctx.fill();
+    }
+}
+
 function drawGameInfo() {
     var exploding = ship.explodeTime > 0;
 
@@ -440,7 +451,7 @@ function draw_tic_text() {
     ctx.fillStyle = "white";
     ctx.font = (TEXT_SIZE * 0.375) + "px arial";
 
-    var text = "sessionID: " + sessionID + ", server tick: " + tickCount + ", x:" + shipX + " y: " + shipY + " angle: " + shipAngle;
+    var text = "sessionID: " + sessionID + ", server tick: " + tickCount + ", x:" + ship.x + " y: " + ship.y + " angle: " + ship.a;
     ctx.fillText(text, ctx.canvas.width / 2, SHIP_SIZE * 3);
 }
 
@@ -502,15 +513,6 @@ function moveShip() {
         // apply friction (slow the ship down when not thrusting)
         ship.thrust.x -= FRICTION * ship.thrust.x / FPS;
         ship.thrust.y -= FRICTION * ship.thrust.y / FPS;
-    }
-
-    if (!exploding) {
-        // rotate the ship
-        ship.a = shipAngle;
-
-        // move the ship
-        ship.x = shipX;
-        ship.y = shipY;
     }
 }
 
@@ -579,6 +581,7 @@ function update() {
     drawSpace();
     //drawAsteroids();
     drawShipFully();   
+    drawBullets();
     //drawLasers();
     //drawGameInfo();
     //draw_tic_text();
@@ -591,11 +594,8 @@ function update() {
     //moveAsteroids();
 }
 
+// this game now depends on a steady timer tick Websock message 
+// with complete game state for this client.
 function AsteroidsInit() {
-    setInterval(update, 1000 / FPS);
-
-    document.addEventListener("keydown", on_game_keydown);
-    document.addEventListener("keyup", on_game_keyup);
-
     newGame();
 }

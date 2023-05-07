@@ -54,9 +54,8 @@ GameSession::GameSession(uint32_t sessionID)
 		assert(rxBuffer.size() >= 11);
 
 		uint32_t rxSessionID = rxBuffer.get_uint32(1);
-		uint16_t playerID = rxBuffer.get_uint16(5);
-		uint16_t clickX = rxBuffer.get_uint16(7);
-		uint16_t clickY = rxBuffer.get_uint16(9);
+		uint16_t clickX = rxBuffer.get_uint16(5);
+		uint16_t clickY = rxBuffer.get_uint16(7);
 
 		assert(rxSessionID == SessionID());
 
@@ -65,7 +64,6 @@ GameSession::GameSession(uint32_t sessionID)
 		txBuffer->set_uint8(0xBB);
 		txBuffer->set_uint8(0x03);
 		txBuffer->set_uint32(SessionID());
-		txBuffer->set_uint16(playerID);
 		txBuffer->set_uint16(clickX);
 		txBuffer->set_uint16(clickY);
 

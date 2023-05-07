@@ -10,7 +10,9 @@ std::ostream& operator<<(std::ostream& os, const CustomSession& cs)
 }
 
 CustomSession::CustomSession(uint32_t sessionID)
-	: GameSession(sessionID)
+	: 
+	gs(*this),
+	GameSession(sessionID)
 {
 	//TRACE("");
 
@@ -66,7 +68,20 @@ void CustomSession::HandleTimerTick()
 	m_ship->GetXY(shipX, shipY);
 	m_ship->GetAngle(shipA);
 
-	auto txBuff = std::make_unique<AppBuffer>(16, m_isLittleEndian);
+	int outSize = 16;
+
+	/*
+	std::unique_ptr<AppBuffer> gunBuffer;
+	auto gun = m_ship->m_gun;
+	if (gun)
+	{
+		gunBuffer = std::move(gun->MakeBulletsPacket(gs.IsLittleEndian()));
+		if (gunBuffer.get())
+			outSize += gunBuffer->size();
+	}
+	*/
+
+	auto txBuff = std::make_unique<AppBuffer>(outSize, m_isLittleEndian);
 
 	txBuff->set_uint8(0xBB);
 	txBuff->set_uint8(0x07);
@@ -76,9 +91,18 @@ void CustomSession::HandleTimerTick()
 	txBuff->set_uint16(shipY);
 	txBuff->set_uint16(shipA);
 
-	// TODO: add bullet(s) data
+	/*
+	if (outSize > 16)
+	{
+		auto offset = txBuff->allocate(gunBuffer->size());
+		memcpy(txBuff->data() + offset, gunBuffer->data(), gunBuffer->size());
+		
+		//TRACE("");
+	}
+	*/
 
 	CommitTxBuffer(txBuff);
+
 	OnTxReady(*this);
 }
 

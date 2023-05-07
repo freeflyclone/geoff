@@ -52,31 +52,14 @@ void Gun::Fire(double x, double y, double dx, double dy)
 	TRACE("bullets.size(): " << bullets.size());
 }
 
-void Gun::TickTock()
+std::unique_ptr<AppBuffer> Gun::MakeBulletsPacket(bool isLittleEndian)
 {
-	if (bullets.empty())
-		return;
-
-	bool bulletDone = false;
-
-	// update bullet lifetime ticks
-	for (auto bullet : bullets)
-		if (bullet->TickTock())
-			bulletDone = true;
-
-	// Remove oldest bullet if it's died.
-	if (bulletDone)
-		bullets.pop_front();
-
 	if (bullets.size() == 0)
-		return;
+		return std::move(nullptr);
 
-	auto appBufferSize = 2 + 4 + 2 + (bullets.size() * 2 * sizeof(int16_t));
-	auto txBuff = std::make_unique<AppBuffer>(appBufferSize, gs.IsLittleEndian());
+	auto appBufferSize = 2 + (bullets.size() * 2 * sizeof(int16_t));
+	auto txBuff = std::make_unique<AppBuffer>(appBufferSize, isLittleEndian);
 
-	txBuff->set_uint8(0xBB);
-	txBuff->set_uint8(0x09);
-	txBuff->set_uint32(gs.SessionID());
 	txBuff->set_uint16(static_cast<uint16_t>(bullets.size()));
 
 	for (auto bullet : bullets)
@@ -88,8 +71,35 @@ void Gun::TickTock()
 		txBuff->set_uint16(cy);
 	}
 
-	gs.CommitTxBuffer(txBuff);
-	gs.OnTxReady(gs);
+	return std::move(txBuff);
+}
+
+void Gun::TickTock()
+{
+	if (bullets.empty())
+		return;
+
+	bool bulletDone = false;
+
+	// update bullet lifetime ticks
+	for (auto bullet : bullets)
+	{
+		if (bullet->TickTock())
+		{
+			TRACE("bulletDone, bullets.size(): " << bullets.size());
+			bulletDone = true;
+		}
+	}
+
+	// Remove oldest bullet if it's died.
+	if (bulletDone)
+	{
+		bullets.pop_front();
+		if (bullets.size() == 0)
+		{
+			TRACE("bulletDone, no more bullets");
+		}
+	}
 }
 
 Ship::Ship(int windowWidth, int windowHeight, double x, double y, double angle, GameSession& gs) :
