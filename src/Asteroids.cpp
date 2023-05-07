@@ -14,7 +14,7 @@ namespace {
 	const int SHIP_SIZE = 20;                // ship height in pixels
 	const int SHIP_THRUST = 10;              // acceleration of the ship in pixels per second per second
 	const int SHIP_TURN_SPEED = 360;         // turn speed in degrees per second
-	const float MUZZLE_VELOCITY = 100;		 // pixels per second
+	const float MUZZLE_VELOCITY = 400;		 // pixels per second
 }
 
 void Context::Resize(uint16_t w, uint16_t h)
@@ -32,6 +32,7 @@ Bullet::Bullet(GameSession &g, double x, double y, double dx, double dy)
 	Velocity({ dx,dy }),
 	ticksLeft(3 * FPS)
 {
+	//TRACE("New bullet - x: " << Position::x << ", y:" << Position::y << "dx: " << Velocity::dx << ", dy: " << Velocity::dy);
 }
 
 Bullet::~Bullet()
@@ -59,7 +60,7 @@ bool Bullet::TickTock()
 void Gun::Fire(double x, double y, double dx, double dy)
 {
 	bullets.emplace_back(std::make_unique<Bullet>(gs, x, y, dx, dy));
-	TRACE("bullets.size(): " << bullets.size());
+	//TRACE("bullets.size(): " << bullets.size());
 }
 
 std::unique_ptr<AppBuffer> Gun::MakeBulletsPacket(bool isLittleEndian)
@@ -95,7 +96,7 @@ void Gun::TickTock()
 	{
 		if (bullet->TickTock())
 		{
-			TRACE("bulletDone, bullets.size(): " << bullets.size());
+			//TRACE("bulletDone, bullets.size(): " << bullets.size());
 			bulletDone = true;
 		}
 	}
@@ -105,7 +106,7 @@ void Gun::TickTock()
 		bullets.pop_front();
 		if (bullets.size() == 0)
 		{
-			TRACE("bulletDone, no more bullets");
+			//TRACE("bulletDone, no more bullets");
 		}
 	}
 }
@@ -188,11 +189,14 @@ void Ship::FireShot()
 	if (!m_gun)
 		return;
 
+	auto px = Position::x + 4 / 3 * m_radius * cos(m_angle);
+	auto py = Position::y - 4 / 3 * m_radius * sin(m_angle);
+	
 	auto mvx = (double)MUZZLE_VELOCITY * cos(m_angle) / (double)FPS;
 	auto mvy = (double)MUZZLE_VELOCITY * -sin(m_angle) / (double)FPS;
 
-	// fire the gun by telling where it is and muzzle 2D velocity vector 
-	m_gun->Fire(Position::x, Position::y, Velocity::dx + mvx, Velocity::dy + mvy);
+	// fire the gun by telling it where it is and muzzle 2D velocity vector 
+	m_gun->Fire(px, py, mvx, mvy);
 }
 
 void Ship::KeyEvent(int key, bool isDown)
