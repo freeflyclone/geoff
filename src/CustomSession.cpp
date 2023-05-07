@@ -68,18 +68,21 @@ void CustomSession::HandleTimerTick()
 	m_ship->GetXY(shipX, shipY);
 	m_ship->GetAngle(shipA);
 
-	int outSize = 16;
+	size_t outSize = 16;
 
-	/*
-	std::unique_ptr<AppBuffer> gunBuffer;
+	// Handle bullets from gun
+	std::unique_ptr<AppBuffer> bulletsBuffer;
 	auto gun = m_ship->m_gun;
+
+	// ensure gun actually exists
 	if (gun)
 	{
-		gunBuffer = std::move(gun->MakeBulletsPacket(gs.IsLittleEndian()));
-		if (gunBuffer.get())
-			outSize += gunBuffer->size();
+		// Get size of bullet buffer (if any bullets are active)
+		// and adjust "outsize" to allow room for bullets
+		bulletsBuffer = std::move(gun->MakeBulletsPacket(gs.IsLittleEndian()));
+		if (bulletsBuffer.get())
+			outSize += bulletsBuffer->size();
 	}
-	*/
 
 	auto txBuff = std::make_unique<AppBuffer>(outSize, m_isLittleEndian);
 
@@ -91,15 +94,13 @@ void CustomSession::HandleTimerTick()
 	txBuff->set_uint16(shipY);
 	txBuff->set_uint16(shipA);
 
-	/*
 	if (outSize > 16)
 	{
-		auto offset = txBuff->allocate(gunBuffer->size());
-		memcpy(txBuff->data() + offset, gunBuffer->data(), gunBuffer->size());
+		auto offset = txBuff->allocate(static_cast<int>(bulletsBuffer->size()));
+		memcpy(txBuff->data() + offset, bulletsBuffer->data(), bulletsBuffer->size());
 		
 		//TRACE("");
 	}
-	*/
 
 	CommitTxBuffer(txBuff);
 

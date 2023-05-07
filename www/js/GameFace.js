@@ -176,30 +176,29 @@ function HandleMessageEvent(data) {
             numBullets = view.getUint16(16);
 
             if (numBullets > 0) {
-                if (typeof bullets == 'undefined') {
+                if (typeof ship.bullets == 'undefined') {
+                    console.log("ship.bullets is undefined");
                     return;
-                    console.log("bullets is undefined");
                 }
 
-                bullets = { };
+                ship.bullets = { };
 
                 for (i = 0; i < numBullets; i++) {
                     x = view.getUint16(18 + i * 2);
                     y = view.getUint16(18 + 2 + i * 2);
-                    bullets[i] = { x, y };
+                    ship.bullets[i] = { x, y };
                 }
 
-                console.log("numBullets: " + numBullets + ", " + bullets[0].x + "," + bullets[0].y);
+            }
+
+            // some JavaScript file needs to define a single update() function
+            // which is invoked after the sever has updated all game state
+            if (typeof update != undefined) {
+                update();
             }
         }
         else
             console.log("HandleMessageEvent, serverCommand: " + serverCommand);
-
-        // some JavaScript file needs to define a single update() function
-        // which is invoked after the 
-        if (typeof update != undefined) {
-            update();
-        }
     }
 }
 

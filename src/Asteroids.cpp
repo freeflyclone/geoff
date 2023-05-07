@@ -43,6 +43,16 @@ bool Bullet::TickTock()
 	if (ticksLeft)
 		ticksLeft--;
 
+	if (ticksLeft)
+	{
+		Position::x += Velocity::dx;
+		Position::y += Velocity::dy;
+
+		// TODO: window boundary detection
+
+		//TRACE("x: " << Position::x << ", y: " << Position::y);
+	}
+
 	return ticksLeft == 0;
 }
 
@@ -57,18 +67,17 @@ std::unique_ptr<AppBuffer> Gun::MakeBulletsPacket(bool isLittleEndian)
 	if (bullets.size() == 0)
 		return std::move(nullptr);
 
-	auto appBufferSize = 2 + (bullets.size() * 2 * sizeof(int16_t));
+	auto bulletDataSize = 2 * sizeof(int16_t);
+
+	auto appBufferSize = 2 + (bullets.size() * bulletDataSize);
 	auto txBuff = std::make_unique<AppBuffer>(appBufferSize, isLittleEndian);
 
 	txBuff->set_uint16(static_cast<uint16_t>(bullets.size()));
 
 	for (auto bullet : bullets)
 	{
-		uint16_t cx = static_cast<uint16_t>(bullet->x);
-		uint16_t cy = static_cast<uint16_t>(bullet->y);
-
-		txBuff->set_uint16(cx);
-		txBuff->set_uint16(cy);
+		txBuff->set_uint16(static_cast<uint16_t>(bullet->x));
+		txBuff->set_uint16(static_cast<uint16_t>(bullet->y));
 	}
 
 	return std::move(txBuff);
@@ -91,7 +100,6 @@ void Gun::TickTock()
 		}
 	}
 
-	// Remove oldest bullet if it's died.
 	if (bulletDone)
 	{
 		bullets.pop_front();
