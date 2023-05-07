@@ -26,7 +26,6 @@ const TEXT_SIZE = 40;               // text font height in pixels
 
 var level, lives, roids, score, scoreHigh, ship, text, textAlpha;
 
-var bullets = [];
 
 function newGame() {
     level = 0;
@@ -69,6 +68,7 @@ function newShip() {
         dead: false,
         explodeTime: 0,
         lasers: [],
+        bullets: [],
         rot: 0,
         thrusting: false,
         thrust: {
@@ -391,14 +391,14 @@ function drawLasers() {
 }
 
 function drawBullets() {
-    var numberOfBullets = Object.keys(bullets).length;
-    if (typeof bullets == 'undefined')
+    var numberOfBullets = Object.keys(ship.bullets).length;
+    if (typeof ship.bullets == 'undefined')
         return;
 
     for (i = 0; i < numberOfBullets; i++) {
         ctx.fillStyle = "cyan";
         ctx.beginPath();
-        ctx.arc(bullets[i].x, bullets[i].y, SHIP_SIZE / 15, 0, Math.PI * 2, false);
+        ctx.arc(ship.bullets[i].x, ship.bullets[i].y, 8, 0, Math.PI * 2, false);
         ctx.fill();
     }
 }

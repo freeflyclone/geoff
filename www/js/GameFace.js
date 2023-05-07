@@ -176,17 +176,17 @@ function HandleMessageEvent(data) {
             numBullets = view.getUint16(16);
 
             if (numBullets > 0) {
-                if (typeof bullets == 'undefined') {
+                if (typeof ship.bullets == 'undefined') {
                     console.log("ship.bullets is undefined");
                     return;
                 }
 
-                bullets = [];
+                ship.bullets = [];
 
                 for (i = 0; i < numBullets; i++) {
                     x = view.getUint16(18 + i * 4);
                     y = view.getUint16(20 + i * 4);
-                    bullets.push({ x, y });
+                    ship.bullets.push({ x, y });
                 }
 
             }
