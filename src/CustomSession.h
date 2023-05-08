@@ -13,8 +13,6 @@ public:
 	friend std::ostream& operator<<(std::ostream& os, const CustomSession& gs);
 
 protected:
-	GameSession& gs;
-
 	void HandleNewSession(AppBuffer& rxBuffer);
 	void HandleKeyEvent(AppBuffer& rxBuffer);
 	void HandleClickEvent(AppBuffer& rxBuffer);

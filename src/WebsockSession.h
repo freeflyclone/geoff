@@ -69,10 +69,6 @@ public:
 	// the next AppBuffer to send to the client side.
 	bool GetNextTxBuffer(std::unique_ptr<AppBuffer>& buffer);
 
-	void StartTimer();
-	void StopTimer();
-	void SetIntervalInUs(uint32_t interval);
-
 	virtual void CommsHandler(const uint8_t* buff, const size_t length);
 	virtual void CommsHandler(AppBuffer& buffer);
 
@@ -80,20 +76,12 @@ public:
 	void OnTxReady(WebsockSession&);
 
 protected:
-	virtual void OnTimerTick();
-	void TimerTick();
-
 	uint32_t m_sessionID;
 	bool m_isLittleEndian;
 
 	std::deque<std::unique_ptr<AppBuffer>> m_txQue;
 	std::recursive_mutex m_session_mutex;
 
-	std::unique_ptr<net::deadline_timer> m_timer;
-	bool m_run_timer;
-	int m_timer_complete;
-	uint32_t m_timer_tick;
-	uint32_t m_tick_interval_in_us;
 	OnTxReadyCallback_t m_tx_ready_callback;
 };
 

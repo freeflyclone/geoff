@@ -148,11 +148,9 @@ function HandleMessageEvent(data) {
     if (view.getUint8(0) == 0xBB) {
         var serverCommand = view.getUint8(1);
         if (serverCommand == 0x01) {
-            if (view.byteLength >= 12) {
+            if (view.byteLength >= 8) {
                 sessionID = view.getUint32(2);
                 serverAppVersion = view.getUint16(6);
-                mapWidth = view.getUint16(8);
-                mapHeight = view.getUint16(10);
                 this.isConnected = true;
             }
         }
