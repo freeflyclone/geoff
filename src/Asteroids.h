@@ -8,6 +8,8 @@
 #include "AppBuffer.h"
 #include "GameSession.h"
 
+class CustomSession;
+
 namespace Asteroids
 {
     struct Context
@@ -60,7 +62,7 @@ namespace Asteroids
 	class Ship : public Context, public Position, public Velocity
 	{
 	public:
-		Ship(int windowWidth, int windowHeight, double x, double y, double angle, GameSession &gs);
+		Ship(GameSession& g, int windowWidth, int windowHeight, double x, double y, double angle);
 
 		~Ship();
 

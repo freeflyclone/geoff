@@ -14,7 +14,7 @@ namespace {
 	const int SHIP_SIZE = 20;                // ship height in pixels
 	const int SHIP_THRUST = 10;              // acceleration of the ship in pixels per second per second
 	const int SHIP_TURN_SPEED = 360;         // turn speed in degrees per second
-	const float MUZZLE_VELOCITY = 400;		 // pixels per second
+	const float MUZZLE_VELOCITY = 500;		 // pixels per second
 }
 
 void Context::Resize(uint16_t w, uint16_t h)
@@ -75,10 +75,20 @@ std::unique_ptr<AppBuffer> Gun::MakeBulletsPacket(bool isLittleEndian)
 
 	txBuff->set_uint16(static_cast<uint16_t>(bullets.size()));
 
+	size_t i = 0;
 	for (auto bullet : bullets)
 	{
-		txBuff->set_uint16(static_cast<uint16_t>(bullet->x));
-		txBuff->set_uint16(static_cast<uint16_t>(bullet->y));
+		auto cx = static_cast<uint16_t>(bullet->x);
+		auto cy = static_cast<uint16_t>(bullet->y);
+
+		//TRACE("bullet[" << i << "]: " << bullet->x << "(" << cx << ")," << bullet->y << "(" << cy << ")");
+
+		txBuff->set_uint16(cx);
+		txBuff->set_uint16(cy);
+		i++;
+
+		//if (i > 1)
+			//TRACE("More than one"); 
 	}
 
 	return std::move(txBuff);
@@ -111,7 +121,7 @@ void Gun::TickTock()
 	}
 }
 
-Ship::Ship(int windowWidth, int windowHeight, double x, double y, double angle, GameSession& gs) :
+Ship::Ship(GameSession& gs, int windowWidth, int windowHeight, double x, double y, double angle) :
 	m_gs(gs),
 	Context({ static_cast<uint16_t>(windowWidth), static_cast<uint16_t>(windowHeight), gs }),
 	Position({ x,y }),
