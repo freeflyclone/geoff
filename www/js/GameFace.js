@@ -168,7 +168,8 @@ function HandleMessageEvent(data) {
 
             ship.Move(view.getInt16(10), view.getInt16(12), view.getInt16(14) / 4096.0);
 
-            if (view.byteLength == 16) {
+            if (view.byteLength == 18) {
+                ship.bullets = [];
                 update();
                 return;
             }

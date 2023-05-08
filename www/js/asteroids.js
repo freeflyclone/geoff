@@ -392,8 +392,11 @@ function drawLasers() {
 
 function drawBullets() {
     var numberOfBullets = Object.keys(ship.bullets).length;
-    if (typeof ship.bullets == 'undefined')
+    if (typeof ship.bullets == 'undefined') {
+        console.log("ship.bullets undefined");
         return;
+    }
+
 
     for (i = 0; i < numberOfBullets; i++) {
         ctx.fillStyle = "cyan";

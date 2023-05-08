@@ -46,10 +46,11 @@ bool Bullet::TickTock()
 
 	if (ticksLeft)
 	{
+		auto ship = GetGun().GetShip();
+		auto ctx = (Asteroids::Context&)ship;
+
 		Position::x += Velocity::dx;
 		Position::y += Velocity::dy;
-
-		Asteroids::Context ctx = (Asteroids::Context&)GetGun().GetShip();
 
 		if (Position::x > ctx.width)
 			Position::x = 0.0;
@@ -70,7 +71,7 @@ bool Bullet::TickTock()
 void Gun::Fire(double x, double y, double dx, double dy)
 {
 	bullets.emplace_back(std::make_unique<Bullet>(*this, x, y, dx, dy));
-	TRACE("bullets.size(): " << bullets.size());
+	//TRACE("bullets.size(): " << bullets.size());
 }
 
 std::unique_ptr<AppBuffer> Gun::MakeBulletsPacket(bool isLittleEndian)
@@ -96,9 +97,6 @@ std::unique_ptr<AppBuffer> Gun::MakeBulletsPacket(bool isLittleEndian)
 		txBuff->set_uint16(cx);
 		txBuff->set_uint16(cy);
 		i++;
-
-		//if (i > 1)
-			//TRACE("More than one"); 
 	}
 
 	return txBuff;

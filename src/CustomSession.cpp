@@ -68,7 +68,7 @@ void CustomSession::HandleTimerTick()
 	m_ship->GetXY(shipX, shipY);
 	m_ship->GetAngle(shipA);
 
-	size_t outSize = 16;
+	size_t outSize = 18;
 
 	// Handle bullets from gun
 	std::unique_ptr<AppBuffer> bulletsBuffer;
@@ -94,10 +94,14 @@ void CustomSession::HandleTimerTick()
 	txBuff->set_uint16(shipY);
 	txBuff->set_uint16(shipA);
 
-	if (outSize > 16)
+	// default bullet count to 0
+	txBuff->set_uint16(0);
+
+	if (outSize > 18)
 	{
 		auto offset = txBuff->allocate(static_cast<int>(bulletsBuffer->size()));
-		memcpy(txBuff->data() + offset, bulletsBuffer->data(), bulletsBuffer->size());
+		txBuff->set_uint16(16, bulletsBuffer->get_uint16(0));
+		memcpy(txBuff->data() + offset, bulletsBuffer->data() + 2, bulletsBuffer->size() - 2);
 		
 		//TRACE("");
 	}
