@@ -47,8 +47,8 @@ namespace Asteroids
 
     class Gun {
     public:
-        Gun::Gun(GameSession& g) : gs(g) {}
-        Gun::~Gun() {}
+        Gun(GameSession& g) : gs(g) {}
+        ~Gun() {}
 
         void Fire(double x, double y, double dx, double dy);
         void TickTock();

@@ -27,9 +27,9 @@ void Context::Resize(uint16_t w, uint16_t h)
 
 Bullet::Bullet(GameSession &g, double x, double y, double dx, double dy)
 	:
-	gs(g),
 	Position({ x,y }),
 	Velocity({ dx,dy }),
+	gs(g),
 	ticksLeft(3 * FPS)
 {
 	//TRACE("New bullet - x: " << Position::x << ", y:" << Position::y << "dx: " << Velocity::dx << ", dy: " << Velocity::dy);
@@ -91,7 +91,7 @@ std::unique_ptr<AppBuffer> Gun::MakeBulletsPacket(bool isLittleEndian)
 			//TRACE("More than one"); 
 	}
 
-	return std::move(txBuff);
+	return txBuff;
 }
 
 void Gun::TickTock()
@@ -122,11 +122,11 @@ void Gun::TickTock()
 }
 
 Ship::Ship(GameSession& gs, int windowWidth, int windowHeight, double x, double y, double angle) :
-	m_gs(gs),
 	Context({ static_cast<uint16_t>(windowWidth), static_cast<uint16_t>(windowHeight), gs }),
 	Position({ x,y }),
 	Velocity({ 0,0 }),
-	m_gun(std::make_unique<Gun>(m_gs)),
+	m_gun(std::make_unique<Gun>(gs)),
+	m_gs(gs),
 	m_angle(angle),
 	m_radius(SHIP_SIZE),
 	m_canShoot(true),
