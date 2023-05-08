@@ -25,11 +25,11 @@ void Context::Resize(uint16_t w, uint16_t h)
 	TRACE("m_width: " << width << ", m_height : " << height);
 }
 
-Bullet::Bullet(GameSession &g, double x, double y, double dx, double dy)
+Bullet::Bullet(Gun &g, double x, double y, double dx, double dy)
 	:
 	Position({ x,y }),
 	Velocity({ dx,dy }),
-	gs(g),
+	m_gun(g),
 	ticksLeft(3 * FPS)
 {
 	//TRACE("New bullet - x: " << Position::x << ", y:" << Position::y << "dx: " << Velocity::dx << ", dy: " << Velocity::dy);
@@ -49,7 +49,17 @@ bool Bullet::TickTock()
 		Position::x += Velocity::dx;
 		Position::y += Velocity::dy;
 
-		// TODO: window boundary detection
+		Asteroids::Context ctx = (Asteroids::Context&)GetGun().GetShip();
+
+		if (Position::x > ctx.width)
+			Position::x = 0.0;
+		if (Position::x < 0.0)
+			Position::x = (double)ctx.width;
+
+		if (Position::y > ctx.height)
+			Position::y = 0.0;
+		if (Position::y < 0.0)
+			Position::y = (double)ctx.height;
 
 		//TRACE("x: " << Position::x << ", y: " << Position::y);
 	}
@@ -59,8 +69,8 @@ bool Bullet::TickTock()
 
 void Gun::Fire(double x, double y, double dx, double dy)
 {
-	bullets.emplace_back(std::make_unique<Bullet>(gs, x, y, dx, dy));
-	//TRACE("bullets.size(): " << bullets.size());
+	bullets.emplace_back(std::make_unique<Bullet>(*this, x, y, dx, dy));
+	TRACE("bullets.size(): " << bullets.size());
 }
 
 std::unique_ptr<AppBuffer> Gun::MakeBulletsPacket(bool isLittleEndian)
@@ -121,12 +131,11 @@ void Gun::TickTock()
 	}
 }
 
-Ship::Ship(GameSession& gs, int windowWidth, int windowHeight, double x, double y, double angle) :
+Ship::Ship(int windowWidth, int windowHeight, double x, double y, double angle) :
 	Context({ static_cast<uint16_t>(windowWidth), static_cast<uint16_t>(windowHeight), gs }),
 	Position({ x,y }),
 	Velocity({ 0,0 }),
-	m_gun(std::make_unique<Gun>(gs)),
-	m_gs(gs),
+	m_gun(std::make_unique<Gun>(*this)),
 	m_angle(angle),
 	m_radius(SHIP_SIZE),
 	m_canShoot(true),

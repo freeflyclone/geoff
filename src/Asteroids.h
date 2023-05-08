@@ -32,37 +32,42 @@ namespace Asteroids
         double dx, dy;
     };
 
+    class Gun;
     class Bullet : public Position, public Velocity
     {
     public:
-        Bullet(GameSession& g, double x, double y, double dx, double dy);
+        Bullet(Gun& g, double x, double y, double dx, double dy);
         ~Bullet();
 
         bool TickTock();
 
+        Gun& GetGun() { return m_gun; }
+
     private:
-        GameSession& gs;
+        Gun& m_gun;
         int ticksLeft;
     };
 
+    class Ship;
     class Gun {
     public:
-        Gun(GameSession& g) : gs(g) {}
+        Gun(Ship& s) : m_ship(s) {}
         ~Gun() {}
 
         void Fire(double x, double y, double dx, double dy);
         void TickTock();
         std::unique_ptr<AppBuffer> MakeBulletsPacket(bool isLittleEndian);
+        Ship& GetShip() { return m_ship; }
 
     private:
-        GameSession& gs;
+        Ship& m_ship;
         std::list<std::shared_ptr<Bullet>> bullets;
     };
 
 	class Ship : public Context, public Position, public Velocity
 	{
 	public:
-		Ship(GameSession& g, int windowWidth, int windowHeight, double x, double y, double angle);
+		Ship(int windowWidth, int windowHeight, double x, double y, double angle);
 
 		~Ship();
 
@@ -76,8 +81,6 @@ namespace Asteroids
         std::shared_ptr<Gun> m_gun;
 
     private:
-        GameSession& m_gs;
-
         double m_angle;
         double m_radius;
 

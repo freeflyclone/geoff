@@ -35,7 +35,7 @@ void CustomSession::HandleNewSession(AppBuffer& rxBuffer)
 	auto w = rxBuffer.get_uint16(3);
 	auto h = rxBuffer.get_uint16(5);
 
-	m_ship = std::make_unique<Asteroids::Ship>(*this, w, h, w / 2, h / 2, static_cast<float>(M_PI / 2.0f));
+	m_ship = std::make_unique<Asteroids::Ship>(w, h, w / 2, h / 2, static_cast<float>(M_PI / 2.0f));
 
 	TRACE(*this);
 }
