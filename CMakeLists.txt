@@ -23,6 +23,8 @@ set(CMAKE_CONFIGURATION_TYPES Debug;Release)
 # Files you want to appear in the "Source Files" project folder are explicitly listed here
 file(GLOB APP_SRC_FILES
 	src/AppBuffer.cpp
+	src/Asteroids.cpp
+	src/AsteroidsSession.cpp
 	src/GameSession.cpp
 	src/geoff.cpp
 	src/SSLContext.cpp
@@ -33,6 +35,8 @@ file(GLOB APP_SRC_FILES
 # Files to appear in "Header Files" project folder are explicitly listed here
 file(GLOB APP_INC_FILES
 	src/AppBuffer.h
+	src/Asteroids.h
+	src/AsteroidsSession.h
 	src/GameSession.h
 	src/geoff.h
     src/handle_request.h

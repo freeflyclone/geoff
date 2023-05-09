@@ -44,7 +44,8 @@ public:
 	{
 		RegisterSession = 0x00,
 		ClickEvent = 0x02,
-		KeyEvent = 0x04
+		KeyEvent = 0x04,
+		ResizeEvent = 0x06,
 	};
 
 	WebsockSession(uint32_t sessionID);
@@ -68,31 +69,19 @@ public:
 	// the next AppBuffer to send to the client side.
 	bool GetNextTxBuffer(std::unique_ptr<AppBuffer>& buffer);
 
-	void StartTimer();
-	void StopTimer();
-	void SetIntervalInUs(uint32_t interval);
-
-protected:
 	virtual void CommsHandler(const uint8_t* buff, const size_t length);
 	virtual void CommsHandler(AppBuffer& buffer);
 
 	// Call the TX ready callback specified by the caller
 	void OnTxReady(WebsockSession&);
 
-	virtual void OnTimerTick();
-	void TimerTick();
-
+protected:
 	uint32_t m_sessionID;
 	bool m_isLittleEndian;
 
 	std::deque<std::unique_ptr<AppBuffer>> m_txQue;
 	std::recursive_mutex m_session_mutex;
 
-	std::unique_ptr<net::deadline_timer> m_timer;
-	bool m_run_timer;
-	int m_timer_complete;
-	uint32_t m_timer_tick;
-	uint32_t m_tick_interval_in_us;
 	OnTxReadyCallback_t m_tx_ready_callback;
 };
 

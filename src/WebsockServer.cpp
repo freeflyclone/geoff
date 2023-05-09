@@ -1,11 +1,11 @@
 #include "WebsockServer.h"
-#include "GameSession.h"
+#include "AsteroidsSession.h"
 
 #include <ios>
 #include <iostream>
 
 namespace {
-	static WebsockSessionManager<GameSession> m_sessions;
+	static WebsockSessionManager<AsteroidsSession> m_sessions;
 };
 
 WebsockServer::WebsockServer() :

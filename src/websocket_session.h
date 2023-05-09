@@ -188,6 +188,10 @@ public:
         // I was missing it in looking at Tim's code, but Wireshark showed me the
         // packet was in text mode. (Note to Self: Wireshark is your friend!)
         ws_.binary(true);
+
+		// Disable Nagle algorithm
+        const boost::asio::ip::tcp::no_delay option(true);
+        ws_.next_layer().socket().set_option(option);
     }
 
     // Called by the base class
@@ -212,6 +216,9 @@ public:
         ws_(std::move(stream))
     {
         ws_.binary(true);
+
+        const boost::asio::ip::tcp::no_delay option(true);
+        ws_.next_layer().next_layer().socket().set_option(option);
     }
 
     // Called by the base class

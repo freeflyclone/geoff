@@ -4,19 +4,13 @@ var loopTimer;
 var webSock;
 
 var appVersion = 3;
-var sessionID;
-var playerID = 0;
 var serverAppVersion = 0;
 var mapWidth = 0;
 var mapHeight = 0;
-var mapOffsetX = 0;
-var mapOffsetY = 0;
 
 var canv = document.getElementById('gameCanvas');
 var ctx = canv.getContext("2d");
 var borderWidth = 4;
-var centerX;
-var centerY;
 var sessionID;
 var tickCount;
 
@@ -86,8 +80,17 @@ function on_resize() {
     ctx.canvas.width = window.innerWidth - borderWidth;
     ctx.canvas.height = window.innerHeight - borderWidth;
 
-    centerX = ctx.canvas.width / 2;
-    centerY = ctx.canvas.height / 2;
+    var buffer = new ArrayBuffer(12);
+    var view = new DataView(buffer);
+
+    view.setUint8(0, (littleEndian == 0) ? 0xAA : 0xAB);
+    view.setUint8(1, 0x06);
+    view.setUint32(2, sessionID);
+    view.setUint16(6, ctx.canvas.width);
+    view.setUint16(8, ctx.canvas.height);
+
+    if (typeof webSock != 'undefined')
+        webSock.Send(buffer);
 }
 
 function ProcessKeyEvent(keyCode, isDown) {
@@ -109,9 +112,8 @@ function on_click(event) {
     view.setUint8(0, (littleEndian == 0) ? 0xAA : 0xAB);
     view.setUint8(1, 0x02);
     view.setUint32(2, sessionID);
-    view.setUint16(6, playerID);
-    view.setUint16(8, mapOffsetX + event.clientX);
-    view.setUint16(10, mapOffsetY + event.clientY);
+    view.setUint16(6, event.clientX);
+    view.setUint16(8, event.clientY);
 
     webSock.Send(buffer);
 }
@@ -128,12 +130,15 @@ function on_keyup(event) {
 }
 
 function RegisterClient() {
-    var buffer = new ArrayBuffer(4);
+    console.log("RegisterClient()");
+    var buffer = new ArrayBuffer(8);
     var view = new DataView(buffer);
 
     view.setUint8(0, (littleEndian == 0) ? 0xAA : 0xAB);
     view.setUint8(1, 0x00);
     view.setUint16(2, appVersion);
+    view.setUint16(4, canv.width);
+    view.setUint16(6, canv.height);
 
     webSock.Send(buffer);
 }
@@ -143,11 +148,9 @@ function HandleMessageEvent(data) {
     if (view.getUint8(0) == 0xBB) {
         var serverCommand = view.getUint8(1);
         if (serverCommand == 0x01) {
-            if (view.byteLength >= 12) {
+            if (view.byteLength >= 8) {
                 sessionID = view.getUint32(2);
                 serverAppVersion = view.getUint16(6);
-                mapWidth = view.getUint16(8);
-                mapHeight = view.getUint16(10);
                 this.isConnected = true;
             }
         }
@@ -155,12 +158,43 @@ function HandleMessageEvent(data) {
             sessionID = view.getUint32(2);
             isDown = view.getUint8(6);
             key = view.getUint8(7);
-            
-            console.log("SessionID: " + sessionID + ", Key: " + key + ", isDown: " + isDown);
+            //console.log("SessionID: " + sessionID + ", Key: " + key + ", isDown: " + isDown);
         }
         else if (serverCommand == 0x07) {
             sessionID = view.getUint32(2);
             tickCount = view.getUint32(6);
+
+            ship.Move(view.getInt16(10), view.getInt16(12), view.getInt16(14) / 4096.0);
+
+            if (view.byteLength == 18) {
+                ship.bullets = [];
+                update();
+                return;
+            }
+
+            numBullets = view.getUint16(16);
+
+            if (numBullets > 0) {
+                if (typeof ship.bullets == 'undefined') {
+                    console.log("ship.bullets is undefined");
+                    return;
+                }
+
+                ship.bullets = [];
+
+                for (i = 0; i < numBullets; i++) {
+                    x = view.getUint16(18 + i * 4);
+                    y = view.getUint16(20 + i * 4);
+                    ship.bullets.push({ x, y });
+                }
+
+            }
+
+            // some JavaScript file needs to define a single update() function
+            // which is invoked after the sever has updated all game state
+            if (typeof update != undefined) {
+                update();
+            }
         }
         else
             console.log("HandleMessageEvent, serverCommand: " + serverCommand);
