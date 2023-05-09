@@ -8,11 +8,11 @@
 *		RegisterSession, 
 *		KeyEvent 
 *		ClickEvent
-*	packets.  Users can add handler functions which will be called in order of
-*   addition to the list(s).
-* 
-*	Maintain list of TimerTick handler functions to be called per timer tick.
-*		Probably wise to be judicious #handlers added, depending on SetIntervalInUs() settings.
+*	user input packets from the client side.
+*
+*	Drive a boost::deadline_timer handler function to be called per timer tick.
+*		Using such a timer we're guaranteed to be called sequentially
+*		with respect to buffer exchanges on the beast Websocket stream.
 *
 * This is intended to be the main interface a GEOFF based game would start from.
 * 

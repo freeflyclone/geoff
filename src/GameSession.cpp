@@ -74,9 +74,6 @@ void GameSession::HandleNewSession(AppBuffer& rxBuffer)
 	txBuffer->set_uint16((uint16_t)GAME_APP_VERSION);
 
 	CommitTxBuffer(txBuffer);
-
-	StartTimer();
-	SetIntervalInUs(1000000 / 60);
 }
 
 // Echo Key events back to client

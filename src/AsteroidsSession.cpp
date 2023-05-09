@@ -1,30 +1,34 @@
-#include "CustomSession.h"
+#include "AsteroidsSession.h"
 #include "Asteroids.h"
 
 //#define CS_TRACE TRACE
 #define CS_TRACE(...)
 
-std::ostream& operator<<(std::ostream& os, const CustomSession& cs)
+// Friend function for providing << stream operator for AsteroidsSession
+// class.
+std::ostream& operator<<(std::ostream& os, const AsteroidsSession& as)
 {
-	os << std::endl << ">>> CustomSession" << std::endl;
-	os << "SessionID: " << cs.m_sessionID << std::endl;
-	os << "<<< CustomSession" << std::endl;
+	os << std::endl << ">>> AsteroidsSession" << std::endl;
+	os << "\tSessionID: " << as.m_sessionID << std::endl;
+	os << "\t     Ship: " << (as.m_ship ? "Found" : "Not yet") << std::endl;
+	os << "<<< AsteroidsSession";
 	return os;
 }
 
-CustomSession::CustomSession(uint32_t sessionID)
+AsteroidsSession::AsteroidsSession(uint32_t sessionID)
 	: 
 	GameSession(sessionID)
 {
-	CS_TRACE("");
+	// example of using the custom '<<' stream operator
+	TRACE(*this);
 }
 
-CustomSession::~CustomSession()
+AsteroidsSession::~AsteroidsSession()
 {
 	CS_TRACE("");
 }
 
-void CustomSession::HandleNewSession(AppBuffer& rxBuffer)
+void AsteroidsSession::HandleNewSession(AppBuffer& rxBuffer)
 {
 	GameSession::HandleNewSession(rxBuffer);
 
@@ -34,12 +38,13 @@ void CustomSession::HandleNewSession(AppBuffer& rxBuffer)
 	m_ship = std::make_unique<Asteroids::Ship>(w, h, w / 2, h / 2, static_cast<float>(M_PI / 2.0f));
 
 	CS_TRACE(*this);
+
+	StartTimer();
+	SetIntervalInUs(1000000 / Asteroids::FPS);
 }
 
-void CustomSession::HandleKeyEvent(AppBuffer& rxBuffer)
+void AsteroidsSession::HandleKeyEvent(AppBuffer& rxBuffer)
 {
-	GameSession::HandleKeyEvent(rxBuffer);
-
 	if (!m_ship)
 		return;
 
@@ -51,23 +56,53 @@ void CustomSession::HandleKeyEvent(AppBuffer& rxBuffer)
 	m_ship->KeyEvent(key, isDown);
 }
 
-void CustomSession::HandleClickEvent(AppBuffer& rxBuffer)
+void AsteroidsSession::HandleClickEvent(AppBuffer& rxBuffer)
 {
-	GameSession::HandleClickEvent(rxBuffer);
+	(void)rxBuffer;
+	if (!m_ship)
+		return;
 
 	CS_TRACE("ClickEvent");
 }
 
-void CustomSession::HandleTimerTick()
+void AsteroidsSession::HandleTimerTick()
 {
-	GameSession::HandleTimerTick();
 	CS_TRACE("TimerTick");
 
 	if (!m_ship)
 		return;
 
 	m_ship->TickEvent();
+
+	auto txBuffer = NewSessionTickBuffer();
+
+	if (txBuffer)
+		CommitTxBuffer(txBuffer);
+
+	OnTxReady(*this);
+}
+
+void AsteroidsSession::HandleResizeEvent(AppBuffer& rxBuffer)
+{
+	GameSession::HandleResizeEvent(rxBuffer);
+
+	uint16_t width = rxBuffer.get_uint16(5);
+	uint16_t height = rxBuffer.get_uint16(7);
+
+	CS_TRACE("sessionID: " << SessionID() << ", width: " << width << ", height: " << height);
+
+	if (!m_ship)
+		return;
+
+	m_ship->Resize(width, height);
+}
+
+std::unique_ptr<AppBuffer> AsteroidsSession::NewSessionTickBuffer()
+{
 	int16_t shipX, shipY, shipA;
+
+	if (!m_ship)
+		return nullptr;
 
 	m_ship->GetXY(shipX, shipY);
 	m_ship->GetAngle(shipA);
@@ -106,26 +141,10 @@ void CustomSession::HandleTimerTick()
 		auto offset = txBuff->allocate(static_cast<int>(bulletsBuffer->size()));
 		txBuff->set_uint16(16, bulletsBuffer->get_uint16(0));
 		memcpy(txBuff->data() + offset, bulletsBuffer->data() + 2, bulletsBuffer->size() - 2);
-		
+
 		//TRACE("");
 	}
 
-	CommitTxBuffer(txBuff);
-
-	OnTxReady(*this);
-}
-
-void CustomSession::HandleResizeEvent(AppBuffer& rxBuffer)
-{
-	GameSession::HandleResizeEvent(rxBuffer);
-
-	uint32_t sessionID = rxBuffer.get_uint32(1);
-
-	uint16_t width = rxBuffer.get_uint16(5);
-	uint16_t height = rxBuffer.get_uint16(7);
-
-	CS_TRACE("sessionID: " << sessionID << ", width: " << width << ", height: " << height);
-
-	m_ship->Resize(width, height);
+	return txBuff;
 }
 
