@@ -117,7 +117,7 @@ void Gun::TickTock()
 }
 
 Ship::Ship(int windowWidth, int windowHeight, double x, double y, double angle) :
-	Context({ static_cast<uint16_t>(windowWidth), static_cast<uint16_t>(windowHeight), gs }),
+	Context({ static_cast<uint16_t>(windowWidth), static_cast<uint16_t>(windowHeight)}),
 	Position({ x,y }),
 	Velocity({ 0,0 }),
 	m_gun(std::make_unique<Gun>(*this)),
