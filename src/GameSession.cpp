@@ -125,6 +125,7 @@ void GameSession::HandleTimerTick()
 {
 	GS_TRACE("tick: " << m_timer_tick);
 }
+
 // maybe log timer ticks
 void GameSession::TimerTicker() {
 	GS_TRACE("sessionID: " << SessionID() << ", tick: " << m_timer_tick);

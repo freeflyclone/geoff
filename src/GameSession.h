@@ -4,7 +4,7 @@
 * This class provides an interface to WebsockSession to facilitate its use.
 * 
 * Services provided:
-*	Maintain lists of handler functions for 
+*	Maintain handler functions for 
 *		RegisterSession, 
 *		KeyEvent 
 *		ClickEvent
@@ -13,8 +13,10 @@
 *	Drive a boost::deadline_timer handler function to be called per timer tick.
 *		Using such a timer we're guaranteed to be called sequentially
 *		with respect to buffer exchanges on the beast Websocket stream.
+*		See AsteroidsSession::TimerTicker() for details.
 *
-* This is intended to be the main interface a GEOFF based game would start from.
+* This is intended to be the main interface a GEOFF based game would start from. It
+* expected that new class will be derived from GameSession for each new game.
 * 
 * See WebsockServer.cpp WebsockSessionManager declaration: that's where a class derived
 * (specialized) from this one needs to be specified.
