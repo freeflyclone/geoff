@@ -69,7 +69,7 @@ void GameSession::HandleNewSession(AppBuffer& rxBuffer)
 	auto txBuffer = std::make_unique<AppBuffer>(12, rxBuffer.isLittleEndian());
 
 	txBuffer->set_uint8(0xBB);
-	txBuffer->set_uint8(0x01);
+	txBuffer->set_uint8(static_cast<uint8_t>(MessageType_t::SessionRegistered));
 	txBuffer->set_uint32(SessionID());
 	txBuffer->set_uint16((uint16_t)GAME_APP_VERSION);
 
@@ -89,7 +89,7 @@ void GameSession::HandleKeyEvent(AppBuffer& rxBuffer)
 	auto txBuffer = std::make_unique <AppBuffer>(8, rxBuffer.isLittleEndian());
 
 	txBuffer->set_uint8(0xBB);
-	txBuffer->set_uint8(0x05);
+	txBuffer->set_uint8(static_cast<uint8_t>(MessageType_t::KeyMessage));
 	txBuffer->set_uint32(SessionID());
 	txBuffer->set_uint8(isDown ? 1 : 0);
 	txBuffer->set_uint8(static_cast<uint8_t>(keyCode));
@@ -113,7 +113,7 @@ void GameSession::HandleClickEvent(AppBuffer& rxBuffer)
 	auto txBuffer = std::make_unique <AppBuffer>(12, rxBuffer.isLittleEndian());
 
 	txBuffer->set_uint8(0xBB);
-	txBuffer->set_uint8(0x03);
+	txBuffer->set_uint8(static_cast<uint8_t>(MessageType_t::ClickMessage));
 	txBuffer->set_uint32(SessionID());
 	txBuffer->set_uint16(clickX);
 	txBuffer->set_uint16(clickY);
@@ -128,7 +128,7 @@ void GameSession::HandleTimerTick()
 
 // maybe log timer ticks
 void GameSession::TimerTicker() {
-	GS_TRACE("sessionID: " << SessionID() << ", tick: " << m_timer_tick);
+	//GS_TRACE("sessionID: " << SessionID() << ", tick: " << m_timer_tick);
 
 	if (!m_timer)
 	{

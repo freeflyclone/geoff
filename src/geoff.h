@@ -22,6 +22,7 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <map>
 #include <deque>
 
 // namespace aliases - less typing in source code

@@ -40,6 +40,7 @@ public:
 	void StartTimer();
 	void StopTimer();
 	void SetIntervalInUs(uint32_t interval);
+	uint32_t GetTimerTick() { return m_timer_tick; }
 
 	void CommsHandler(AppBuffer &) override;
 

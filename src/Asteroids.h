@@ -7,6 +7,7 @@
 
 #include "AppBuffer.h"
 #include "GameSession.h"
+#include "WebsockSessionManager.h"
 
 class AsteroidsSession;
 
@@ -69,9 +70,10 @@ namespace Asteroids
         std::unique_ptr<AppBuffer> MakeBulletsPacket(bool isLittleEndian);
         Ship& GetShip() { return m_ship; }
 
+        std::list<std::shared_ptr<Bullet>> m_bullets;
+
     private:
         Ship& m_ship;
-        std::list<std::shared_ptr<Bullet>> bullets;
     };
 
 	class Ship : public Context, public Position, public Velocity
@@ -101,6 +103,35 @@ namespace Asteroids
         bool m_thrusting;
         bool m_show_position;
 	};
+
+    class Player : public Context
+    {
+    public:
+        Player(int width, int height);
+        ~Player();
+
+        void KeyEvent(int key, bool isDown);
+        void ResizeEvent(int w, int h);
+        void TickEvent(AsteroidsSession&);
+    
+        Ship m_ship;
+    };
+
+	// For multiplayer support, objects from ALL AsteroidsSessions
+	// need to be conveyed to each client.
+	// We'll use a separate packet to the client for the Universe update "tick"
+    class Universe : public Context
+    {
+    public:
+        Universe(int width, int height);
+        ~Universe();
+
+        void ResizeEvent(int w, int h);
+        void TickEvent(AsteroidsSession &);
+
+    private:
+        WebsockSessionManager<AsteroidsSession>& m_sessions;
+    };
 };
 
 #endif // ASTEROIDS

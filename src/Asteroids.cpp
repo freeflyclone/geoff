@@ -1,15 +1,28 @@
 #include "geoff.h"
 
 #include "Asteroids.h"
+#include "AsteroidsSession.h"
+#include "WebsockSessionManager.h"
 
 using namespace Asteroids;
+
+// The Universe class needs access to the WebsockSessionManager, to know
+// about other players;
+namespace Websock
+{
+	extern WebsockSessionManager<AsteroidsSession> g_sessions;
+};
+using namespace Websock;
+
+#define CTX_TRACE(...)
+//#define CTX_TRACE TRACE
 
 void Context::Resize(uint16_t w, uint16_t h)
 {
 	width = w;
 	height = h;
 
-	TRACE("m_width: " << width << ", m_height : " << height);
+	CTX_TRACE(__FUNCTION__ << "width: " << width << ", height : " << height);
 }
 
 Bullet::Bullet(Gun &g, double x, double y, double dx, double dy)
@@ -55,31 +68,33 @@ bool Bullet::TickTock()
 	return ticksLeft == 0;
 }
 
+#define G_TRACE(...)
+//#define G_TRACE TRACE
 void Gun::Fire(double x, double y, double dx, double dy)
 {
-	bullets.emplace_back(std::make_unique<Bullet>(*this, x, y, dx, dy));
-	//TRACE("bullets.size(): " << bullets.size());
+	m_bullets.emplace_back(std::make_unique<Bullet>(*this, x, y, dx, dy));
+	G_TRACE(__FUNCTION__ << "m_bullets.size(): " << m_bullets.size());
 }
 
 std::unique_ptr<AppBuffer> Gun::MakeBulletsPacket(bool isLittleEndian)
 {
-	if (bullets.size() == 0)
+	if (m_bullets.size() == 0)
 		return std::move(nullptr);
 
 	auto bulletDataSize = 2 * sizeof(int16_t);
 
-	auto appBufferSize = 2 + (bullets.size() * bulletDataSize);
+	auto appBufferSize = 2 + (m_bullets.size() * bulletDataSize);
 	auto txBuff = std::make_unique<AppBuffer>(appBufferSize, isLittleEndian);
 
-	txBuff->set_uint16(static_cast<uint16_t>(bullets.size()));
+	txBuff->set_uint16(static_cast<uint16_t>(m_bullets.size()));
 
 	size_t i = 0;
-	for (auto bullet : bullets)
+	for (auto bullet : m_bullets)
 	{
 		auto cx = static_cast<uint16_t>(bullet->x);
 		auto cy = static_cast<uint16_t>(bullet->y);
 
-		//TRACE("bullet[" << i << "]: " << bullet->x << "(" << cx << ")," << bullet->y << "(" << cy << ")");
+		G_TRACE("bullet[" << i << "]: " << bullet->x << "(" << cx << ")," << bullet->y << "(" << cy << ")");
 
 		txBuff->set_uint16(cx);
 		txBuff->set_uint16(cy);
@@ -91,30 +106,33 @@ std::unique_ptr<AppBuffer> Gun::MakeBulletsPacket(bool isLittleEndian)
 
 void Gun::TickTock()
 {
-	if (bullets.empty())
+	if (m_bullets.empty())
 		return;
 
 	bool bulletDone = false;
 
 	// update bullet lifetime ticks
-	for (auto bullet : bullets)
+	for (auto bullet : m_bullets)
 	{
 		if (bullet->TickTock())
 		{
-			//TRACE("bulletDone, bullets.size(): " << bullets.size());
+			G_TRACE(__FUNCTION__ << "bulletDone, m_bullets.size(): " << m_bullets.size());
 			bulletDone = true;
 		}
 	}
 
 	if (bulletDone)
 	{
-		bullets.pop_front();
-		if (bullets.size() == 0)
+		m_bullets.pop_front();
+		if (m_bullets.size() == 0)
 		{
-			//TRACE("bulletDone, no more bullets");
+			G_TRACE(__FUNCTION__ << "bulletDone, no more m_bullets");
 		}
 	}
 }
+
+#define SH_TRACE TRACE
+//#define SH_TRACE(...)
 
 Ship::Ship(int windowWidth, int windowHeight, double x, double y, double angle) :
 	Context({ static_cast<uint16_t>(windowWidth), static_cast<uint16_t>(windowHeight)}),
@@ -134,7 +152,7 @@ Ship::Ship(int windowWidth, int windowHeight, double x, double y, double angle) 
 
 Ship::~Ship()
 {
-	//TRACE("");
+	//SH_TRACE("");
 }
 
 void Ship::GetXY(int16_t& xPos, int16_t& yPos)
@@ -205,7 +223,7 @@ void Ship::FireShot()
 
 void Ship::KeyEvent(int key, bool isDown)
 {
-	//TRACE("Key: (" << key << "," << (isDown ? "down" : "up") << ")");
+	//SH_TRACE(__FUNCTION__ << ", Key: (" << key << "," << (isDown ? "down" : "up") << ")");
 
 	switch (key)
 	{
@@ -234,4 +252,204 @@ void Ship::TickEvent()
 {
 	MoveShip();
 	m_gun->TickTock();
+}
+
+//#define P_TRACE TRACE
+#define P_TRACE(...)
+
+Player::Player(int width, int height)
+	:
+	Context({ static_cast<uint16_t>(width), static_cast<uint16_t>(height) }),
+	m_ship(width, height, width / 2, height / 2, static_cast<float>(M_PI / 2.0f))
+{
+	P_TRACE(__FUNCTION__);
+}
+
+Player::~Player()
+{
+	P_TRACE(__FUNCTION__);
+}
+
+void Player::KeyEvent(int key, bool isDown)
+{
+	P_TRACE(__FUNCTION__);
+	m_ship.KeyEvent(key, isDown);
+}
+
+void Player::ResizeEvent(int w, int h)
+{
+	Context::Resize(static_cast<uint16_t>(w), static_cast<uint16_t>(h));
+	
+	// Any Context derived child objects should also have their
+	// Context::Resize() methods called here.
+	m_ship.Resize(static_cast<uint16_t>(w), static_cast<uint16_t>(h));
+}
+
+void Player::TickEvent(AsteroidsSession& session)
+{
+	P_TRACE(__FUNCTION__ << ", sessionID: " << session.SessionID());
+
+	m_ship.TickEvent();
+
+	int16_t shipX, shipY, shipA;
+
+	m_ship.GetXY(shipX, shipY);
+	m_ship.GetAngle(shipA);
+
+	size_t outSize = 18;
+
+	// Handle m_bullets from gun
+	std::unique_ptr<AppBuffer> bulletsBuffer;
+	auto gun = m_ship.m_gun;
+
+	// ensure gun actually exists
+	if (gun)
+	{
+		// Get size of bullet buffer (if any m_bullets are active)
+		// and adjust "outsize" to allow room for m_bullets
+		bulletsBuffer = std::move(gun->MakeBulletsPacket(session.IsLittleEndian()));
+		if (bulletsBuffer.get())
+			outSize += bulletsBuffer->size();
+	}
+
+	auto txBuff = std::make_unique<AppBuffer>(outSize, session.IsLittleEndian());
+
+	txBuff->set_uint8(0xBB);
+	txBuff->set_uint8(static_cast<uint8_t>(WebsockSession::MessageType_t::PlayerTickMessage));
+	txBuff->set_uint32(session.SessionID());
+	txBuff->set_uint32(session.GetTimerTick());
+	txBuff->set_uint16(shipX);
+	txBuff->set_uint16(shipY);
+	txBuff->set_uint16(shipA);
+
+	// default bullet count to 0
+	txBuff->set_uint16(0);
+
+	if (outSize > 18)
+	{
+		auto offset = txBuff->allocate(static_cast<int>(bulletsBuffer->size()));
+		txBuff->set_uint16(16, bulletsBuffer->get_uint16(0));
+		memcpy(txBuff->data() + offset, bulletsBuffer->data() + 2, bulletsBuffer->size() - 2);
+
+		//TRACE("");
+	}
+
+	session.CommitTxBuffer(txBuff);
+}
+
+#define U_TRACE TRACE
+
+Universe::Universe(int width, int height)
+	:
+	Context({ static_cast<uint16_t>(width), static_cast<uint16_t>(height) }),
+	m_sessions(g_sessions)
+{
+	U_TRACE(__FUNCTION__ << ", Session count:" << m_sessions.get_count());
+}
+
+Universe::~Universe()
+{
+	U_TRACE(__FUNCTION__);
+}
+
+void Universe::ResizeEvent(int w, int h)
+{
+	Context::Resize(static_cast<uint16_t>(w), static_cast<uint16_t>(h));
+}
+
+void Universe::TickEvent(AsteroidsSession& session)
+{
+	//U_TRACE(__FUNCTION__ << ", session ID : " << session.SessionID());
+
+	// the number of active sessions gives us the (possible) number of ships in the Universe
+	// Possible because a session doesn't have a ship until the client side registers new session.
+	size_t numShips = 0;
+
+	// go through all sessions looking for those that with valid Asteroids::Player
+	// and hence a valid ship
+	for (auto pair : m_sessions.get_map())
+	{
+		auto sessionID = pair.first;
+		auto sessPtr = pair.second;
+
+		// don't count ourself, and don't count unregistered sessions
+		if (sessionID == session.SessionID() || !sessPtr->m_player)
+			continue;
+
+		numShips++;
+	}
+
+	auto count = numShips;
+	size_t outsize = sizeof(int16_t) + (count * (3 * sizeof(int16_t)));
+
+	auto txBuff = std::make_unique<AppBuffer>(10 + outsize, session.IsLittleEndian());
+
+	txBuff->set_uint8(0xBB);
+	txBuff->set_uint8(static_cast<uint8_t>(WebsockSession::MessageType_t::UniverseTickMessage));
+	txBuff->set_uint32(session.SessionID());
+	txBuff->set_uint32(session.GetTimerTick());
+
+	txBuff->set_uint16(static_cast<uint16_t>(count));
+
+	if (count == 0)
+	{
+		session.CommitTxBuffer(txBuff);
+		return;
+	}
+
+	size_t totalBullets = 0;
+
+	// Add all other ship's x,y,angle variables to tick message
+	for (auto pair : m_sessions.get_map())
+	{
+		auto sessionID = pair.first;
+		auto sessPtr = pair.second;
+
+		// don't count ourself, and don't count unregistered sessions
+		if (sessionID == session.SessionID() || !sessPtr->m_player)
+			continue;
+
+		totalBullets += sessPtr->m_player->m_ship.m_gun->m_bullets.size();
+
+		int16_t shipX, shipY, shipAngle;
+
+		sessPtr->m_player->m_ship.GetXY(shipX, shipY);
+		sessPtr->m_player->m_ship.GetAngle(shipAngle);
+
+		txBuff->set_uint16(shipX);
+		txBuff->set_uint16(shipY);
+		txBuff->set_uint16(shipAngle);
+	}
+
+	// figure out how much room is needed for bullets, make new AppBuffer from "txBuffer" but with moreRoom
+	auto bulletsSpace = sizeof(uint16_t) + (sizeof(uint16_t) + totalBullets * 2 * sizeof(int16_t));
+	auto txBuff2 = std::make_unique<AppBuffer>(*txBuff, bulletsSpace, session.IsLittleEndian());
+
+	txBuff2->set_uint16(static_cast<uint16_t>(totalBullets));
+
+	// add all other ship's bullets at end of all other ships
+	if (totalBullets)
+	{
+		//U_TRACE(__FUNCTION__ << "writeOffset: " << txBuff2->bytesWritten() << ", size: " << txBuff2->size());
+
+		for (auto pair : m_sessions.get_map())
+		{
+			auto sessionID = pair.first;
+			auto sessPtr = pair.second;
+
+			// don't count ourself, and don't count unregistered sessions
+			if (sessionID == session.SessionID() || !sessPtr->m_player)
+				continue;
+
+			for (auto bullet : sessPtr->m_player->m_ship.m_gun->m_bullets)
+			{
+				txBuff2->set_uint16(static_cast<int16_t>(bullet->x));
+				txBuff2->set_uint16(static_cast<int16_t>(bullet->y));
+			}
+		}
+	}
+
+	txBuff = std::move(txBuff2);
+
+	session.CommitTxBuffer(txBuff);
 }

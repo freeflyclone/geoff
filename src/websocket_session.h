@@ -64,14 +64,19 @@ class websocket_session
         // We get one for each session, thus each session now has its own OnTxReady interrupt
         // for processing TimerTick() messages.
         WebsockServer::GetInstance().FindSessionByID(m_sessionID)->OnTxReady([this](WebsockSession & session) {
-            std::unique_ptr<AppBuffer> txBuffer;
-            if (session.GetNextTxBuffer(txBuffer))
-            {
-                do_write(txBuffer->data(), txBuffer->bytesWritten());
-            }
+            post(derived().ws().get_executor(), [&]() {
+                //TRACE("Posted");
+
+                std::unique_ptr<AppBuffer> txBuffer;
+                if (session.GetNextTxBuffer(txBuffer))
+                {
+                    do_write(txBuffer->data(), txBuffer->bytesWritten());
+                }
+            });
         });
 
         do_read();
+
     }
 
     void do_read()
@@ -139,6 +144,8 @@ class websocket_session
         if (ec)
             return fail(ec, "write");
 
+        m_write_active = false;
+
         // Server side is now allowed to send multiple messages back-to-back,
         // independently of input from the client.
         // 
@@ -153,11 +160,7 @@ class websocket_session
             {
                 do_write(txBuff->data(), txBuff->bytesWritten());
             }
-            else
-                m_write_active = false;
         }
-        else
-            m_write_active = false;
     }
 
 public:

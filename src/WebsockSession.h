@@ -48,6 +48,15 @@ public:
 		ResizeEvent = 0x06,
 	};
 
+	enum class MessageType_t
+	{
+		SessionRegistered = 0x01,
+		ClickMessage = 0x03,
+		KeyMessage = 0x05,
+		PlayerTickMessage = 0x07,
+		UniverseTickMessage = 0x09
+	};
+
 	WebsockSession(uint32_t sessionID);
 	virtual ~WebsockSession();
 

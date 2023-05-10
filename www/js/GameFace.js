@@ -17,6 +17,21 @@ var tickCount;
 // allow for multiple keys down simultaneously.
 var keysPressed = {};
 
+const MessageType = {
+    SessionRegistered: 1,
+    ClickMessage: 3,
+    KeyMessage: 5,
+    PlayerTickMessage: 7,
+    UniverseTickMessage: 9,
+}
+
+const RequestType = {
+    RegisterSession: 0,
+    ClickEvent: 2,
+    KeyEvent: 4,
+    ResizeEvent: 6,
+}
+
 const littleEndian = ((() => {
     const buffer = new ArrayBuffer(2);
     new DataView(buffer).setInt16(0, 256, true);
@@ -84,7 +99,7 @@ function on_resize() {
     var view = new DataView(buffer);
 
     view.setUint8(0, (littleEndian == 0) ? 0xAA : 0xAB);
-    view.setUint8(1, 0x06);
+    view.setUint8(1, RequestType.ResizeEvent);
     view.setUint32(2, sessionID);
     view.setUint16(6, ctx.canvas.width);
     view.setUint16(8, ctx.canvas.height);
@@ -98,7 +113,7 @@ function ProcessKeyEvent(keyCode, isDown) {
     var view = new Uint8Array(buff);
 
     view[0] = littleEndian;
-    view[1] = 0x04;
+    view[1] = RequestType.KeyEvent;
     view[2] = isDown;
     view[3] = keyCode;
 
@@ -110,7 +125,7 @@ function on_click(event) {
     var view = new DataView(buffer);
 
     view.setUint8(0, (littleEndian == 0) ? 0xAA : 0xAB);
-    view.setUint8(1, 0x02);
+    view.setUint8(1, RequestType.ClickEvent);
     view.setUint32(2, sessionID);
     view.setUint16(6, event.clientX);
     view.setUint16(8, event.clientY);
@@ -130,12 +145,12 @@ function on_keyup(event) {
 }
 
 function RegisterClient() {
-    console.log("RegisterClient()");
+    console.log("RegisterSession()");
     var buffer = new ArrayBuffer(8);
     var view = new DataView(buffer);
 
     view.setUint8(0, (littleEndian == 0) ? 0xAA : 0xAB);
-    view.setUint8(1, 0x00);
+    view.setUint8(1, RequestType.RegisterSession);
     view.setUint16(2, appVersion);
     view.setUint16(4, canv.width);
     view.setUint16(6, canv.height);
@@ -145,59 +160,41 @@ function RegisterClient() {
 
 function HandleMessageEvent(data) {
     var view = new DataView(data);
-    if (view.getUint8(0) == 0xBB) {
-        var serverCommand = view.getUint8(1);
-        if (serverCommand == 0x01) {
-            if (view.byteLength >= 8) {
-                sessionID = view.getUint32(2);
-                serverAppVersion = view.getUint16(6);
-                this.isConnected = true;
-            }
-        }
-        else if (serverCommand == 0x05) {
-            sessionID = view.getUint32(2);
-            isDown = view.getUint8(6);
-            key = view.getUint8(7);
-            //console.log("SessionID: " + sessionID + ", Key: " + key + ", isDown: " + isDown);
-        }
-        else if (serverCommand == 0x07) {
-            sessionID = view.getUint32(2);
-            tickCount = view.getUint32(6);
 
-            ship.Move(view.getInt16(10), view.getInt16(12), view.getInt16(14) / 4096.0);
+    if (view.getUint8(0) != 0xBB) {
+        return;
+    }
 
-            if (view.byteLength == 18) {
-                ship.bullets = [];
-                update();
-                return;
-            }
+    var messageType = view.getUint8(1);
+    switch (messageType)
+    {
+        case MessageType.SessionRegistered:
+            if (typeof OnSessionRegistered != 'undefined')
+                OnSessionRegistered(data);
+            break;
 
-            numBullets = view.getUint16(16);
+        case MessageType.KeyMessage:
+            if (typeof OnKeyMessage != 'undefined')
+                OnKeyMessage(data);
+            break;
 
-            if (numBullets > 0) {
-                if (typeof ship.bullets == 'undefined') {
-                    console.log("ship.bullets is undefined");
-                    return;
-                }
+        case MessageType.ClickMessage:
+            console.log("ClickMessage");
+            break;
 
-                ship.bullets = [];
+        case MessageType.PlayerTickMessage:
+            if (typeof OnPlayerTickMessage != 'undefined')
+                OnPlayerTickMessage(data);
+            break;
 
-                for (i = 0; i < numBullets; i++) {
-                    x = view.getUint16(18 + i * 4);
-                    y = view.getUint16(20 + i * 4);
-                    ship.bullets.push({ x, y });
-                }
+        case MessageType.UniverseTickMessage:
+            if (typeof OnUniverseTickMessage != 'undefined')
+                OnUniverseTickMessage(data);
+            break;
 
-            }
-
-            // some JavaScript file needs to define a single update() function
-            // which is invoked after the sever has updated all game state
-            if (typeof update != undefined) {
-                update();
-            }
-        }
-        else
-            console.log("HandleMessageEvent, serverCommand: " + serverCommand);
+        default:
+            console.log("Unknown MessageType: " + messageType);
+            break;
     }
 }
 

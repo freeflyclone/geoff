@@ -26,7 +26,6 @@ const TEXT_SIZE = 40;               // text font height in pixels
 
 var level, lives, roids, score, scoreHigh, ship, text, textAlpha;
 
-
 function newGame() {
     level = 0;
     lives = GAME_LIVES;
@@ -390,6 +389,13 @@ function drawLasers() {
     }
 }
 
+function drawBullet(x, y, radius = 2, color = "cyan") {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2, false);
+    ctx.fill();
+}
+
 function drawBullets() {
     var numberOfBullets = Object.keys(ship.bullets).length;
     if (typeof ship.bullets == 'undefined') {
@@ -397,12 +403,8 @@ function drawBullets() {
         return;
     }
 
-
     for (i = 0; i < numberOfBullets; i++) {
-        ctx.fillStyle = "cyan";
-        ctx.beginPath();
-        ctx.arc(ship.bullets[i].x, ship.bullets[i].y, 8, 0, Math.PI * 2, false);
-        ctx.fill();
+        drawBullet(ship.bullets[i].x, ship.bullets[i].y);
     }
 }
 
@@ -602,4 +604,111 @@ function update() {
 // with complete game state for this client.
 function AsteroidsInit() {
     newGame();
+}
+
+function OnSessionRegistered(data) {
+    view = new DataView(data);
+    console.log("OnSessionRegistered");
+
+    if (view.byteLength >= 8) {
+        sessionID = view.getUint32(2);
+        serverAppVersion = view.getUint16(6);
+        this.isConnected = true;
+    }
+}
+
+function OnKeyMessage(data) {
+    view = new DataView(data);
+    console.log("KeyMessage");
+
+    sessionID = view.getUint32(2);
+    isDown = view.getUint8(6);
+    key = view.getUint8(7);
+    console.log("SessionID: " + sessionID + ", Key: " + key + ", isDown: " + isDown);
+}
+
+function OnPlayerTickMessage(data) {
+    view = new DataView(data);
+    //console.log("PlayerTickMessage");
+
+    sessionID = view.getUint32(2);
+    tickCount = view.getUint32(6);
+
+    ship.Move(view.getInt16(10), view.getInt16(12), view.getInt16(14) / 4096.0);
+
+    if (view.byteLength == 18) {
+        ship.bullets = [];
+        update();
+        return;
+    }
+
+    numBullets = view.getUint16(16);
+
+    if (numBullets > 0) {
+        if (typeof ship.bullets == 'undefined') {
+            console.log("ship.bullets is undefined");
+            return;
+        }
+
+        ship.bullets = [];
+
+        for (i = 0; i < numBullets; i++) {
+            x = view.getUint16(18 + i * 4);
+            y = view.getUint16(20 + i * 4);
+            ship.bullets.push({ x, y });
+        }
+    }
+
+    // some JavaScript file needs to define a single update() function
+    // which is invoked after the sever has updated all game state
+    if (typeof update != undefined) {
+        update();
+    }
+}
+
+function OnUniverseTickMessage(data) {
+    view = new DataView(data);
+
+    offset = 2;
+
+    sessionID = view.getUint32(2);
+    offset += 4;
+
+    tickCount = view.getUint32(6);
+    offset += 4;
+
+    numShips = view.getUint16(10);
+    offset += 2;
+
+    if (numShips == 0)
+        return;
+
+    for (i = 0; i < numShips; i++) {
+        x = view.getUint16(offset);
+        offset += 2;
+
+        y = view.getUint16(offset);
+        offset += 2;
+
+        angle = view.getUint16(offset) / 4096.0;
+        offset += 2;
+
+        drawShip(x, y, angle, "yellow");
+    }
+
+    numBullets = view.getUint16(offset);
+    offset += 2;
+
+    if (numBullets == 0)
+        return;
+
+    for (i = 0; i < numBullets; i++) {
+        x = view.getInt16(offset);
+        offset += 2;
+
+        y = view.getInt16(offset);
+        offset += 2;
+
+        drawBullet(x, y, 2, "red");
+    }
 }

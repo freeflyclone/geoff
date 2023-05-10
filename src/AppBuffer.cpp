@@ -2,6 +2,10 @@
 #include <cstdint>
 
 #include "AppBuffer.h"
+#include "geoff.h"
+
+#define AB_TRACE(...)
+//#define AB_TRACE TRACE
 
 AppBuffer::AppBuffer(std::size_t bufferLength, int isLittleEndian)
     :
@@ -18,6 +22,15 @@ AppBuffer::AppBuffer(const uint8_t *buffer, const std::size_t bufferLength, int 
     AppBuffer(bufferLength, isLittleEndian)
 {
     std::memcpy(m_buff, buffer, m_length);
+}
+
+AppBuffer::AppBuffer(AppBuffer& ab, size_t moreRoom, bool isLittleEndian)
+    :
+    AppBuffer(ab.data(), ab.bytesRemaining() + moreRoom, isLittleEndian)
+{
+    m_writeOffset = static_cast<int>(ab.bytesRemaining());
+
+    AB_TRACE(__FUNCTION__ << "bytesRemaining(): " << ab.bytesRemaining() << ", moreRoom: " << moreRoom << "m_length: " << m_length);
 }
 
 AppBuffer::~AppBuffer()

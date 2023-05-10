@@ -4,9 +4,11 @@
 #include <ios>
 #include <iostream>
 
-namespace {
-	static WebsockSessionManager<AsteroidsSession> m_sessions;
+namespace Websock {
+	WebsockSessionManager<AsteroidsSession> g_sessions;
 };
+
+using namespace Websock;
 
 WebsockServer::WebsockServer() :
 	m_serverMutex(),
@@ -40,19 +42,19 @@ net::io_context* WebsockServer::IoContext()
 
 void WebsockServer::OnAccept(OnAcceptCallback_t fn)
 {
-	fn(m_sessions.add_session());
+	fn(g_sessions.add_session());
 }
 
 void WebsockServer::OnClose(uint32_t sessionID)
 {
-	m_sessions.delete_by_id(sessionID);
+	g_sessions.delete_by_id(sessionID);
 }
 
 void WebsockServer::CommsHandler(uint32_t sessionID, beast::flat_buffer in_buffer, std::size_t in_length)
 {
 	const std::lock_guard<std::recursive_mutex> lock(m_serverMutex);
 
-	auto session = m_sessions.find_by_id(sessionID);
+	auto session = g_sessions.find_by_id(sessionID);
 
 	if (!session)
 		return;
@@ -62,5 +64,5 @@ void WebsockServer::CommsHandler(uint32_t sessionID, beast::flat_buffer in_buffe
 
 std::shared_ptr<WebsockSession> WebsockServer::FindSessionByID(uint32_t sessionID)
 {
-	return m_sessions.find_by_id(sessionID);
+	return g_sessions.find_by_id(sessionID);
 }
