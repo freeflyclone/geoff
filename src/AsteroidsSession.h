@@ -17,6 +17,8 @@ public:
 	std::unique_ptr<Asteroids::Player> m_player;
 	std::shared_ptr<Asteroids::Universe> m_universe;
 
+	double DistanceBetweenPoints(Asteroids::Position& point1, Asteroids::Position& point2);
+
 protected:
 	void HandleNewSession(AppBuffer& rxBuffer);
 	void HandleKeyEvent(AppBuffer& rxBuffer);

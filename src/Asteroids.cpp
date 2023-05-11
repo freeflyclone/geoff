@@ -188,6 +188,7 @@ void Gun::TickTock()
 		return;
 
 	bool bulletDone = false;
+	auto rocks = GetShip().m_player.m_session.m_universe->m_rockField.m_rocks;
 
 	// update bullet lifetime ticks
 	for (auto bullet : m_bullets)
@@ -197,6 +198,17 @@ void Gun::TickTock()
 			G_TRACE(__FUNCTION__ << "bulletDone, m_bullets.size(): " << m_bullets.size());
 			bulletDone = true;
 		}
+
+		for (auto rock : rocks)
+		{
+			auto distance = m_ship.m_player.m_session.DistanceBetweenPoints(*bullet, *rock);
+			if (distance < rock->Radius())
+			{
+				TRACE("Hit: @ x: " << bullet->x << ", y: " << bullet->y);
+			}
+		}
+
+		//TRACE("There are " << rocks.size() << " rocks.");
 	}
 
 	if (bulletDone)

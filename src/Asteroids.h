@@ -93,10 +93,10 @@ namespace Asteroids
 		void KeyEvent(int key, bool isDown);
 		void TickEvent();
 
+        Player& m_player;
         std::shared_ptr<Gun> m_gun;
 
     private:
-        Player& m_player;
         double m_angle;
         double m_radius;
 
@@ -117,6 +117,7 @@ namespace Asteroids
         bool TickTock();
 
         RockField& GetRockField() { return m_field; };
+        double Radius() { return m_radius;  }
 
     private:
         RockField& m_field;

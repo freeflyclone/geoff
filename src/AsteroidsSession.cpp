@@ -29,6 +29,14 @@ AsteroidsSession::~AsteroidsSession()
 	AS_TRACE("");
 }
 
+double AsteroidsSession::DistanceBetweenPoints(Asteroids::Position& point1, Asteroids::Position& point2)
+{
+	auto dxSquared = std::pow(point2.x - point1.x, 2);
+	auto dySquared = std::pow(point2.y - point1.y, 2);
+
+	return std::sqrt(dxSquared + dySquared);
+}
+
 void AsteroidsSession::HandleNewSession(AppBuffer& rxBuffer)
 {
 	GameSession::HandleNewSession(rxBuffer);
