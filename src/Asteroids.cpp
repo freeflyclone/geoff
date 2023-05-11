@@ -68,6 +68,67 @@ bool Bullet::TickTock()
 	return ticksLeft == 0;
 }
 
+Rock::Rock(RockField& field, double x, double y, double dx, double dy, double radius)
+	:
+	Position({ x,y }),
+	Velocity({ dx,dy }),
+	m_field(field),
+	m_radius(radius)
+{
+	//TRACE("New rock - x: " << Position::x << ", y:" << Position::y << "dx: " << Velocity::dx << ", dy: " << Velocity::dy);
+}
+
+Rock::~Rock()
+{
+}
+
+bool Rock::TickTock()
+{
+	auto rockField = GetRockField();
+	auto ctx = (Asteroids::Context&)rockField;
+
+	Position::x += Velocity::dx;
+	Position::y += Velocity::dy;
+
+	if (Position::x > ctx.width)
+		Position::x = 0.0;
+	if (Position::x < 0.0)
+		Position::x = (double)ctx.width;
+
+	if (Position::y > ctx.height)
+		Position::y = 0.0;
+	if (Position::y < 0.0)
+		Position::y = (double)ctx.height;
+
+	return true;
+}
+
+RockField::RockField(int w, int h)
+	:
+	Context({ static_cast<uint16_t>(w), static_cast<uint16_t>(h) })
+{
+
+}
+
+RockField::~RockField()
+{
+}
+
+void RockField::LaunchOne(double x, double y, double dx, double dy, double radius)
+{
+	m_rocks.emplace_back(std::make_unique<Rock>(*this, x, y, dx, dy, radius));
+}
+
+void RockField::ResizeEvent(int w, int h)
+{
+	Resize(static_cast<double>(w), static_cast<double>(h));
+}
+
+void RockField::TickEvent(AsteroidsSession&) 
+{
+
+}
+
 #define G_TRACE(...)
 //#define G_TRACE TRACE
 void Gun::Fire(double x, double y, double dx, double dy)
@@ -355,6 +416,16 @@ Universe::~Universe()
 void Universe::ResizeEvent(int w, int h)
 {
 	Context::Resize(static_cast<uint16_t>(w), static_cast<uint16_t>(h));
+}
+
+void Universe::ClickEvent(uint16_t x, uint16_t y)
+{
+	TRACE(__FUNCTION__ << "x: " << x << ", y: " << y);
+}
+
+void Universe::KeyEvent(int key, bool isDown)
+{
+	TRACE(__FUNCTION__);
 }
 
 void Universe::TickEvent(AsteroidsSession& session)

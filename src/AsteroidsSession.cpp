@@ -50,26 +50,34 @@ void AsteroidsSession::HandleNewSession(AppBuffer& rxBuffer)
 
 void AsteroidsSession::HandleKeyEvent(AppBuffer& rxBuffer)
 {
-	if (!m_player)
-		return;
-
 	AS_TRACE("KeyEvent");
 
 	bool isDown = rxBuffer.get_uint8(1);
 	int key     = (int)rxBuffer.get_uint8(2);
 
-	m_player->KeyEvent(key, isDown);
+	if (m_universe)
+		m_universe->KeyEvent(key, isDown);
+
+	if (m_player)
+		m_player->KeyEvent(key, isDown);
 }
 
 // Asteroids currently doesn't care about click events. May change.
 void AsteroidsSession::HandleClickEvent(AppBuffer& rxBuffer)
 {
-	(void)rxBuffer;
+	// preserve rxBuffer state for possible additional handlers
+	// (ie read data without altering its m_readOffset)
+	assert(rxBuffer.size() >= 11);
 
-	if (!m_player)
-		return;
+	uint32_t rxSessionID = rxBuffer.get_uint32(1);
+	uint16_t clickX = rxBuffer.get_uint16(5);
+	uint16_t clickY = rxBuffer.get_uint16(7);
+
 
 	AS_TRACE("ClickEvent");
+
+	if (m_universe)
+		m_universe->ClickEvent(clickX, clickY);
 }
 
 void AsteroidsSession::HandleResizeEvent(AppBuffer& rxBuffer)
@@ -81,22 +89,22 @@ void AsteroidsSession::HandleResizeEvent(AppBuffer& rxBuffer)
 
 	AS_TRACE("sessionID: " << SessionID() << ", width: " << width << ", height: " << height);
 
-	if (!m_player)
-		return;
+	if (m_universe)
+		m_universe->ResizeEvent(width, height);
 
-	m_player->ResizeEvent(width, height);
-	m_universe->ResizeEvent(width, height);
+	if (m_player)
+		m_player->ResizeEvent(width, height);
 }
 
 void AsteroidsSession::HandleTimerTick()
 {
 	AS_TRACE("TimerTick");
 
-	if (!m_player)
-		return;
+	if (m_universe)
+		m_universe->TickEvent(*this);
 
-	m_player->TickEvent(*this);
-	m_universe->TickEvent(*this);
+	if (m_player)
+		m_player->TickEvent(*this);
 
 	OnTxReady(*this);
 }

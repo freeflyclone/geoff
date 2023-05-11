@@ -26,6 +26,7 @@ namespace Asteroids
 
     class Gun;
     class Ship;
+    class RockField;
 
     struct Context
     {
@@ -107,23 +108,32 @@ namespace Asteroids
     class Rock : public Position, public Velocity
     {
     public:
-        Rock(double x, double y, double dx, double dy, double radius);
+        Rock(RockField& field, double x, double y, double dx, double dy, double radius);
         ~Rock();
 
         bool TickTock();
 
+        RockField& GetRockField() { return m_field; };
+
     private:
+        RockField& m_field;
+
         double m_radius;
     };
 
     class RockField : public Context
     {
     public:
-        RockField();
+        RockField(int w, int h);
         ~RockField();
+
+        void LaunchOne(double x, double y, double dx, double dy, double radius);
 
         void ResizeEvent(int w, int h);
         void TickEvent(AsteroidsSession&);
+
+    private:
+        std::list<std::shared_ptr<Rock>> m_rocks;
     };
 
     class Player : public Context
@@ -148,6 +158,8 @@ namespace Asteroids
         Universe(int width, int height);
         ~Universe();
 
+        void ClickEvent(uint16_t x, uint16_t y);
+        void KeyEvent(int key, bool isDown);
         void ResizeEvent(int w, int h);
         void TickEvent(AsteroidsSession &);
 
