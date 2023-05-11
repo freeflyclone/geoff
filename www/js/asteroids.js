@@ -23,12 +23,13 @@ const SHIP_TURN_SPEED = 360;        // turn speed in degrees per second
 const SHOW_BOUNDING = false;        // show or hide collision bounding
 const TEXT_FADE_TIME = 2.5;         // text fade time in seconds
 const TEXT_SIZE = 40;               // text font height in pixels
+const FP_4_12 = 4096.0;              // convert to fixed point 4.12, specifically for angle scaling
 
 var level, lives, roids, score, scoreHigh, ship, text, textAlpha;
 
+var universeRocks = [];
 var universeShips = [];
 var universeBullets = [];
-var universeRocks = [];
 
 function newGame() {
     level = 0;
@@ -438,6 +439,22 @@ function drawOtherBullets() {
         drawBullet(universeBullets[i].x, universeBullets[i].y, universeBullets[i].radius, universeBullets[i].color);
     }
 }
+
+function drawRocks() {
+    var numberOfRocks = Object.keys(universeRocks).length;
+    if (typeof universeRocks == 'undefined') {
+        console.log("universeRocks undefined");
+        return;
+    }
+
+    if (numberOfRocks == 0)
+        return;
+
+    for (i = 0; i < numberOfRocks; i++) {
+        drawBullet(universeRocks[i].x, universeRocks[i].y, 20, "green");
+    }
+}
+
 function drawGameInfo() {
     var exploding = ship.explodeTime > 0;
 
@@ -620,6 +637,7 @@ function update() {
     drawBullets();
     drawOtherShips();
     drawOtherBullets();
+    drawRocks();
 
     //drawLasers();
     //drawGameInfo();
@@ -667,7 +685,7 @@ function OnPlayerTickMessage(data) {
     sessionID = view.getUint32(2);
     tickCount = view.getUint32(6);
 
-    ship.Move(view.getInt16(10), view.getInt16(12), view.getInt16(14) / 4096.0);
+    ship.Move(view.getInt16(10), view.getInt16(12), view.getInt16(14) / FP_4_12);
 
     if (view.byteLength == 18) {
         ship.bullets = [];
@@ -700,25 +718,64 @@ function OnPlayerTickMessage(data) {
 }
 
 function OnUniverseTickMessage(data) {
-    view = new DataView(data);
-
-    offset = 2;
-
-    sessionID = view.getUint32(2);
-    offset += 4;
-
-    tickCount = view.getUint32(6);
-    offset += 4;
-
-    numShips = view.getUint16(10);
-    offset += 2;
-
-    if (numShips == 0)
+    if (data.byteLength < 10)
         return;
 
+    view = new DataView(data);
+
+    universeRocks = [];
     universeShips = [];
     universeBullets = [];
-    universeRocks = [];
+
+    // skip 0xBB,UniverseTickMessage bytes
+    offset = 2;
+
+    sessionID = view.getUint32(offset);
+    offset += 4;
+
+    tickCount = view.getUint32(offset);
+    offset += 4;
+
+    // there are no rocks, ships, or bullets
+    if (offset == data.byteLength) {
+        //console.log("no extra data");
+        return;
+    }
+
+    numRocks = view.getUint16(offset);
+    offset += 2;
+
+    if (numRocks) {
+        //console.log("numRocks: " + numRocks);
+
+        for (i = 0; i < numRocks; i++) {
+            x = view.getUint16(offset);
+            offset += 2;
+
+            y = view.getUint16(offset);
+            offset += 2;
+
+            universeRocks.push({ x, y });
+        }
+    }
+    else {
+        //console.log("numRocks is 0");
+    }
+
+    // there are no ships or bullets;
+    if (offset == data.byteLength) {
+        //console.log("no ships or bullets");
+        return;
+    }
+
+    numShips = view.getUint16(offset);
+    offset += 2;
+
+    // if there are no universeShips, there can be no universeBullets
+    if (numShips == 0) {
+        //console.log("numShips == 0");
+        return;
+    }
 
     for (i = 0; i < numShips; i++) {
         x = view.getUint16(offset);
@@ -727,7 +784,7 @@ function OnUniverseTickMessage(data) {
         y = view.getUint16(offset);
         offset += 2;
 
-        angle = view.getUint16(offset) / 4096.0;
+        angle = view.getUint16(offset) / FP_4_12;
         offset += 2;
 
         universeShips.push({ x, y, angle });
@@ -736,8 +793,10 @@ function OnUniverseTickMessage(data) {
     numBullets = view.getUint16(offset);
     offset += 2;
 
-    if (numBullets == 0)
+    if (numBullets == 0) {
+        //console.log("no bullets");
         return;
+    }
 
     for (i = 0; i < numBullets; i++) {
         x = view.getInt16(offset);
@@ -750,22 +809,4 @@ function OnUniverseTickMessage(data) {
         color = "red";
         universeBullets.push({ x, y, radius, color });
     }
-
-    if (offset == data.byteLength)
-        return;
-
-    numRocks = view.getUint16(offset);
-    offset += 2;
-
-    for (i = 0; i < numRocks; i++) {
-        x = view.getInt16(offset);
-        offset += 2;
-
-        y = view.getInt16(offset);
-        offset += 2;
-
-        universeRocks.push({ x, y });
-    }
-
-    console.log("numRocks: " + numRocks);
 }
