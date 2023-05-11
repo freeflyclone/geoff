@@ -739,8 +739,6 @@ function OnUniverseTickMessage(data) {
     if (numBullets == 0)
         return;
 
-    console.log("numBullets: " + numBullets);
-
     for (i = 0; i < numBullets; i++) {
         x = view.getInt16(offset);
         offset += 2;
@@ -752,6 +750,9 @@ function OnUniverseTickMessage(data) {
         color = "red";
         universeBullets.push({ x, y, radius, color });
     }
+
+    if (offset == data.byteLength)
+        return;
 
     numRocks = view.getUint16(offset);
     offset += 2;
@@ -765,4 +766,6 @@ function OnUniverseTickMessage(data) {
 
         universeRocks.push({ x, y });
     }
+
+    console.log("numRocks: " + numRocks);
 }
