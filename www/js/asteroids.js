@@ -451,7 +451,7 @@ function drawRocks() {
         return;
 
     for (i = 0; i < numberOfRocks; i++) {
-        drawBullet(universeRocks[i].x, universeRocks[i].y, 20, "green");
+        drawBullet(universeRocks[i].x, universeRocks[i].y, 30, "green");
     }
 }
 

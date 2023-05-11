@@ -188,11 +188,13 @@ void Gun::TickTock()
 		return;
 
 	bool bulletDone = false;
-	auto rocks = GetShip().m_player.m_session.m_universe->m_rockField.m_rocks;
+	std::list<std::shared_ptr<Rock>>& rocks = GetShip().m_player.m_session.m_universe->m_rockField.m_rocks;
 
 	// update bullet lifetime ticks
 	for (auto bullet : m_bullets)
 	{
+		bool bulletHit = false;
+
 		if (bullet->TickTock())
 		{
 			G_TRACE(__FUNCTION__ << "bulletDone, m_bullets.size(): " << m_bullets.size());
@@ -205,13 +207,25 @@ void Gun::TickTock()
 			if (distance < rock->Radius())
 			{
 				TRACE("Hit: @ x: " << bullet->x << ", y: " << bullet->y);
+				bulletHit = true;
+				rocks.remove(rock);
+				rock.reset();
+				if (rocks.empty())
+					break;
 			}
 		}
 
+		if (bulletHit)
+		{
+			m_bullets.remove(bullet);
+			bullet.reset();
+			if (m_bullets.empty())
+				break;
+		}
 		//TRACE("There are " << rocks.size() << " rocks.");
 	}
 
-	if (bulletDone)
+	if (bulletDone && !m_bullets.empty())
 	{
 		m_bullets.pop_front();
 		if (m_bullets.size() == 0)
