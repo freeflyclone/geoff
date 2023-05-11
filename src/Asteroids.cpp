@@ -100,6 +100,8 @@ bool Rock::TickTock()
 	if (Position::y < 0.0)
 		Position::y = (double)ctx.height;
 
+	//TRACE(__FUNCTION__ << "x: " << Position::x << ", y: " << Position::y);
+
 	return true;
 }
 
@@ -117,16 +119,21 @@ RockField::~RockField()
 void RockField::LaunchOne(double x, double y, double dx, double dy, double radius)
 {
 	m_rocks.emplace_back(std::make_unique<Rock>(*this, x, y, dx, dy, radius));
+
+	TRACE(__FUNCTION__ << "x: " << x << ", y: " << y << ", radius: " << radius << ", " << m_rocks.size() << " rock(s) exist.");
 }
 
 void RockField::ResizeEvent(int w, int h)
 {
-	Resize(static_cast<double>(w), static_cast<double>(h));
+	Resize(static_cast<uint16_t>(w), static_cast<uint16_t>(h));
 }
 
 void RockField::TickEvent(AsteroidsSession&) 
 {
-
+	for (auto rock : m_rocks)
+	{
+		rock->TickTock();
+	}
 }
 
 #define G_TRACE(...)
@@ -398,11 +405,13 @@ void Player::TickEvent(AsteroidsSession& session)
 	session.CommitTxBuffer(txBuff);
 }
 
-#define U_TRACE TRACE
+//#define U_TRACE TRACE
+#define U_TRACE(...)
 
 Universe::Universe(int width, int height)
 	:
 	Context({ static_cast<uint16_t>(width), static_cast<uint16_t>(height) }),
+	m_rocks(width, height),
 	m_sessions(g_sessions)
 {
 	U_TRACE(__FUNCTION__ << ", Session count:" << m_sessions.get_count());
@@ -420,17 +429,21 @@ void Universe::ResizeEvent(int w, int h)
 
 void Universe::ClickEvent(uint16_t x, uint16_t y)
 {
-	TRACE(__FUNCTION__ << "x: " << x << ", y: " << y);
+	m_rocks.LaunchOne(static_cast<double>(x), static_cast<double>(y), 0, 0,	30);
 }
 
 void Universe::KeyEvent(int key, bool isDown)
 {
-	TRACE(__FUNCTION__);
+	(void)key;
+	(void)isDown;
+	U_TRACE(__FUNCTION__);
 }
 
 void Universe::TickEvent(AsteroidsSession& session)
 {
 	//U_TRACE(__FUNCTION__ << ", session ID : " << session.SessionID());
+
+	m_rocks.TickEvent(session);
 
 	// the number of active sessions gives us the (possible) number of ships in the Universe
 	// Possible because a session doesn't have a ship until the client side registers new session.
