@@ -334,9 +334,10 @@ void Ship::TickEvent()
 //#define P_TRACE TRACE
 #define P_TRACE(...)
 
-Player::Player(int width, int height)
+Player::Player(AsteroidsSession& session, int width, int height)
 	:
 	Context({ static_cast<uint16_t>(width), static_cast<uint16_t>(height) }),
+	m_session(session),
 	m_ship(width, height, width / 2, height / 2, static_cast<float>(M_PI / 2.0f))
 {
 	P_TRACE(__FUNCTION__);
@@ -367,6 +368,8 @@ void Player::TickEvent(AsteroidsSession& session)
 	P_TRACE(__FUNCTION__ << ", sessionID: " << session.SessionID());
 
 	m_ship.TickEvent();
+
+	auto numBullets = m_ship.m_gun->m_bullets.size();
 
 	int16_t shipX, shipY, shipA;
 
@@ -417,10 +420,11 @@ void Player::TickEvent(AsteroidsSession& session)
 //#define U_TRACE TRACE
 #define U_TRACE(...)
 
-Universe::Universe(int width, int height)
+Universe::Universe(AsteroidsSession& session, int width, int height)
 	:
 	Context({ static_cast<uint16_t>(width), static_cast<uint16_t>(height) }),
 	m_rockField(width, height),
+	m_session(session),
 	m_sessions(g_sessions)
 {
 	U_TRACE(__FUNCTION__ << ", Session count:" << m_sessions.get_count());

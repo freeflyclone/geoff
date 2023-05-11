@@ -37,8 +37,8 @@ void AsteroidsSession::HandleNewSession(AppBuffer& rxBuffer)
 	auto h = rxBuffer.get_uint16(5);
 
 	// we have to wait for the client to register, in order to get window width and height.
-	m_player = std::make_unique<Asteroids::Player>(w, h);
-	m_universe = std::make_unique<Asteroids::Universe>(w, h);
+	m_player = std::make_unique<Asteroids::Player>(*this, w, h);
+	m_universe = std::make_unique<Asteroids::Universe>(*this, w, h);
 
 	AS_TRACE(*this);
 

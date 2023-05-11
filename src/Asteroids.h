@@ -27,6 +27,8 @@ namespace Asteroids
     class Gun;
     class Ship;
     class RockField;
+    class Player;
+    class Universe;
 
     struct Context
     {
@@ -138,13 +140,14 @@ namespace Asteroids
     class Player : public Context
     {
     public:
-        Player(int width, int height);
+        Player(AsteroidsSession& session, int width, int height);
         ~Player();
 
         void KeyEvent(int key, bool isDown);
         void ResizeEvent(int w, int h);
         void TickEvent(AsteroidsSession&);
     
+        AsteroidsSession& m_session;
         Ship m_ship;
     };
 
@@ -154,7 +157,7 @@ namespace Asteroids
     class Universe : public Context
     {
     public:
-        Universe(int width, int height);
+        Universe(AsteroidsSession& session, int width, int height);
         ~Universe();
 
         void ClickEvent(uint16_t x, uint16_t y);
@@ -165,6 +168,7 @@ namespace Asteroids
         RockField m_rockField;
 
     private:
+        AsteroidsSession& m_session;
         WebsockSessionManager<AsteroidsSession>& m_sessions;
     };
 
