@@ -132,8 +132,7 @@ namespace Asteroids
         void ResizeEvent(int w, int h);
         void TickEvent(AsteroidsSession&);
 
-    private:
-        std::list<std::shared_ptr<Rock>> m_rocks;
+        std::list<std::shared_ptr<Rock>>& m_rocks;
     };
 
     class Player : public Context
@@ -168,6 +167,7 @@ namespace Asteroids
     private:
         WebsockSessionManager<AsteroidsSession>& m_sessions;
     };
+
 };
 
 #endif // ASTEROIDS

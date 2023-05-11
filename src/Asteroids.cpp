@@ -14,6 +14,13 @@ namespace Websock
 };
 using namespace Websock;
 
+// Data that all AsteroidsSession instances need access to.
+namespace Asteroids
+{
+	std::mutex g_rocks_mutex;
+	std::list<std::shared_ptr<Rock>> g_rocks;
+};
+
 #define CTX_TRACE(...)
 //#define CTX_TRACE TRACE
 
@@ -107,7 +114,8 @@ bool Rock::TickTock()
 
 RockField::RockField(int w, int h)
 	:
-	Context({ static_cast<uint16_t>(w), static_cast<uint16_t>(h) })
+	Context({ static_cast<uint16_t>(w), static_cast<uint16_t>(h) }),
+	m_rocks(g_rocks)
 {
 
 }
