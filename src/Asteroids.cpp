@@ -438,7 +438,18 @@ void Universe::ResizeEvent(int w, int h)
 
 void Universe::ClickEvent(uint16_t x, uint16_t y)
 {
-	m_rockField.LaunchOne(static_cast<double>(x), static_cast<double>(y), 0, 0,	30);
+	auto randRange = 400;
+
+	auto randX = rand() % randRange;
+	auto randY = rand() % randRange;
+
+	randX -= randRange / 2;
+	randY -= randRange / 2;
+
+	auto dx = static_cast<double>(randX) / static_cast<double>(FPS);
+	auto dy = static_cast<double>(randY) / static_cast<double>(FPS);
+
+	m_rockField.LaunchOne(static_cast<double>(x), static_cast<double>(y), dx, dy, 30);
 }
 
 void Universe::KeyEvent(int key, bool isDown)
