@@ -104,6 +104,28 @@ namespace Asteroids
         bool m_show_position;
 	};
 
+    class Rock : public Position, public Velocity
+    {
+    public:
+        Rock(double x, double y, double dx, double dy, double radius);
+        ~Rock();
+
+        bool TickTock();
+
+    private:
+        double m_radius;
+    };
+
+    class RockField : public Context
+    {
+    public:
+        RockField();
+        ~RockField();
+
+        void ResizeEvent(int w, int h);
+        void TickEvent(AsteroidsSession&);
+    };
+
     class Player : public Context
     {
     public:
