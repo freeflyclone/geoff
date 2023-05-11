@@ -26,8 +26,9 @@ const TEXT_SIZE = 40;               // text font height in pixels
 
 var level, lives, roids, score, scoreHigh, ship, text, textAlpha;
 
-var otherShips = [];
-var otherBullets = [];
+var universeShips = [];
+var universeBullets = [];
+var universeRocks = [];
 
 function newGame() {
     level = 0;
@@ -412,20 +413,20 @@ function drawBullets() {
 }
 
 function drawOtherShips() {
-    var numberOfOtherShips = Object.keys(otherShips).length;
-    if (typeof otherShips == 'undefined') {
+    var numberOfOtherShips = Object.keys(universeShips).length;
+    if (typeof universeShips == 'undefined') {
         console.log("otherShips undefined");
         return;
     }
 
     for (i = 0; i < numberOfOtherShips; i++) {
-        drawShip(otherShips[i].x, otherShips[i].y, otherShips[i].angle, "yellow");
+        drawShip(universeShips[i].x, universeShips[i].y, universeShips[i].angle, "yellow");
     }
 }
 
 function drawOtherBullets() {
-    var numberOfOtherBullets = Object.keys(otherBullets).length;
-    if (typeof otherBullets == 'undefined') {
+    var numberOfOtherBullets = Object.keys(universeBullets).length;
+    if (typeof universeBullets == 'undefined') {
         console.log("otherBullets undefined");
         return;
     }
@@ -434,7 +435,7 @@ function drawOtherBullets() {
         return;
 
     for (i = 0; i < numberOfOtherBullets; i++) {
-        drawBullet(otherBullets[i].x, otherBullets[i].y, otherBullets[i].radius, otherBullets[i].color);
+        drawBullet(universeBullets[i].x, universeBullets[i].y, universeBullets[i].radius, universeBullets[i].color);
     }
 }
 function drawGameInfo() {
@@ -715,8 +716,9 @@ function OnUniverseTickMessage(data) {
     if (numShips == 0)
         return;
 
-    otherShips = [];
-    otherBullets = [];
+    universeShips = [];
+    universeBullets = [];
+    universeRocks = [];
 
     for (i = 0; i < numShips; i++) {
         x = view.getUint16(offset);
@@ -728,7 +730,7 @@ function OnUniverseTickMessage(data) {
         angle = view.getUint16(offset) / 4096.0;
         offset += 2;
 
-        otherShips.push({ x, y, angle });
+        universeShips.push({ x, y, angle });
     }
 
     numBullets = view.getUint16(offset);
@@ -748,6 +750,19 @@ function OnUniverseTickMessage(data) {
 
         radius = 4;
         color = "red";
-        otherBullets.push({ x, y, radius, color });
+        universeBullets.push({ x, y, radius, color });
+    }
+
+    numRocks = view.getUint16(offset);
+    offset += 2;
+
+    for (i = 0; i < numRocks; i++) {
+        x = view.getInt16(offset);
+        offset += 2;
+
+        y = view.getInt16(offset);
+        offset += 2;
+
+        universeRocks.push({ x, y });
     }
 }
