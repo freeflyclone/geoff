@@ -26,6 +26,9 @@ const TEXT_SIZE = 40;               // text font height in pixels
 
 var level, lives, roids, score, scoreHigh, ship, text, textAlpha;
 
+var otherShips = [];
+var otherBullets = [];
+
 function newGame() {
     level = 0;
     lives = GAME_LIVES;
@@ -408,6 +411,32 @@ function drawBullets() {
     }
 }
 
+function drawOtherShips() {
+    var numberOfOtherShips = Object.keys(otherShips).length;
+    if (typeof otherShips == 'undefined') {
+        console.log("otherShips undefined");
+        return;
+    }
+
+    for (i = 0; i < numberOfOtherShips; i++) {
+        drawShip(otherShips[i].x, otherShips[i].y, otherShips[i].angle, "yellow");
+    }
+}
+
+function drawOtherBullets() {
+    var numberOfOtherBullets = Object.keys(otherBullets).length;
+    if (typeof otherBullets == 'undefined') {
+        console.log("otherBullets undefined");
+        return;
+    }
+
+    if (numberOfOtherBullets == 0)
+        return;
+
+    for (i = 0; i < numberOfOtherBullets; i++) {
+        drawBullet(otherBullets[i].x, otherBullets[i].y, otherBullets[i].radius, otherBullets[i].color);
+    }
+}
 function drawGameInfo() {
     var exploding = ship.explodeTime > 0;
 
@@ -588,6 +617,9 @@ function update() {
     //drawAsteroids();
     drawShipFully();   
     drawBullets();
+    drawOtherShips();
+    drawOtherBullets();
+
     //drawLasers();
     //drawGameInfo();
     //draw_tic_text();
@@ -683,6 +715,9 @@ function OnUniverseTickMessage(data) {
     if (numShips == 0)
         return;
 
+    otherShips = [];
+    otherBullets = [];
+
     for (i = 0; i < numShips; i++) {
         x = view.getUint16(offset);
         offset += 2;
@@ -693,7 +728,7 @@ function OnUniverseTickMessage(data) {
         angle = view.getUint16(offset) / 4096.0;
         offset += 2;
 
-        drawShip(x, y, angle, "yellow");
+        otherShips.push({ x, y, angle });
     }
 
     numBullets = view.getUint16(offset);
@@ -702,6 +737,8 @@ function OnUniverseTickMessage(data) {
     if (numBullets == 0)
         return;
 
+    console.log("numBullets: " + numBullets);
+
     for (i = 0; i < numBullets; i++) {
         x = view.getInt16(offset);
         offset += 2;
@@ -709,6 +746,8 @@ function OnUniverseTickMessage(data) {
         y = view.getInt16(offset);
         offset += 2;
 
-        drawBullet(x, y, 2, "red");
+        radius = 4;
+        color = "red";
+        otherBullets.push({ x, y, radius, color });
     }
 }
