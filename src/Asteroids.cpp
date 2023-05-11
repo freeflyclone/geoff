@@ -113,9 +113,10 @@ bool Rock::TickTock()
 	return true;
 }
 
-RockField::RockField(int w, int h)
+RockField::RockField(Universe& universe, int w, int h)
 	:
 	Context({ static_cast<uint16_t>(w), static_cast<uint16_t>(h) }),
+	m_universe(universe),
 	m_rocks(g_rocks)
 {
 
@@ -211,10 +212,11 @@ void Gun::TickTock()
 #define SH_TRACE TRACE
 //#define SH_TRACE(...)
 
-Ship::Ship(int windowWidth, int windowHeight, double x, double y, double angle) :
+Ship::Ship(Player& player, int windowWidth, int windowHeight, double x, double y, double angle) :
 	Context({ static_cast<uint16_t>(windowWidth), static_cast<uint16_t>(windowHeight)}),
 	Position({ x,y }),
 	Velocity({ 0,0 }),
+	m_player(player),
 	m_gun(std::make_unique<Gun>(*this)),
 	m_angle(angle),
 	m_radius(SHIP_SIZE),
@@ -338,7 +340,7 @@ Player::Player(AsteroidsSession& session, int width, int height)
 	:
 	Context({ static_cast<uint16_t>(width), static_cast<uint16_t>(height) }),
 	m_session(session),
-	m_ship(width, height, width / 2, height / 2, static_cast<float>(M_PI / 2.0f))
+	m_ship(*this, width, height, width / 2, height / 2, static_cast<float>(M_PI / 2.0f))
 {
 	P_TRACE(__FUNCTION__);
 }
@@ -423,7 +425,7 @@ void Player::TickEvent(AsteroidsSession& session)
 Universe::Universe(AsteroidsSession& session, int width, int height)
 	:
 	Context({ static_cast<uint16_t>(width), static_cast<uint16_t>(height) }),
-	m_rockField(width, height),
+	m_rockField(*this, width, height),
 	m_session(session),
 	m_sessions(g_sessions)
 {
