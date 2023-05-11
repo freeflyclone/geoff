@@ -419,7 +419,7 @@ void Player::TickEvent(AsteroidsSession& session)
 Universe::Universe(int width, int height)
 	:
 	Context({ static_cast<uint16_t>(width), static_cast<uint16_t>(height) }),
-	m_rocks(width, height),
+	m_rockField(width, height),
 	m_sessions(g_sessions)
 {
 	U_TRACE(__FUNCTION__ << ", Session count:" << m_sessions.get_count());
@@ -437,7 +437,7 @@ void Universe::ResizeEvent(int w, int h)
 
 void Universe::ClickEvent(uint16_t x, uint16_t y)
 {
-	m_rocks.LaunchOne(static_cast<double>(x), static_cast<double>(y), 0, 0,	30);
+	m_rockField.LaunchOne(static_cast<double>(x), static_cast<double>(y), 0, 0,	30);
 }
 
 void Universe::KeyEvent(int key, bool isDown)
@@ -451,7 +451,7 @@ void Universe::TickEvent(AsteroidsSession& session)
 {
 	//U_TRACE(__FUNCTION__ << ", session ID : " << session.SessionID());
 
-	m_rocks.TickEvent(session);
+	m_rockField.TickEvent(session);
 
 	// the number of active sessions gives us the (possible) number of ships in the Universe
 	// Possible because a session doesn't have a ship until the client side registers new session.

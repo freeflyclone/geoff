@@ -162,7 +162,7 @@ namespace Asteroids
         void ResizeEvent(int w, int h);
         void TickEvent(AsteroidsSession &);
 
-        RockField m_rocks;
+        RockField m_rockField;
 
     private:
         WebsockSessionManager<AsteroidsSession>& m_sessions;
