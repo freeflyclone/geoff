@@ -451,7 +451,7 @@ function drawRocks() {
         return;
 
     for (i = 0; i < numberOfRocks; i++) {
-        drawBullet(universeRocks[i].x, universeRocks[i].y, 30, "green");
+        drawBullet(universeRocks[i].x, universeRocks[i].y, universeRocks[i].r, "green");
     }
 }
 
@@ -755,7 +755,10 @@ function OnUniverseTickMessage(data) {
             y = view.getUint16(offset);
             offset += 2;
 
-            universeRocks.push({ x, y });
+            r = view.getUint16(offset);
+            offset += 2;
+
+            universeRocks.push({ x, y, r });
         }
     }
     else {

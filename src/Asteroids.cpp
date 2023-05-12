@@ -130,7 +130,54 @@ void RockField::LaunchOne(double x, double y, double dx, double dy, double radiu
 {
 	m_rocks.emplace_back(std::make_unique<Rock>(*this, x, y, dx, dy, radius));
 
-	TRACE(__FUNCTION__ << "x: " << x << ", y: " << y << ", radius: " << radius << ", " << m_rocks.size() << " rock(s) exist.");
+	//TRACE(__FUNCTION__ << "x: " << x << ", y: " << y << ", radius: " << radius << ", " << m_rocks.size() << " rock(s) exist.");
+}
+
+void RockField::DestroyRock(std::shared_ptr<Rock> rock)
+{
+	m_rocks.remove(rock);
+	int randRange = ROCK_SPEED;
+	int randX, randY;
+	double dx, dy;
+
+	//TRACE("Destroy Rock: X: " << rock->x << ", Y: " << rock->y << ", radius: " << rock->Radius());
+
+	if (rock->Radius() >= ROCK_RADIUS)
+	{
+		randX = rand() % randRange;
+		randY = rand() % randRange;
+		randX -= randRange / 2;
+		randY -= randRange / 2;
+		dx = static_cast<double>(randX) / static_cast<double>(FPS);
+		dy = static_cast<double>(randY) / static_cast<double>(FPS);
+		LaunchOne(rock->x, rock->y, rock->dx + dx, rock->dy + dy, rock->Radius() / 2);
+
+		randX = rand() % randRange;
+		randY = rand() % randRange;
+		randX -= randRange / 2;
+		randY -= randRange / 2;
+		dx = static_cast<double>(randX) / static_cast<double>(FPS);
+		dy = static_cast<double>(randY) / static_cast<double>(FPS);
+		LaunchOne(rock->x, rock->y, rock->dx + dx, rock->dy + dy, rock->Radius() / 2);
+	}
+	else if (rock->Radius() >= ROCK_RADIUS / 2)
+	{
+		randX = rand() % randRange;
+		randY = rand() % randRange;
+		randX -= randRange / 2;
+		randY -= randRange / 2;
+		dx = static_cast<double>(randX) / static_cast<double>(FPS);
+		dy = static_cast<double>(randY) / static_cast<double>(FPS);
+		LaunchOne(rock->x, rock->y, rock->dx + dx, rock->dy + dy, rock->Radius() / 2);
+
+		randX = rand() % randRange;
+		randY = rand() % randRange;
+		randX -= randRange / 2;
+		randY -= randRange / 2;
+		dx = static_cast<double>(randX) / static_cast<double>(FPS);
+		dy = static_cast<double>(randY) / static_cast<double>(FPS);
+		LaunchOne(rock->x, rock->y, rock->dx + dx, rock->dy + dy, rock->Radius() / 2);
+	}
 }
 
 void RockField::ResizeEvent(int w, int h)
@@ -240,7 +287,7 @@ void Gun::TickTock()
 
 	// remove any collidedRocks
 	for (auto rock : collidedRocks)
-		rocks.remove(rock);
+		GetShip().m_player.m_session.m_universe->m_rockField.DestroyRock(rock);
 
 	// remove any collidedBullets
 	for (auto bullet : collidedBullets)
@@ -480,18 +527,18 @@ void Universe::ResizeEvent(int w, int h)
 
 void Universe::ClickEvent(uint16_t x, uint16_t y)
 {
-	auto randRange = 400;
+	auto randRange = ROCK_SPEED;
 
 	auto randX = rand() % randRange;
 	auto randY = rand() % randRange;
 
-	randX -= randRange / 2;
-	randY -= randRange / 2;
+	randX = randRange / 2 - randX;
+	randY = randRange / 2 - randY;
 
 	auto dx = static_cast<double>(randX) / static_cast<double>(FPS);
 	auto dy = static_cast<double>(randY) / static_cast<double>(FPS);
 
-	m_rockField.LaunchOne(static_cast<double>(x), static_cast<double>(y), dx, dy, 30);
+	m_rockField.LaunchOne(static_cast<double>(x), static_cast<double>(y), dx, dy, ROCK_RADIUS);
 }
 
 void Universe::KeyEvent(int key, bool isDown)
@@ -518,7 +565,7 @@ void Universe::TickEvent(AsteroidsSession& session)
 	// Update all AsteroidSession state for single/multiplayer modes.
 	{
 		auto numRocks = session.m_universe->m_rockField.m_rocks.size();
-		size_t outsize = sizeof(int16_t) + (numRocks * (2 * sizeof(int16_t)));
+		size_t outsize = sizeof(int16_t) + (numRocks * (3 * sizeof(int16_t)));
 
 		U_TRACE("numRocks: " << numRocks << ", outsize: " << outsize);
 		auto txBuff2 = std::make_unique<AppBuffer>(*txBuff, outsize, session.IsLittleEndian());
@@ -529,6 +576,7 @@ void Universe::TickEvent(AsteroidsSession& session)
 		{
 			txBuff2->set_uint16(static_cast<int16_t>(rock->x));
 			txBuff2->set_uint16(static_cast<int16_t>(rock->y));
+			txBuff2->set_uint16(static_cast<uint16_t>(rock->Radius()));
 		}
 
 		txBuff = std::move(txBuff2);
