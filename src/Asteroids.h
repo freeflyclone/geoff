@@ -24,7 +24,7 @@ namespace Asteroids
     const int SHIP_TURN_SPEED = 360;         // turn speed in degrees per second
     const float MUZZLE_VELOCITY = 500;		 // pixels per second
     const double ROCK_RADIUS = 32.0;         // Rock radius in pixels.
-    const int ROCK_SPEED = 400;              // Rock speed in pixels/second;
+    const int ROCK_SPEED = 50;               // Rock speed in pixels/second;
 
     class Gun;
     class Ship;
@@ -137,7 +137,7 @@ namespace Asteroids
         RockField(Universe& universe, int w, int h);
         ~RockField();
 
-        void LaunchOne(double x, double y, double dx, double dy, double radius);
+        void LaunchOne(double x, double y, double r);
         void DestroyRock(std::shared_ptr<Rock>);
 
         void ResizeEvent(int w, int h);
