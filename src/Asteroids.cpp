@@ -71,7 +71,7 @@ bool Bullet::TickTock()
 	if (ticksLeft)
 	{
 		auto ship = GetGun().GetShip();
-		auto ctx = (Asteroids::Context&)ship;
+		auto ctx = ship;
 
 		Position::x += Velocity::dx;
 		Position::y += Velocity::dy;
@@ -224,43 +224,13 @@ void Gun::TickTock()
 
 	bool bulletDone = false;
 
-	/*
-	// TODO: this is crap accessing technique.  Fix it with more elegance.
-	RockField::RocksList_t& rocks = GetShip().m_player.m_session.m_universe.m_rockField.m_rocks;
-	*/
-
-	// Check each Player Bullet...
 	for (auto bullet : m_bullets)
 	{
-		//bool bulletHit = false;
-
-		//...against bullet lifetime expiration...
 		if (bullet->TickTock())
 		{
 			G_TRACE(__FUNCTION__ << "bulletDone, m_bullets.size(): " << m_bullets.size());
 			bulletDone = true;
 		}
-
-		/*
-		//... and against ALL Universe rocks
-		for (auto rock : rocks)
-		{
-			auto distance = m_ship.m_player.m_session.DistanceBetweenPoints(*bullet, *rock);
-			if (distance < rock->Radius())
-			{
-				G_TRACE("Hit: @ x: " << bullet->x << ", y: " << bullet->y);
-				bulletHit = true;
-				collidedRocks.push_back(rock);
-				break;
-			}
-		}
-
-		if (bulletHit)
-		{
-			collidedBullets.push_back(bullet);
-		}
-		G_TRACE("There are " << rocks.size() << " rocks.");
-		*/
 	}
 
 	if (bulletDone)
@@ -271,16 +241,6 @@ void Gun::TickTock()
 			G_TRACE(__FUNCTION__ << "bulletDone, no more m_bullets");
 		}
 	}
-
-	/*
-	// remove any collidedRocks
-	for (auto rock : collidedRocks)
-		GetShip().m_player.m_session.m_universe.m_rockField.DestroyRock(rock);
-
-	// remove any collidedBullets
-	for (auto bullet : collidedBullets)
-		m_bullets.remove(bullet);
-	*/
 }
 
 #define SH_TRACE TRACE
@@ -450,8 +410,10 @@ void Player::TickEvent(AsteroidsSession& session)
 {
 	P_TRACE(__FUNCTION__ << ", sessionID: " << session.SessionID());
 
+	// update all Player specfic state here. (objects with TickEvent() handler)
 	m_ship.TickEvent();
 
+	// dump all player-specific state to the client
 	int16_t shipX, shipY, shipA;
 
 	m_ship.GetXY(shipX, shipY);
@@ -491,8 +453,6 @@ void Player::TickEvent(AsteroidsSession& session)
 		auto offset = txBuff->allocate(static_cast<int>(bulletsBuffer->size()));
 		txBuff->set_uint16(16, bulletsBuffer->get_uint16(0));
 		memcpy(txBuff->data() + offset, bulletsBuffer->data() + 2, bulletsBuffer->size() - 2);
-
-		//TRACE("");
 	}
 
 	session.CommitTxBuffer(txBuff);
@@ -534,14 +494,16 @@ void Universe::TickEvent()
 {
 	//U_TRACE(__FUNCTION__);
 
+	// update all Universe specfic state here.  (objects with TickEvent() handler)
 	m_rockField.TickEvent();
 
-	// TODO: collision detection
+	// Collision detection
 	// Rocks and/or Bullets to be destroyed AFTER all collision checks are complete.
 	// (deleting these in the collision detection loops causes mayhem)
 	RockField::RocksList_t collidedRocks;
 	Gun::BulletsList_t collidedBullets;
 
+	// Bullets vs Rocks collisions. (brute force, no optimization)
 	for (auto rock : m_rockField.m_rocks)
 	{
 		for (auto pair : m_sessions.get_map())
@@ -557,6 +519,7 @@ void Universe::TickEvent()
 				{
 					collidedRocks.push_back(rock);
 					collidedBullets.push_back(bullet);
+					break;
 				}
 			}
 
