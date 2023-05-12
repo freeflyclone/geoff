@@ -44,6 +44,11 @@ namespace Asteroids
         uint16_t offsetY;
     };
 
+    struct Size
+    {
+        double w, h;
+    };
+
     struct Position
     {
         double x, y;
@@ -150,7 +155,7 @@ namespace Asteroids
         RocksList_t m_rocks;
     };
 
-    class Player : public Context
+    class Player : public Size, public Position, public Context
     {
     public:
         Player(AsteroidsSession& session, int width, int height);
@@ -169,7 +174,7 @@ namespace Asteroids
 	// need to be conveyed to each client.
     // 
 	// We'll use a separate packet to the client for the Universe update "tick"
-    class Universe : public Context
+    class Universe : public Size, public Context
     {
     public:
         Universe(int width, int height, uint32_t interval);

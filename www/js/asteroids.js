@@ -31,6 +31,13 @@ var universeRocks = [];
 var universeShips = [];
 var universeBullets = [];
 
+var universeWidth;
+var universeHeight;
+var contextWidth;
+var contextHeight;
+var contextOffsetX;
+var contextOffsetY;
+
 function newGame() {
     level = 0;
     lives = GAME_LIVES;
@@ -682,18 +689,44 @@ function OnPlayerTickMessage(data) {
     view = new DataView(data);
     //console.log("PlayerTickMessage");
 
-    sessionID = view.getUint32(2);
-    tickCount = view.getUint32(6);
+    offset = 2;
+    sessionID = view.getUint32(offset);
+    offset += 4;
 
-    ship.Move(view.getInt16(10), view.getInt16(12), view.getInt16(14) / FP_4_12);
+    tickCount = view.getUint32(offset);
+    offset += 4;
 
-    if (view.byteLength == 18) {
+    contextWidth = view.getUint16(offset);
+    offset += 2;
+
+    contextHeight = view.getUint16(offset);
+    offset += 2;
+
+    contextOffsetX = view.getUint16(offset);
+    offset += 2;
+
+    contextOffsetY = view.getUint16(offset);
+    offset += 2;
+
+    shipX = view.getUint16(offset);
+    offset += 2;
+
+    shipY = view.getUint16(offset);
+    offset += 2;
+
+    shipAngle = view.getUint16(offset) / FP_4_12;
+    offset += 2;
+
+    ship.Move(shipX, shipY, shipAngle);
+
+    if (offset == view.byteLength) {
         ship.bullets = [];
         update();
         return;
     }
 
-    numBullets = view.getUint16(16);
+    numBullets = view.getUint16(offset);
+    offset += 2;
 
     if (numBullets > 0) {
         if (typeof ship.bullets == 'undefined') {
@@ -704,10 +737,17 @@ function OnPlayerTickMessage(data) {
         ship.bullets = [];
 
         for (i = 0; i < numBullets; i++) {
-            x = view.getUint16(18 + i * 4);
-            y = view.getUint16(20 + i * 4);
+            x = view.getUint16(offset);
+            offset += 2;
+
+            y = view.getUint16(offset);
+            offset += 2;
+
             ship.bullets.push({ x, y });
         }
+    }
+    else {
+        ship.bullets = [];
     }
 
     // some JavaScript file needs to define a single update() function
@@ -718,7 +758,7 @@ function OnPlayerTickMessage(data) {
 }
 
 function OnUniverseTickMessage(data) {
-    if (data.byteLength < 10)
+    if (data.byteLength < 14)
         return;
 
     view = new DataView(data);
@@ -735,6 +775,12 @@ function OnUniverseTickMessage(data) {
 
     tickCount = view.getUint32(offset);
     offset += 4;
+
+    universeWidth = view.getUint16(offset);
+    offset += 2;
+
+    universeHeight = view.getUint16(offset);
+    offset += 2;
 
     // there are no rocks, ships, or bullets
     if (offset == data.byteLength) {

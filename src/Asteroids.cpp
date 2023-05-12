@@ -406,20 +406,20 @@ void Player::KeyEvent(int key, bool isDown)
 	m_ship.KeyEvent(key, isDown);
 }
 
-void Player::ClickEvent(int x, int y)
+void Player::ClickEvent(int clickX, int clickY)
 {
 	P_TRACE(__FUNCTION__);
 
-	g_universe->m_rockField.LaunchOne(x, y, ROCK_RADIUS);
+	g_universe->m_rockField.LaunchOne(clickX, clickY, ROCK_RADIUS);
 }
 
-void Player::ResizeEvent(int w, int h)
+void Player::ResizeEvent(int eventW, int eventH)
 {
-	Context::Resize(static_cast<uint16_t>(w), static_cast<uint16_t>(h));
+	Context::Resize(static_cast<uint16_t>(eventW), static_cast<uint16_t>(eventH));
 	
 	// Any Context derived child objects should also have their
 	// Context::Resize() methods called here.
-	m_ship.Resize(static_cast<uint16_t>(w), static_cast<uint16_t>(h));
+	m_ship.Resize(static_cast<uint16_t>(eventW), static_cast<uint16_t>(eventH));
 }
 
 void Player::TickEvent(AsteroidsSession& session)
@@ -435,7 +435,7 @@ void Player::TickEvent(AsteroidsSession& session)
 	m_ship.GetXY(shipX, shipY);
 	m_ship.GetAngle(shipA);
 
-	size_t outSize = 18;
+	size_t outSize = 26;
 
 	// Handle m_bullets from gun
 	std::unique_ptr<AppBuffer> bulletsBuffer;
@@ -457,6 +457,12 @@ void Player::TickEvent(AsteroidsSession& session)
 	txBuff->set_uint8(static_cast<uint8_t>(WebsockSession::MessageType_t::PlayerTickMessage));
 	txBuff->set_uint32(session.SessionID());
 	txBuff->set_uint32(session.GetTimerTick());
+
+	txBuff->set_uint16(Context::width);
+	txBuff->set_uint16(Context::height);
+	txBuff->set_uint16(Context::offsetX);
+	txBuff->set_uint16(Context::offsetY);
+
 	txBuff->set_uint16(shipX);
 	txBuff->set_uint16(shipY);
 	txBuff->set_uint16(shipA);
@@ -464,10 +470,10 @@ void Player::TickEvent(AsteroidsSession& session)
 	// default bullet count to 0
 	txBuff->set_uint16(0);
 
-	if (outSize > 18)
+	if (outSize > 26)
 	{
 		auto offset = txBuff->allocate(static_cast<int>(bulletsBuffer->size()));
-		txBuff->set_uint16(16, bulletsBuffer->get_uint16(0));
+		txBuff->set_uint16(24, bulletsBuffer->get_uint16(0));
 		memcpy(txBuff->data() + offset, bulletsBuffer->data() + 2, bulletsBuffer->size() - 2);
 	}
 
@@ -601,12 +607,14 @@ void Universe::PerSessionTickEvent(AsteroidsSession& session)
 	//U_TRACE(__FUNCTION__ << ", session ID : " << session.SessionID());
 
 	// initial AppBuffer: just the UniverseTickMessage header
-	auto txBuff = std::make_unique<AppBuffer>(10, session.IsLittleEndian());
+	auto txBuff = std::make_unique<AppBuffer>(14, session.IsLittleEndian());
 
 	txBuff->set_uint8(0xBB);
 	txBuff->set_uint8(static_cast<uint8_t>(WebsockSession::MessageType_t::UniverseTickMessage));
 	txBuff->set_uint32(session.SessionID());
 	txBuff->set_uint32(session.GetTimerTick());
+	txBuff->set_uint16(Context::width);
+	txBuff->set_uint16(Context::height);
 
 	// Update all AsteroidSession state for single/multiplayer modes.
 	{
