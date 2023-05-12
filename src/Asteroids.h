@@ -65,6 +65,8 @@ namespace Asteroids
 
     class Gun {
     public:
+        typedef std::list<std::shared_ptr<Bullet>> BulletsList_t;
+
         Gun(Ship& s) : m_ship(s) {}
         ~Gun() {}
 
@@ -73,7 +75,7 @@ namespace Asteroids
         std::unique_ptr<AppBuffer> MakeBulletsPacket(bool isLittleEndian);
         Ship& GetShip() { return m_ship; }
 
-        std::list<std::shared_ptr<Bullet>> m_bullets;
+        BulletsList_t m_bullets;
 
     private:
         Ship& m_ship;
@@ -128,6 +130,8 @@ namespace Asteroids
     class RockField : public Context
     {
     public:
+        typedef std::list<std::shared_ptr<Rock>> RocksList_t;
+
         RockField(Universe& universe, int w, int h);
         ~RockField();
 
@@ -137,7 +141,7 @@ namespace Asteroids
         void TickEvent(AsteroidsSession&);
 
         Universe& m_universe;
-        std::list<std::shared_ptr<Rock>>& m_rocks;
+        RocksList_t& m_rocks;
     };
 
     class Player : public Context

@@ -19,7 +19,7 @@ using namespace Websock;
 namespace Asteroids
 {
 	std::mutex g_rocks_mutex;
-	std::list<std::shared_ptr<Rock>> g_rocks;
+	RockField::RocksList_t g_rocks;
 };
 
 #define CTX_TRACE(...)
@@ -188,44 +188,48 @@ void Gun::TickTock()
 		return;
 
 	bool bulletDone = false;
-	std::list<std::shared_ptr<Rock>>& rocks = GetShip().m_player.m_session.m_universe->m_rockField.m_rocks;
 
-	// update bullet lifetime ticks
+	// Rocks and/or Bullets to be destroyed AFTER all collision checks are complete.
+	// (deleting these in the collision detection loops causes mayhem)
+	RockField::RocksList_t collidedRocks;
+	Gun::BulletsList_t collidedBullets                                                                                                                                                                                               ;
+
+	// TODO: this is crap accessing technique.  Fix it with more elegance.
+	RockField::RocksList_t& rocks = GetShip().m_player.m_session.m_universe->m_rockField.m_rocks;
+
+	// Check each Player Bullet...
 	for (auto bullet : m_bullets)
 	{
 		bool bulletHit = false;
 
+		//...against bullet lifetime expiration...
 		if (bullet->TickTock())
 		{
 			G_TRACE(__FUNCTION__ << "bulletDone, m_bullets.size(): " << m_bullets.size());
 			bulletDone = true;
 		}
 
+		//... and against ALL Universe rocks
 		for (auto rock : rocks)
 		{
 			auto distance = m_ship.m_player.m_session.DistanceBetweenPoints(*bullet, *rock);
 			if (distance < rock->Radius())
 			{
-				TRACE("Hit: @ x: " << bullet->x << ", y: " << bullet->y);
+				G_TRACE("Hit: @ x: " << bullet->x << ", y: " << bullet->y);
 				bulletHit = true;
-				rocks.remove(rock);
-				rock.reset();
-				if (rocks.empty())
-					break;
+				collidedRocks.push_back(rock);
+				break;
 			}
 		}
 
 		if (bulletHit)
 		{
-			m_bullets.remove(bullet);
-			bullet.reset();
-			if (m_bullets.empty())
-				break;
+			collidedBullets.push_back(bullet);
 		}
-		//TRACE("There are " << rocks.size() << " rocks.");
+		G_TRACE("There are " << rocks.size() << " rocks.");
 	}
 
-	if (bulletDone && !m_bullets.empty())
+	if (bulletDone)
 	{
 		m_bullets.pop_front();
 		if (m_bullets.size() == 0)
@@ -233,6 +237,14 @@ void Gun::TickTock()
 			G_TRACE(__FUNCTION__ << "bulletDone, no more m_bullets");
 		}
 	}
+
+	// remove any collidedRocks
+	for (auto rock : collidedRocks)
+		rocks.remove(rock);
+
+	// remove any collidedBullets
+	for (auto bullet : collidedBullets)
+		m_bullets.remove(bullet);
 }
 
 #define SH_TRACE TRACE
