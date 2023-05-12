@@ -462,6 +462,46 @@ function drawRocks() {
     }
 }
 
+function drawRadar() {
+    var radarScaler = 32;
+
+    var radarWidth = universeWidth / radarScaler;
+    var radarHeight = universeHeight / radarScaler;
+    var radarWX = contextOffsetX / radarScaler;
+    var radarWY = contextOffsetY / radarScaler;
+    var radarWW = contextWidth / radarScaler;
+    var radarWH = contextHeight / radarScaler;
+
+    var radarStartX = contextWidth - radarWidth;
+    var radarStartY = 0;
+    var radarCenterX = radarStartX + radarWidth / 2;
+    var radarCenterY = radarStartY + radarHeight / 2;
+
+    ctx.strokeStyle = "blue";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.rect(contextWidth - radarWidth, 0, radarWidth, radarHeight);
+    ctx.closePath();
+    ctx.stroke();
+
+    ctx.strokeStyle = "cyan";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.rect(radarCenterX - radarWW / 2, radarCenterY - radarWH / 2, radarWW, radarWH);
+    ctx.closePath();
+    ctx.stroke();
+
+    /*
+    console.log(
+          "uw: " + universeWidth +
+        ", uh: " + universeHeight +
+        ", cw: " + contextWidth +
+        ", ch: " + contextHeight +
+        ", ox: " + contextOffsetX +
+        ", oy: " + contextOffsetY);
+    */
+}
+
 function drawGameInfo() {
     var exploding = ship.explodeTime > 0;
 
@@ -645,6 +685,7 @@ function update() {
     drawOtherShips();
     drawOtherBullets();
     drawRocks();
+    drawRadar();
 
     //drawLasers();
     //drawGameInfo();

@@ -31,8 +31,8 @@ namespace Asteroids
 	}
 };
 
-//#define CTX_TRACE(...)
-#define CTX_TRACE TRACE
+#define CTX_TRACE(...)
+//#define CTX_TRACE TRACE
 
 void Context::Resize(uint16_t w, uint16_t h)
 {
