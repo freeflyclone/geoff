@@ -23,9 +23,14 @@ namespace Asteroids
     const int SHIP_THRUST = 10;              // acceleration of the ship in pixels per second per second
     const int SHIP_TURN_SPEED = 360;         // turn speed in degrees per second
     const float MUZZLE_VELOCITY = 500;		 // pixels per second
+    const double ROCK_RADIUS = 32.0;         // Rock radius in pixels.
+    const int ROCK_SPEED = 400;              // Rock speed in pixels/second;
 
     class Gun;
     class Ship;
+    class RockField;
+    class Player;
+    class Universe;
 
     struct Context
     {
@@ -62,6 +67,8 @@ namespace Asteroids
 
     class Gun {
     public:
+        typedef std::list<std::shared_ptr<Bullet>> BulletsList_t;
+
         Gun(Ship& s) : m_ship(s) {}
         ~Gun() {}
 
@@ -70,7 +77,7 @@ namespace Asteroids
         std::unique_ptr<AppBuffer> MakeBulletsPacket(bool isLittleEndian);
         Ship& GetShip() { return m_ship; }
 
-        std::list<std::shared_ptr<Bullet>> m_bullets;
+        BulletsList_t m_bullets;
 
     private:
         Ship& m_ship;
@@ -79,7 +86,7 @@ namespace Asteroids
 	class Ship : public Context, public Position, public Velocity
 	{
 	public:
-		Ship(int windowWidth, int windowHeight, double x, double y, double angle);
+		Ship(Player& player, int windowWidth, int windowHeight, double x, double y, double angle);
 
 		~Ship();
 
@@ -90,6 +97,7 @@ namespace Asteroids
 		void KeyEvent(int key, bool isDown);
 		void TickEvent();
 
+        Player& m_player;
         std::shared_ptr<Gun> m_gun;
 
     private:
@@ -104,16 +112,52 @@ namespace Asteroids
         bool m_show_position;
 	};
 
+    class Rock : public Position, public Velocity
+    {
+    public:
+        Rock(RockField& field, double x, double y, double dx, double dy, double radius);
+        ~Rock();
+
+        bool TickTock();
+
+        RockField& GetRockField() { return m_field; };
+        double Radius() { return m_radius;  }
+
+    private:
+        RockField& m_field;
+
+        double m_radius;
+    };
+
+    class RockField : public Context
+    {
+    public:
+        typedef std::list<std::shared_ptr<Rock>> RocksList_t;
+
+        RockField(Universe& universe, int w, int h);
+        ~RockField();
+
+        void LaunchOne(double x, double y, double dx, double dy, double radius);
+        void DestroyRock(std::shared_ptr<Rock>);
+
+        void ResizeEvent(int w, int h);
+        void TickEvent(AsteroidsSession&);
+
+        Universe& m_universe;
+        RocksList_t& m_rocks;
+    };
+
     class Player : public Context
     {
     public:
-        Player(int width, int height);
+        Player(AsteroidsSession& session, int width, int height);
         ~Player();
 
         void KeyEvent(int key, bool isDown);
         void ResizeEvent(int w, int h);
         void TickEvent(AsteroidsSession&);
     
+        AsteroidsSession& m_session;
         Ship m_ship;
     };
 
@@ -123,15 +167,21 @@ namespace Asteroids
     class Universe : public Context
     {
     public:
-        Universe(int width, int height);
+        Universe(AsteroidsSession& session, int width, int height);
         ~Universe();
 
+        void ClickEvent(uint16_t x, uint16_t y);
+        void KeyEvent(int key, bool isDown);
         void ResizeEvent(int w, int h);
         void TickEvent(AsteroidsSession &);
 
+        RockField m_rockField;
+
     private:
+        AsteroidsSession& m_session;
         WebsockSessionManager<AsteroidsSession>& m_sessions;
     };
+
 };
 
 #endif // ASTEROIDS

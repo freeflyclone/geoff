@@ -14,6 +14,14 @@ namespace Websock
 };
 using namespace Websock;
 
+// Data that all AsteroidsSession instances need access to
+// in single and/or multiplayer mode.
+namespace Asteroids
+{
+	std::mutex g_rocks_mutex;
+	RockField::RocksList_t g_rocks;
+};
+
 #define CTX_TRACE(...)
 //#define CTX_TRACE TRACE
 
@@ -68,6 +76,123 @@ bool Bullet::TickTock()
 	return ticksLeft == 0;
 }
 
+Rock::Rock(RockField& field, double x, double y, double dx, double dy, double radius)
+	:
+	Position({ x,y }),
+	Velocity({ dx,dy }),
+	m_field(field),
+	m_radius(radius)
+{
+	//TRACE("New rock - x: " << Position::x << ", y:" << Position::y << "dx: " << Velocity::dx << ", dy: " << Velocity::dy);
+}
+
+Rock::~Rock()
+{
+}
+
+bool Rock::TickTock()
+{
+	auto rockField = GetRockField();
+	auto ctx = (Asteroids::Context&)rockField;
+
+	Position::x += Velocity::dx;
+	Position::y += Velocity::dy;
+
+	if (Position::x > ctx.width)
+		Position::x = 0.0;
+	if (Position::x < 0.0)
+		Position::x = (double)ctx.width;
+
+	if (Position::y > ctx.height)
+		Position::y = 0.0;
+	if (Position::y < 0.0)
+		Position::y = (double)ctx.height;
+
+	//TRACE(__FUNCTION__ << "x: " << Position::x << ", y: " << Position::y);
+
+	return true;
+}
+
+RockField::RockField(Universe& universe, int w, int h)
+	:
+	Context({ static_cast<uint16_t>(w), static_cast<uint16_t>(h) }),
+	m_universe(universe),
+	m_rocks(g_rocks)
+{
+
+}
+
+RockField::~RockField()
+{
+}
+
+void RockField::LaunchOne(double x, double y, double dx, double dy, double radius)
+{
+	m_rocks.emplace_back(std::make_unique<Rock>(*this, x, y, dx, dy, radius));
+
+	//TRACE(__FUNCTION__ << "x: " << x << ", y: " << y << ", radius: " << radius << ", " << m_rocks.size() << " rock(s) exist.");
+}
+
+void RockField::DestroyRock(std::shared_ptr<Rock> rock)
+{
+	m_rocks.remove(rock);
+	int randRange = ROCK_SPEED;
+	int randX, randY;
+	double dx, dy;
+
+	//TRACE("Destroy Rock: X: " << rock->x << ", Y: " << rock->y << ", radius: " << rock->Radius());
+
+	if (rock->Radius() >= ROCK_RADIUS)
+	{
+		randX = rand() % randRange;
+		randY = rand() % randRange;
+		randX -= randRange / 2;
+		randY -= randRange / 2;
+		dx = static_cast<double>(randX) / static_cast<double>(FPS);
+		dy = static_cast<double>(randY) / static_cast<double>(FPS);
+		LaunchOne(rock->x, rock->y, rock->dx + dx, rock->dy + dy, rock->Radius() / 2);
+
+		randX = rand() % randRange;
+		randY = rand() % randRange;
+		randX -= randRange / 2;
+		randY -= randRange / 2;
+		dx = static_cast<double>(randX) / static_cast<double>(FPS);
+		dy = static_cast<double>(randY) / static_cast<double>(FPS);
+		LaunchOne(rock->x, rock->y, rock->dx + dx, rock->dy + dy, rock->Radius() / 2);
+	}
+	else if (rock->Radius() >= ROCK_RADIUS / 2)
+	{
+		randX = rand() % randRange;
+		randY = rand() % randRange;
+		randX -= randRange / 2;
+		randY -= randRange / 2;
+		dx = static_cast<double>(randX) / static_cast<double>(FPS);
+		dy = static_cast<double>(randY) / static_cast<double>(FPS);
+		LaunchOne(rock->x, rock->y, rock->dx + dx, rock->dy + dy, rock->Radius() / 2);
+
+		randX = rand() % randRange;
+		randY = rand() % randRange;
+		randX -= randRange / 2;
+		randY -= randRange / 2;
+		dx = static_cast<double>(randX) / static_cast<double>(FPS);
+		dy = static_cast<double>(randY) / static_cast<double>(FPS);
+		LaunchOne(rock->x, rock->y, rock->dx + dx, rock->dy + dy, rock->Radius() / 2);
+	}
+}
+
+void RockField::ResizeEvent(int w, int h)
+{
+	Resize(static_cast<uint16_t>(w), static_cast<uint16_t>(h));
+}
+
+void RockField::TickEvent(AsteroidsSession&) 
+{
+	for (auto rock : m_rocks)
+	{
+		rock->TickTock();
+	}
+}
+
 #define G_TRACE(...)
 //#define G_TRACE TRACE
 void Gun::Fire(double x, double y, double dx, double dy)
@@ -111,14 +236,44 @@ void Gun::TickTock()
 
 	bool bulletDone = false;
 
-	// update bullet lifetime ticks
+	// Rocks and/or Bullets to be destroyed AFTER all collision checks are complete.
+	// (deleting these in the collision detection loops causes mayhem)
+	RockField::RocksList_t collidedRocks;
+	Gun::BulletsList_t collidedBullets                                                                                                                                                                                               ;
+
+	// TODO: this is crap accessing technique.  Fix it with more elegance.
+	RockField::RocksList_t& rocks = GetShip().m_player.m_session.m_universe->m_rockField.m_rocks;
+
+	// Check each Player Bullet...
 	for (auto bullet : m_bullets)
 	{
+		bool bulletHit = false;
+
+		//...against bullet lifetime expiration...
 		if (bullet->TickTock())
 		{
 			G_TRACE(__FUNCTION__ << "bulletDone, m_bullets.size(): " << m_bullets.size());
 			bulletDone = true;
 		}
+
+		//... and against ALL Universe rocks
+		for (auto rock : rocks)
+		{
+			auto distance = m_ship.m_player.m_session.DistanceBetweenPoints(*bullet, *rock);
+			if (distance < rock->Radius())
+			{
+				G_TRACE("Hit: @ x: " << bullet->x << ", y: " << bullet->y);
+				bulletHit = true;
+				collidedRocks.push_back(rock);
+				break;
+			}
+		}
+
+		if (bulletHit)
+		{
+			collidedBullets.push_back(bullet);
+		}
+		G_TRACE("There are " << rocks.size() << " rocks.");
 	}
 
 	if (bulletDone)
@@ -129,15 +284,24 @@ void Gun::TickTock()
 			G_TRACE(__FUNCTION__ << "bulletDone, no more m_bullets");
 		}
 	}
+
+	// remove any collidedRocks
+	for (auto rock : collidedRocks)
+		GetShip().m_player.m_session.m_universe->m_rockField.DestroyRock(rock);
+
+	// remove any collidedBullets
+	for (auto bullet : collidedBullets)
+		m_bullets.remove(bullet);
 }
 
 #define SH_TRACE TRACE
 //#define SH_TRACE(...)
 
-Ship::Ship(int windowWidth, int windowHeight, double x, double y, double angle) :
+Ship::Ship(Player& player, int windowWidth, int windowHeight, double x, double y, double angle) :
 	Context({ static_cast<uint16_t>(windowWidth), static_cast<uint16_t>(windowHeight)}),
 	Position({ x,y }),
 	Velocity({ 0,0 }),
+	m_player(player),
 	m_gun(std::make_unique<Gun>(*this)),
 	m_angle(angle),
 	m_radius(SHIP_SIZE),
@@ -257,10 +421,11 @@ void Ship::TickEvent()
 //#define P_TRACE TRACE
 #define P_TRACE(...)
 
-Player::Player(int width, int height)
+Player::Player(AsteroidsSession& session, int width, int height)
 	:
 	Context({ static_cast<uint16_t>(width), static_cast<uint16_t>(height) }),
-	m_ship(width, height, width / 2, height / 2, static_cast<float>(M_PI / 2.0f))
+	m_session(session),
+	m_ship(*this, width, height, width / 2, height / 2, static_cast<float>(M_PI / 2.0f))
 {
 	P_TRACE(__FUNCTION__);
 }
@@ -337,11 +502,14 @@ void Player::TickEvent(AsteroidsSession& session)
 	session.CommitTxBuffer(txBuff);
 }
 
-#define U_TRACE TRACE
+//#define U_TRACE TRACE
+#define U_TRACE(...)
 
-Universe::Universe(int width, int height)
+Universe::Universe(AsteroidsSession& session, int width, int height)
 	:
 	Context({ static_cast<uint16_t>(width), static_cast<uint16_t>(height) }),
+	m_rockField(*this, width, height),
+	m_session(session),
 	m_sessions(g_sessions)
 {
 	U_TRACE(__FUNCTION__ << ", Session count:" << m_sessions.get_count());
@@ -357,81 +525,72 @@ void Universe::ResizeEvent(int w, int h)
 	Context::Resize(static_cast<uint16_t>(w), static_cast<uint16_t>(h));
 }
 
+void Universe::ClickEvent(uint16_t x, uint16_t y)
+{
+	auto randRange = ROCK_SPEED;
+
+	auto randX = rand() % randRange;
+	auto randY = rand() % randRange;
+
+	randX = randRange / 2 - randX;
+	randY = randRange / 2 - randY;
+
+	auto dx = static_cast<double>(randX) / static_cast<double>(FPS);
+	auto dy = static_cast<double>(randY) / static_cast<double>(FPS);
+
+	m_rockField.LaunchOne(static_cast<double>(x), static_cast<double>(y), dx, dy, ROCK_RADIUS);
+}
+
+void Universe::KeyEvent(int key, bool isDown)
+{
+	(void)key;
+	(void)isDown;
+	U_TRACE(__FUNCTION__);
+}
+
 void Universe::TickEvent(AsteroidsSession& session)
 {
 	//U_TRACE(__FUNCTION__ << ", session ID : " << session.SessionID());
 
-	// the number of active sessions gives us the (possible) number of ships in the Universe
-	// Possible because a session doesn't have a ship until the client side registers new session.
-	size_t numShips = 0;
+	m_rockField.TickEvent(session);
 
-	// go through all sessions looking for those that with valid Asteroids::Player
-	// and hence a valid ship
-	for (auto pair : m_sessions.get_map())
-	{
-		auto sessionID = pair.first;
-		auto sessPtr = pair.second;
-
-		// don't count ourself, and don't count unregistered sessions
-		if (sessionID == session.SessionID() || !sessPtr->m_player)
-			continue;
-
-		numShips++;
-	}
-
-	auto count = numShips;
-	size_t outsize = sizeof(int16_t) + (count * (3 * sizeof(int16_t)));
-
-	auto txBuff = std::make_unique<AppBuffer>(10 + outsize, session.IsLittleEndian());
+	// initial AppBuffer: just the UniverseTickMessage header
+	auto txBuff = std::make_unique<AppBuffer>(10, session.IsLittleEndian());
 
 	txBuff->set_uint8(0xBB);
 	txBuff->set_uint8(static_cast<uint8_t>(WebsockSession::MessageType_t::UniverseTickMessage));
 	txBuff->set_uint32(session.SessionID());
 	txBuff->set_uint32(session.GetTimerTick());
 
-	txBuff->set_uint16(static_cast<uint16_t>(count));
-
-	if (count == 0)
+	// Update all AsteroidSession state for single/multiplayer modes.
 	{
-		session.CommitTxBuffer(txBuff);
-		return;
+		auto numRocks = session.m_universe->m_rockField.m_rocks.size();
+		size_t outsize = sizeof(int16_t) + (numRocks * (3 * sizeof(int16_t)));
+
+		U_TRACE("numRocks: " << numRocks << ", outsize: " << outsize);
+		auto txBuff2 = std::make_unique<AppBuffer>(*txBuff, outsize, session.IsLittleEndian());
+
+		txBuff2->set_uint16(static_cast<uint16_t>(numRocks));
+
+		for (auto rock : session.m_universe->m_rockField.m_rocks)
+		{
+			txBuff2->set_uint16(static_cast<int16_t>(rock->x));
+			txBuff2->set_uint16(static_cast<int16_t>(rock->y));
+			txBuff2->set_uint16(static_cast<uint16_t>(rock->Radius()));
+		}
+
+		txBuff = std::move(txBuff2);
 	}
 
-	size_t totalBullets = 0;
-
-	// Add all other ship's x,y,angle variables to tick message
-	for (auto pair : m_sessions.get_map())
+	bool doShips = true;
+	if (doShips)
 	{
-		auto sessionID = pair.first;
-		auto sessPtr = pair.second;
+		// the number of active sessions gives us the (possible) number of ships in the Universe
+		// Possible because a session doesn't have a ship until the client side registers new session.
+		size_t numShips = 0;
 
-		// don't count ourself, and don't count unregistered sessions
-		if (sessionID == session.SessionID() || !sessPtr->m_player)
-			continue;
-
-		totalBullets += sessPtr->m_player->m_ship.m_gun->m_bullets.size();
-
-		int16_t shipX, shipY, shipAngle;
-
-		sessPtr->m_player->m_ship.GetXY(shipX, shipY);
-		sessPtr->m_player->m_ship.GetAngle(shipAngle);
-
-		txBuff->set_uint16(shipX);
-		txBuff->set_uint16(shipY);
-		txBuff->set_uint16(shipAngle);
-	}
-
-	// figure out how much room is needed for bullets, make new AppBuffer from "txBuffer" but with moreRoom
-	auto bulletsSpace = sizeof(uint16_t) + (sizeof(uint16_t) + totalBullets * 2 * sizeof(int16_t));
-	auto txBuff2 = std::make_unique<AppBuffer>(*txBuff, bulletsSpace, session.IsLittleEndian());
-
-	txBuff2->set_uint16(static_cast<uint16_t>(totalBullets));
-
-	// add all other ship's bullets at end of all other ships
-	if (totalBullets)
-	{
-		//U_TRACE(__FUNCTION__ << "writeOffset: " << txBuff2->bytesWritten() << ", size: " << txBuff2->size());
-
+		// go through all sessions looking for those with valid Asteroids::Player
+		// and hence a valid ship
 		for (auto pair : m_sessions.get_map())
 		{
 			auto sessionID = pair.first;
@@ -441,15 +600,69 @@ void Universe::TickEvent(AsteroidsSession& session)
 			if (sessionID == session.SessionID() || !sessPtr->m_player)
 				continue;
 
-			for (auto bullet : sessPtr->m_player->m_ship.m_gun->m_bullets)
+			numShips++;
+		}
+
+		auto count = numShips;
+		size_t outsize = sizeof(int16_t) + (count * (3 * sizeof(int16_t)));
+
+		// new AppBuffer with contents of initial AppBuffer (header), plus room for ships data
+		auto txBuff2 = std::make_unique<AppBuffer>(*txBuff, outsize, session.IsLittleEndian());
+		txBuff2->set_uint16(static_cast<uint16_t>(count));
+
+		size_t totalBullets = 0;
+
+		// Add all other ship's x,y,angle variables to tick message
+		for (auto pair : m_sessions.get_map())
+		{
+			auto sessionID = pair.first;
+			auto sessPtr = pair.second;
+
+			// don't count ourself, and don't count unregistered sessions
+			if (sessionID == session.SessionID() || !sessPtr->m_player)
+				continue;
+
+			totalBullets += sessPtr->m_player->m_ship.m_gun->m_bullets.size();
+
+			int16_t shipX, shipY, shipAngle;
+
+			sessPtr->m_player->m_ship.GetXY(shipX, shipY);
+			sessPtr->m_player->m_ship.GetAngle(shipAngle);
+
+			txBuff2->set_uint16(shipX);
+			txBuff2->set_uint16(shipY);
+			txBuff2->set_uint16(shipAngle);
+		}
+
+		// figure out how much room is needed for bullets, make new AppBuffer from "txBuffer" but with moreRoom
+		auto bulletsSpace = sizeof(uint16_t) + (sizeof(uint16_t) + totalBullets * 2 * sizeof(int16_t));
+		auto txBuff3 = std::make_unique<AppBuffer>(*txBuff2, bulletsSpace, session.IsLittleEndian());
+
+		txBuff3->set_uint16(static_cast<uint16_t>(totalBullets));
+
+		// add all other ship's bullets at end of all other ships
+		if (totalBullets)
+		{
+			//U_TRACE(__FUNCTION__ << "writeOffset: " << txBuff2->bytesWritten() << ", size: " << txBuff2->size());
+
+			for (auto pair : m_sessions.get_map())
 			{
-				txBuff2->set_uint16(static_cast<int16_t>(bullet->x));
-				txBuff2->set_uint16(static_cast<int16_t>(bullet->y));
+				auto sessionID = pair.first;
+				auto sessPtr = pair.second;
+
+				// don't count ourself, and don't count unregistered sessions
+				if (sessionID == session.SessionID() || !sessPtr->m_player)
+					continue;
+
+				for (auto bullet : sessPtr->m_player->m_ship.m_gun->m_bullets)
+				{
+					txBuff3->set_uint16(static_cast<int16_t>(bullet->x));
+					txBuff3->set_uint16(static_cast<int16_t>(bullet->y));
+				}
 			}
 		}
+		txBuff = std::move(txBuff3);
 	}
-
-	txBuff = std::move(txBuff2);
 
 	session.CommitTxBuffer(txBuff);
 }

@@ -599,6 +599,8 @@ int main(int argc, char* argv[])
     // basis.
     WebsockServer::GetInstance().IoContext(&ioc);
 
+    srand((unsigned)time(NULL));
+
 #ifdef _WIN64
     auto ctx = SSLContext(ec);
 #elif __linux__
