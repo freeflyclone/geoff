@@ -25,28 +25,29 @@ namespace Asteroids
 	const Universe& Init(int w, int h)
 	{
 		if (!g_universe)
-		{
 			g_universe = std::make_unique<Universe>(w, h, 1000000 / FPS);
-			TRACE(__FUNCTION__ << ", New Universe");
-		}
-		else
-		{
-			TRACE(__FUNCTION__ << ", Same Universe");
-		}
 
 		return *g_universe;
 	}
 };
 
-#define CTX_TRACE(...)
-//#define CTX_TRACE TRACE
+//#define CTX_TRACE(...)
+#define CTX_TRACE TRACE
 
 void Context::Resize(uint16_t w, uint16_t h)
 {
 	width = w;
 	height = h;
 
-	CTX_TRACE(__FUNCTION__ << "width: " << width << ", height : " << height);
+	CTX_TRACE(__FUNCTION__ << "width: " << width << ", height: " << height);
+}
+
+void Context::Move(uint16_t x, uint16_t y)
+{
+	offsetX = x;
+	offsetY = y;
+
+	CTX_TRACE(__FUNCTION__ << "offsetX: " << offsetX << ", offsetY: " << offsetY);
 }
 
 Bullet::Bullet(Gun &g, double x, double y, double dx, double dy)
@@ -131,7 +132,12 @@ bool Rock::TickTock()
 
 RockField::RockField(Universe& universe, int w, int h)
 	:
-	Context({ static_cast<uint16_t>(w), static_cast<uint16_t>(h) }),
+	Context({ 
+		static_cast<uint16_t>(w), 
+		static_cast<uint16_t>(h), 
+		static_cast<uint16_t>(w/2),
+		static_cast<uint16_t>(h/2)
+	}),
 	m_universe(universe)
 {
 
@@ -246,8 +252,13 @@ void Gun::TickTock()
 #define SH_TRACE TRACE
 //#define SH_TRACE(...)
 
-Ship::Ship(Player& player, int windowWidth, int windowHeight, double x, double y, double angle) :
-	Context({ static_cast<uint16_t>(windowWidth), static_cast<uint16_t>(windowHeight)}),
+Ship::Ship(Player& player, int w, int h, double x, double y, double angle) :
+	Context({
+		static_cast<uint16_t>(w),
+		static_cast<uint16_t>(h),
+		static_cast<uint16_t>(w / 2),
+		static_cast<uint16_t>(h / 2)
+		}),
 	Position({ x,y }),
 	Velocity({ 0,0 }),
 	m_player(player),
@@ -370,11 +381,16 @@ void Ship::TickEvent()
 //#define P_TRACE TRACE
 #define P_TRACE(...)
 
-Player::Player(AsteroidsSession& session, int width, int height)
+Player::Player(AsteroidsSession& session, int w, int h)
 	:
-	Context({ static_cast<uint16_t>(width), static_cast<uint16_t>(height) }),
+	Context({
+		static_cast<uint16_t>(w),
+		static_cast<uint16_t>(h),
+		static_cast<uint16_t>(w / 2),
+		static_cast<uint16_t>(h / 2)
+		}),
 	m_session(session),
-	m_ship(*this, width, height, width / 2, height / 2, static_cast<float>(M_PI / 2.0f))
+	m_ship(*this, w, h, w / 2, h / 2, static_cast<float>(M_PI / 2.0f))
 {
 	P_TRACE(__FUNCTION__);
 }
@@ -461,14 +477,19 @@ void Player::TickEvent(AsteroidsSession& session)
 #define U_TRACE TRACE
 //#define U_TRACE(...)
 
-Universe::Universe(int width, int height, uint32_t interval)
+Universe::Universe(int w, int h, uint32_t interval)
 	:
-	Context({ static_cast<uint16_t>(width), static_cast<uint16_t>(height) }),
-	m_rockField(*this, width, height),
+	Context({
+		static_cast<uint16_t>(w),
+		static_cast<uint16_t>(h),
+		static_cast<uint16_t>(w / 2),
+		static_cast<uint16_t>(h / 2)
+		}),
+	m_rockField(*this, w, h),
 	m_sessions(g_sessions),
 	m_tick_interval_in_us(interval)
 {
-	U_TRACE(__FUNCTION__ << ", width: " << width << ", height: " << height << ", interval: " << interval << ", Session count : " << m_sessions.get_count());
+	U_TRACE(__FUNCTION__ << ", width: " << w << ", height: " << h << ", interval: " << interval << ", Session count : " << m_sessions.get_count());
 
 	m_timer = std::make_unique<net::deadline_timer>(*WebsockServer::GetInstance().IoContext(), boost::posix_time::microseconds(m_tick_interval_in_us));
 	m_run_timer = true;
