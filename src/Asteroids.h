@@ -185,6 +185,7 @@ namespace Asteroids
         // borrow from GameSession
         void TickEvent();
         void TimerTicker();
+        uint32_t GetTimerTick() { return m_timer_tick; }
 
         RockField m_rockField;
 
@@ -195,6 +196,7 @@ namespace Asteroids
         uint32_t m_tick_interval_in_us;
         bool m_timer_complete;
         bool m_run_timer;
+        uint32_t m_timer_tick;
     };
 
     extern std::unique_ptr<Universe> g_universe;

@@ -567,6 +567,8 @@ void Universe::TickEvent()
 		session->HandleTimerTick();
 		PerSessionTickEvent(*session);
 	}
+
+	m_timer_tick++;
 }
 
 void Universe::TimerTicker()

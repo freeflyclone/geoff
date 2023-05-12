@@ -37,11 +37,6 @@ public:
 	GameSession(uint32_t sessionID);
 	~GameSession();
 
-	void StartTimer();
-	void StopTimer();
-	void SetIntervalInUs(uint32_t interval);
-	uint32_t GetTimerTick() { return m_timer_tick; }
-
 	void CommsHandler(AppBuffer &) override;
 
 	friend std::ostream& operator<<(std::ostream& os, const GameSession& gs);
@@ -52,15 +47,6 @@ protected:
 	virtual void HandleClickEvent(AppBuffer& rxBuffer);
 	virtual void HandleResizeEvent(AppBuffer& rxBuffer);
 	virtual void HandleTimerTick();
-
-	void TimerTicker();
-
-	std::unique_ptr<net::deadline_timer> m_timer;
-
-	bool m_run_timer;
-	int m_timer_complete;
-	uint32_t m_timer_tick;
-	uint32_t m_tick_interval_in_us;
 };
 
 #endif
