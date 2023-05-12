@@ -440,7 +440,7 @@ void Player::TickEvent(AsteroidsSession& session)
 	txBuff->set_uint8(0xBB);
 	txBuff->set_uint8(static_cast<uint8_t>(WebsockSession::MessageType_t::PlayerTickMessage));
 	txBuff->set_uint32(session.SessionID());
-	txBuff->set_uint32(session.GetTimerTick());
+	txBuff->set_uint32(g_universe->GetTimerTick());
 	txBuff->set_uint16(shipX);
 	txBuff->set_uint16(shipY);
 	txBuff->set_uint16(shipA);
@@ -540,6 +540,8 @@ void Universe::TickEvent()
 		session->HandleTimerTick();
 		PerSessionTickEvent(*session);
 	}
+
+	m_timer_tick++;
 }
 
 void Universe::TimerTicker()
@@ -585,7 +587,7 @@ void Universe::PerSessionTickEvent(AsteroidsSession& session)
 	txBuff->set_uint8(0xBB);
 	txBuff->set_uint8(static_cast<uint8_t>(WebsockSession::MessageType_t::UniverseTickMessage));
 	txBuff->set_uint32(session.SessionID());
-	txBuff->set_uint32(session.GetTimerTick());
+	txBuff->set_uint32(g_universe->GetTimerTick());
 
 	// Update all AsteroidSession state for single/multiplayer modes.
 	{

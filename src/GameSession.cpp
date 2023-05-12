@@ -13,47 +13,14 @@ std::ostream& operator<<(std::ostream& os, const GameSession& gs)
 }
 
 GameSession::GameSession(uint32_t sessionID)
-	: WebsockSession(sessionID),
-	m_run_timer(false),
-	m_timer_complete(0),
-	m_timer_tick(0),
-	m_tick_interval_in_us(500000)
+	: WebsockSession(sessionID)
 {
 	GS_TRACE("sessionID: " << SessionID());
-
-	// Initialize the deadline_timer with this session's io_context
-	m_timer = std::make_unique<net::deadline_timer>(*WebsockServer::GetInstance().IoContext(), boost::posix_time::microseconds(m_tick_interval_in_us));
 }
 
 GameSession::~GameSession()
 {
 	GS_TRACE("sessionID: " << SessionID());
-
-	m_run_timer = false;
-	m_timer_complete = 5;
-	while (m_timer_complete >= 0)
-	{
-		m_run_timer = false;
-		std::this_thread::sleep_for(std::chrono::duration(std::chrono::milliseconds(10)));
-		m_timer_complete--;
-	}
-}
-
-void GameSession::StartTimer()
-{
-	m_run_timer = true;
-	TimerTicker();
-}
-
-void GameSession::StopTimer()
-{
-	m_run_timer = false;
-	TimerTicker();
-}
-
-void GameSession::SetIntervalInUs(uint32_t interval)
-{
-	m_tick_interval_in_us = interval;
 }
 
 void GameSession::HandleResizeEvent(AppBuffer& rxBuffer)
@@ -125,40 +92,6 @@ void GameSession::HandleTimerTick()
 {
 	GS_TRACE("tick: " << m_timer_tick);
 }
-
-// maybe log timer ticks
-void GameSession::TimerTicker() {
-	//GS_TRACE("sessionID: " << SessionID() << ", tick: " << m_timer_tick);
-
-	if (!m_timer)
-	{
-		TRACE("")
-			m_timer_complete = true;
-		return;
-	}
-
-	if (!m_run_timer)
-	{
-		//TRACE("")
-		m_timer_complete = true;
-		return;
-	}
-
-	HandleTimerTick();
-
-	boost::system::error_code ec;
-	m_timer->expires_from_now(boost::posix_time::microseconds(m_tick_interval_in_us), ec);
-	if (ec)
-	{
-		TRACE(ec);
-		return;
-	}
-
-	m_timer->async_wait([this](const boost::system::error_code& e) {
-		(void)e;
-		TimerTicker();
-	});
-};
 
 void GameSession::CommsHandler(AppBuffer & rxBuffer)
 {
