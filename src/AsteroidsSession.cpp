@@ -11,7 +11,6 @@ std::ostream& operator<<(std::ostream& os, const AsteroidsSession& as)
 	os << std::endl << ">>> AsteroidsSession" << std::endl;
 	os << "\tSessionID: " << as.m_sessionID << std::endl;
 	os << "\t   Player: " << (as.m_player ? "Found" : "Not yet") << std::endl;
-	os << "\t Universe: " << (as.m_universe ? "Found" : "Not yet") << std::endl;
 	os << "<<< AsteroidsSession";
 	return os;
 }
@@ -22,6 +21,8 @@ AsteroidsSession::AsteroidsSession(uint32_t sessionID)
 {
 	// example of using the custom '<<' stream operator
 	TRACE(*this);
+
+	Asteroids::Init(8192, 8192);
 }
 
 AsteroidsSession::~AsteroidsSession()
@@ -46,12 +47,11 @@ void AsteroidsSession::HandleNewSession(AppBuffer& rxBuffer)
 
 	// we have to wait for the client to register, in order to get window width and height.
 	m_player = std::make_unique<Asteroids::Player>(*this, w, h);
-	m_universe = std::make_unique<Asteroids::Universe>(*this, w, h);
 
 	AS_TRACE(*this);
 
-	StartTimer();
-	SetIntervalInUs(1000000 / Asteroids::FPS);
+	//StartTimer();
+	//SetIntervalInUs(1000000 / Asteroids::FPS);
 
 	//SetIntervalInUs(1000000);
 }
@@ -63,9 +63,6 @@ void AsteroidsSession::HandleKeyEvent(AppBuffer& rxBuffer)
 	bool isDown = rxBuffer.get_uint8(1);
 	int key     = (int)rxBuffer.get_uint8(2);
 
-	if (m_universe)
-		m_universe->KeyEvent(key, isDown);
-
 	if (m_player)
 		m_player->KeyEvent(key, isDown);
 }
@@ -73,19 +70,18 @@ void AsteroidsSession::HandleKeyEvent(AppBuffer& rxBuffer)
 // Asteroids currently doesn't care about click events. May change.
 void AsteroidsSession::HandleClickEvent(AppBuffer& rxBuffer)
 {
+	AS_TRACE("ClickEvent");
+
 	// preserve rxBuffer state for possible additional handlers
 	// (ie read data without altering its m_readOffset)
 	assert(rxBuffer.size() >= 11);
 
-	uint32_t rxSessionID = rxBuffer.get_uint32(1);
+	//uint32_t rxSessionID = rxBuffer.get_uint32(1);
 	uint16_t clickX = rxBuffer.get_uint16(5);
 	uint16_t clickY = rxBuffer.get_uint16(7);
 
-
-	AS_TRACE("ClickEvent");
-
-	if (m_universe)
-		m_universe->ClickEvent(clickX, clickY);
+	if (m_player)
+		m_player->ClickEvent(clickX, clickY);
 }
 
 void AsteroidsSession::HandleResizeEvent(AppBuffer& rxBuffer)
@@ -97,9 +93,6 @@ void AsteroidsSession::HandleResizeEvent(AppBuffer& rxBuffer)
 
 	AS_TRACE("sessionID: " << SessionID() << ", width: " << width << ", height: " << height);
 
-	if (m_universe)
-		m_universe->ResizeEvent(width, height);
-
 	if (m_player)
 		m_player->ResizeEvent(width, height);
 }
@@ -107,9 +100,6 @@ void AsteroidsSession::HandleResizeEvent(AppBuffer& rxBuffer)
 void AsteroidsSession::HandleTimerTick()
 {
 	AS_TRACE("TimerTick");
-
-	if (m_universe)
-		m_universe->TickEvent(*this);
 
 	if (m_player)
 		m_player->TickEvent(*this);

@@ -140,11 +140,10 @@ namespace Asteroids
         void LaunchOne(double x, double y, double r);
         void DestroyRock(std::shared_ptr<Rock>);
 
-        void ResizeEvent(int w, int h);
-        void TickEvent(AsteroidsSession&);
+        void TickEvent();
 
         Universe& m_universe;
-        RocksList_t& m_rocks;
+        RocksList_t m_rocks;
     };
 
     class Player : public Context
@@ -154,6 +153,7 @@ namespace Asteroids
         ~Player();
 
         void KeyEvent(int key, bool isDown);
+        void ClickEvent(int x, int y);
         void ResizeEvent(int w, int h);
         void TickEvent(AsteroidsSession&);
     
@@ -163,25 +163,33 @@ namespace Asteroids
 
 	// For multiplayer support, objects from ALL AsteroidsSessions
 	// need to be conveyed to each client.
+    // 
 	// We'll use a separate packet to the client for the Universe update "tick"
     class Universe : public Context
     {
     public:
-        Universe(AsteroidsSession& session, int width, int height);
+        Universe(int width, int height, uint32_t interval);
         ~Universe();
 
-        void ClickEvent(uint16_t x, uint16_t y);
-        void KeyEvent(int key, bool isDown);
-        void ResizeEvent(int w, int h);
-        void TickEvent(AsteroidsSession &);
+        void PerSessionTickEvent(AsteroidsSession &);
+
+        // borrow from GameSession
+        void TickEvent();
+        void TimerTicker();
 
         RockField m_rockField;
 
     private:
-        AsteroidsSession& m_session;
         WebsockSessionManager<AsteroidsSession>& m_sessions;
+
+        std::unique_ptr<net::deadline_timer> m_timer;
+        uint32_t m_tick_interval_in_us;
+        bool m_timer_complete;
+        bool m_run_timer;
     };
 
+    extern std::unique_ptr<Universe> g_universe;
+    const Universe& Init(int w, int h);
 };
 
 #endif // ASTEROIDS
