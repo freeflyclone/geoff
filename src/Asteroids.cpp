@@ -409,8 +409,6 @@ void Player::TickEvent(AsteroidsSession& session)
 
 	m_ship.TickEvent();
 
-	auto numBullets = m_ship.m_gun->m_bullets.size();
-
 	int16_t shipX, shipY, shipA;
 
 	m_ship.GetXY(shipX, shipY);
