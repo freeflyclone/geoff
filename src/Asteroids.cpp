@@ -74,6 +74,7 @@ Bullet::Bullet(Gun &g, double x, double y, double dx, double dy)
 
 Bullet::~Bullet()
 {
+	TRACE("Bullet destroyed");
 }
 
 bool Bullet::TickTock()
@@ -113,11 +114,12 @@ Rock::Rock(RockField& field, double x, double y, double dx, double dy, double ra
 	m_field(field),
 	m_radius(radius)
 {
-	//TRACE("New rock - x: " << Position::x << ", y:" << Position::y << "dx: " << Velocity::dx << ", dy: " << Velocity::dy);
+	TRACE("New rock - x: " << Position::x << ", y:" << Position::y << "dx: " << Velocity::dx << ", dy: " << Velocity::dy);
 }
 
 Rock::~Rock()
 {
+	TRACE("Rock destroyed");
 }
 
 bool Rock::TickTock()
@@ -178,18 +180,24 @@ void RockField::LaunchOne(double x, double y, double r)
 void RockField::DestroyRock(std::shared_ptr<Rock> rock)
 {
 	m_rocks.remove(rock);
+	
+	double xPos = rock->Position::x;
+	double yPos = rock->Position::y;
+	double radius = rock->Radius();
+
+	rock.reset();
 
 	//TRACE("Destroy Rock: X: " << rock->x << ", Y: " << rock->y << ", radius: " << rock->Radius());
 
-	if (rock->Radius() >= ROCK_RADIUS)
+	if (radius >= ROCK_RADIUS)
 	{
-		LaunchOne(rock->x, rock->y, rock->Radius() / 2);
-		LaunchOne(rock->x, rock->y, rock->Radius() / 2);
+		LaunchOne(xPos, yPos, radius / 2);
+		LaunchOne(xPos, yPos, radius / 2);
 	}
-	else if (rock->Radius() >= ROCK_RADIUS / 2)
+	else if (radius >= ROCK_RADIUS / 2)
 	{
-		LaunchOne(rock->x, rock->y, rock->Radius() / 2);
-		LaunchOne(rock->x, rock->y, rock->Radius() / 2);
+		LaunchOne(xPos, yPos, radius / 2);
+		LaunchOne(xPos, yPos, radius / 2);
 	}
 }
 
@@ -549,9 +557,6 @@ void Universe::TickEvent()
 {
 	//U_TRACE(__FUNCTION__);
 
-	// update all Universe specfic state here.  (objects with TickEvent() handler)
-	m_rockField.TickEvent();
-
 	// Collision detection
 	// Rocks and/or Bullets to be destroyed AFTER all collision checks are complete.
 	// (deleting these in the collision detection loops causes mayhem)
@@ -574,6 +579,7 @@ void Universe::TickEvent()
 				{
 					collidedRocks.push_back(rock);
 					collidedBullets.push_back(bullet);
+					TRACE("Bullet Hit");
 					break;
 				}
 			}
@@ -585,6 +591,9 @@ void Universe::TickEvent()
 
 	for (auto rock : collidedRocks)
 		m_rockField.DestroyRock(rock);
+
+	// update all Universe specfic state here.  (objects with TickEvent() handler)
+	m_rockField.TickEvent();
 
 	// Fire all TickEvent handlers on each session.
 	for (auto pair : m_sessions.get_map())
