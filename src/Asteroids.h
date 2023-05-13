@@ -40,23 +40,27 @@ namespace Asteroids
         uint16_t width;
         uint16_t height;
 
+        // offset of upper left corner in Universe coordinates.
         uint16_t offsetX;
         uint16_t offsetY;
     };
 
     struct Size
     {
-        double w, h;
+        double w;
+        double h;
     };
 
     struct Position
     {
-        double x, y;
+        double x;
+        double y;
     };
 
     struct Velocity
     {
-        double dx, dy;
+        double dx;
+        double dy;
     };
 
     class Bullet : public Position, public Velocity
@@ -174,7 +178,7 @@ namespace Asteroids
 	// need to be conveyed to each client.
     // 
 	// We'll use a separate packet to the client for the Universe update "tick"
-    class Universe : public Size, public Context
+    class Universe : public Size
     {
     public:
         Universe(int width, int height, uint32_t interval);

@@ -31,15 +31,27 @@ namespace Asteroids
 	}
 };
 
-#define CTX_TRACE(...)
-//#define CTX_TRACE TRACE
+//#define CTX_TRACE(...)
+#define CTX_TRACE TRACE
 
 void Context::Resize(uint16_t w, uint16_t h)
 {
 	width = w;
 	height = h;
 
-	CTX_TRACE(__FUNCTION__ << "width: " << width << ", height: " << height);
+	if (g_universe)
+	{
+		auto universeWidth = static_cast<uint16_t>(g_universe->Size::w);
+		auto universeHeight = static_cast<uint16_t>(g_universe->Size::h);
+		
+		offsetX = universeWidth / 2 - width / 2;
+		offsetY = universeHeight / 2 - height / 2;
+	}
+	CTX_TRACE(__FUNCTION__ 
+		<< "w: " << width 
+		<< ", h: " << height
+		<< ", ox: " << offsetX
+		<< ", oy: " << offsetY);
 }
 
 void Context::Move(uint16_t x, uint16_t y)
@@ -72,20 +84,21 @@ bool Bullet::TickTock()
 	if (ticksLeft)
 	{
 		auto ship = GetGun().GetShip();
-		auto ctx = ship;
+		auto universeW = g_universe->Size::w;
+		auto universeH = g_universe->Size::h;
 
 		Position::x += Velocity::dx;
 		Position::y += Velocity::dy;
 
-		if (Position::x > ctx.width)
+		if (Position::x > universeW)
 			Position::x = 0.0;
 		if (Position::x < 0.0)
-			Position::x = (double)ctx.width;
+			Position::x = universeW;
 
-		if (Position::y > ctx.height)
+		if (Position::y > universeH)
 			Position::y = 0.0;
 		if (Position::y < 0.0)
-			Position::y = (double)ctx.height;
+			Position::y = universeH;
 
 		//TRACE("x: " << Position::x << ", y: " << Position::y);
 	}
@@ -110,20 +123,21 @@ Rock::~Rock()
 bool Rock::TickTock()
 {
 	auto rockField = GetRockField();
-	auto ctx = (Asteroids::Context)rockField;
+	auto universeW = g_universe->Size::w;
+	auto universeH = g_universe->Size::h;
 
 	Position::x += Velocity::dx;
 	Position::y += Velocity::dy;
 
-	if (Position::x > ctx.width)
+	if (Position::x > universeW)
 		Position::x = 0.0;
 	if (Position::x < 0.0)
-		Position::x = (double)ctx.width;
+		Position::x = universeW;
 
-	if (Position::y > ctx.height)
+	if (Position::y > universeH)
 		Position::y = 0.0;
 	if (Position::y < 0.0)
-		Position::y = (double)ctx.height;
+		Position::y = universeH;
 
 	//TRACE(__FUNCTION__ << "x: " << Position::x << ", y: " << Position::y);
 
@@ -252,12 +266,12 @@ void Gun::TickTock()
 #define SH_TRACE TRACE
 //#define SH_TRACE(...)
 
-Ship::Ship(Player& player, int w, int h, double x, double y, double angle) :
+Ship::Ship(Player& player, int windowW, int windowH, double x, double y, double angle) :
 	Context({
-		static_cast<uint16_t>(w),
-		static_cast<uint16_t>(h),
-		static_cast<uint16_t>(w / 2),
-		static_cast<uint16_t>(h / 2)
+		static_cast<uint16_t>(windowW),
+		static_cast<uint16_t>(windowH),
+		static_cast<uint16_t>(g_universe->Size::w / 2 - windowW / 2),
+		static_cast<uint16_t>(g_universe->Size::h / 2 - windowH / 2)
 		}),
 	Position({ x,y }),
 	Velocity({ 0,0 }),
@@ -272,6 +286,7 @@ Ship::Ship(Player& player, int w, int h, double x, double y, double angle) :
 	m_thrusting(false),
 	m_show_position(false)
 {
+	SH_TRACE(__FUNCTION__ << "@ " << Position::x << "," << Position::y)
 }
 
 Ship::~Ship()
@@ -313,20 +328,25 @@ void Ship::MoveShip()
 
 	Position::x += Velocity::dx;
 	Position::y += Velocity::dy;
+	
+	auto offX = static_cast<double>(Context::offsetX);
+	auto offY = static_cast<double>(Context::offsetY);
+	auto windowW = static_cast<double>(Context::width);
+	auto windowH = static_cast<double>(Context::height);
 
 	// handle edge of screen
-	if (Position::x < 0 - m_radius) {
-		Position::x = Context::width + m_radius;
+	if (Position::x < offX - m_radius) {
+		Position::x = offX + windowW + m_radius;
 	}
-	else if (Position::x > Context::width + m_radius) {
-		Position::x = 0 - m_radius;
+	else if (Position::x > offsetX + windowW + m_radius) {
+		Position::x = offX - m_radius;
 	}
 
-	if (Position::y < 0 - m_radius) {
-		Position::y = Context::height + m_radius;
+	if (Position::y < offY - m_radius) {
+		Position::y = offY + windowH + m_radius;
 	}
-	else if (Position::y > Context::height + m_radius) {
-		Position::y = 0 - m_radius;
+	else if (Position::y > offY + windowH + m_radius) {
+		Position::y = offY - m_radius;
 	}
 }
 
@@ -335,8 +355,13 @@ void Ship::FireShot()
 	if (!m_gun)
 		return;
 
-	auto px = Position::x + 4 / 3 * m_radius * cos(m_angle);
-	auto py = Position::y - 4 / 3 * m_radius * sin(m_angle);
+	double offX = static_cast<double>(Context::offsetX);
+	double offY = static_cast<double>(Context::offsetY);
+	double posX = Position::x - offX;
+	double posY = Position::y - offY;
+
+	auto px = (posX + 4 / 3 * m_radius * cos(m_angle)) + offX;
+	auto py = (posY - 4 / 3 * m_radius * sin(m_angle)) + offY;
 	
 	auto mvx = (double)MUZZLE_VELOCITY * cos(m_angle) / (double)FPS;
 	auto mvy = (double)MUZZLE_VELOCITY * -sin(m_angle) / (double)FPS;
@@ -381,18 +406,20 @@ void Ship::TickEvent()
 //#define P_TRACE TRACE
 #define P_TRACE(...)
 
-Player::Player(AsteroidsSession& session, int w, int h)
+Player::Player(AsteroidsSession& session, int windowW, int windowH)
 	:
 	Context({
-		static_cast<uint16_t>(w),
-		static_cast<uint16_t>(h),
-		static_cast<uint16_t>(w / 2),
-		static_cast<uint16_t>(h / 2)
+		static_cast<uint16_t>(windowW),
+		static_cast<uint16_t>(windowH),
+		static_cast<uint16_t>(g_universe->Size::w / 2 - windowW / 2),
+		static_cast<uint16_t>(g_universe->Size::h / 2 - windowH / 2),
 		}),
 	m_session(session),
-	m_ship(*this, w, h, w / 2, h / 2, static_cast<float>(M_PI / 2.0f))
+	m_ship(*this, windowW, windowH, (g_universe->Size::w / 2), (g_universe->Size::h / 2), static_cast<float>(M_PI / 2.0f))
 {
 	P_TRACE(__FUNCTION__);
+
+	TRACE(__FUNCTION__ << "Ship@ " << m_ship.Position::x << "," << m_ship.Position::y);
 }
 
 Player::~Player()
@@ -410,13 +437,16 @@ void Player::ClickEvent(int clickX, int clickY)
 {
 	P_TRACE(__FUNCTION__);
 
-	g_universe->m_rockField.LaunchOne(clickX, clickY, ROCK_RADIUS);
+	int universeClickX = clickX + static_cast<int>(Context::offsetX);
+	int universeClickY = clickY + static_cast<int>(Context::offsetY);
+
+	g_universe->m_rockField.LaunchOne(universeClickX, universeClickY, ROCK_RADIUS);
 }
 
 void Player::ResizeEvent(int eventW, int eventH)
 {
 	Context::Resize(static_cast<uint16_t>(eventW), static_cast<uint16_t>(eventH));
-	
+
 	// Any Context derived child objects should also have their
 	// Context::Resize() methods called here.
 	m_ship.Resize(static_cast<uint16_t>(eventW), static_cast<uint16_t>(eventH));
@@ -458,6 +488,8 @@ void Player::TickEvent(AsteroidsSession& session)
 	txBuff->set_uint32(session.SessionID());
 	txBuff->set_uint32(g_universe->GetTimerTick());
 
+	//TRACE(__FUNCTION__ << "ctx::w: " << Context::width << ", ctx::h: " << Context::height);
+
 	txBuff->set_uint16(Context::width);
 	txBuff->set_uint16(Context::height);
 	txBuff->set_uint16(Context::offsetX);
@@ -485,12 +517,8 @@ void Player::TickEvent(AsteroidsSession& session)
 
 Universe::Universe(int w, int h, uint32_t interval)
 	:
-	Context({
-		static_cast<uint16_t>(w),
-		static_cast<uint16_t>(h),
-		static_cast<uint16_t>(w / 2),
-		static_cast<uint16_t>(h / 2)
-		}),
+	Size({static_cast<double>(w), static_cast<double>(h)}),
+
 	m_rockField(*this, w, h),
 	m_sessions(g_sessions),
 	m_tick_interval_in_us(interval)
@@ -535,7 +563,7 @@ void Universe::TickEvent()
 	{
 		for (auto pair : m_sessions.get_map())
 		{
-			auto sessionID = pair.first;
+			//auto sessionID = pair.first;
 			auto session = pair.second;
 
 			auto bullets = session->m_player->m_ship.m_gun->m_bullets;
@@ -561,7 +589,7 @@ void Universe::TickEvent()
 	// Fire all TickEvent handlers on each session.
 	for (auto pair : m_sessions.get_map())
 	{
-		auto sessionID = pair.first;
+		//auto sessionID = pair.first;
 		auto session = pair.second;
 
 		session->HandleTimerTick();
@@ -615,8 +643,8 @@ void Universe::PerSessionTickEvent(AsteroidsSession& session)
 	txBuff->set_uint8(static_cast<uint8_t>(WebsockSession::MessageType_t::UniverseTickMessage));
 	txBuff->set_uint32(session.SessionID());
 	txBuff->set_uint32(g_universe->GetTimerTick());
-	txBuff->set_uint16(Context::width);
-	txBuff->set_uint16(Context::height);
+	txBuff->set_uint16(static_cast<uint16_t>(Size::w));
+	txBuff->set_uint16(static_cast<uint16_t>(Size::h));
 
 	// Update all AsteroidSession state for single/multiplayer modes.
 	{
