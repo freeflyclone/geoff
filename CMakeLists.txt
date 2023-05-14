@@ -13,7 +13,7 @@ cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 project (geoff VERSION 0.1.0 LANGUAGES CXX)
 
 set(GEOFF_LIB_NAME GeoffLib)
-set(GEOFF_APP_NAME GeoffApp)
+set(GEOFF_APP_NAME Asteroids)
 
 # set this to ON to enable the message() calls below
 # that display various cmake path variable evaluations
