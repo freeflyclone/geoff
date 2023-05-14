@@ -278,8 +278,8 @@ void Gun::TickTock()
 	}
 }
 
-#define SH_TRACE TRACE
-//#define SH_TRACE(...)
+//#define SH_TRACE TRACE
+#define SH_TRACE(...)
 
 Ship::Ship(Player& player, int windowW, int windowH, double x, double y, double angle) :
 	Context({
