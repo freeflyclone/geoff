@@ -5,11 +5,10 @@
 
 #define TRACE(...) {std::cout << "Line: " << __LINE__ << ", " << __VA_ARGS__ << std::endl;}
 
-class RockField;
 class Rock
 {
 public:
-    Rock(RockField& field, double ix, double iy) : m_rockField(field), x(ix), y(iy) 
+    Rock(double ix, double iy) : x(ix), y(iy) 
     {
         TRACE(__FUNCTION__ << ", x:" << x << ", y: " << y);
     }
@@ -19,7 +18,6 @@ public:
         TRACE(__FUNCTION__ << ", x:" << x << ", y: " << y);
     }
 
-    RockField& m_rockField;
     double x;
     double y;
 };
@@ -39,7 +37,7 @@ public:
     }
 
     void CreateOne(double x, double y) {
-        RockPtr_t rock(new Rock(*this, x, y));
+        RockPtr_t rock(new Rock(x, y));
         m_rocks.push_back(std::move(rock));
     }
 
