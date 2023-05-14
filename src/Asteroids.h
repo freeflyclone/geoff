@@ -128,35 +128,34 @@ namespace Asteroids
     class Rock : public Position, public Velocity
     {
     public:
-        Rock(RockField& field, double x, double y, double dx, double dy, double radius);
+        Rock(double x, double y, double dx, double dy, double radius);
         ~Rock();
 
         bool TickTock();
 
-        RockField& GetRockField() { return m_field; };
         double Radius() { return m_radius;  }
 
     private:
-        RockField& m_field;
-
         double m_radius;
     };
 
     class RockField : public Context
     {
     public:
-        typedef std::list<std::shared_ptr<Rock>> RocksList_t;
+        typedef std::unique_ptr<Rock> RockPtr_t;
+        typedef std::list<RockPtr_t> RockList_t;
+        typedef RockList_t::iterator RockIterator;
 
         RockField(Universe& universe, int w, int h);
         ~RockField();
 
         void LaunchOne(double x, double y, double r);
-        void DestroyRock(std::shared_ptr<Rock>);
+        void DestroyRock(RockIterator rock);
 
         void TickEvent();
 
         Universe& m_universe;
-        RocksList_t m_rocks;
+        RockList_t m_rocks;
     };
 
     class Player : public Size, public Position, public Context

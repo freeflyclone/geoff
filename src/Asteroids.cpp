@@ -107,11 +107,10 @@ bool Bullet::TickTock()
 	return ticksLeft == 0;
 }
 
-Rock::Rock(RockField& field, double x, double y, double dx, double dy, double radius)
+Rock::Rock(double x, double y, double dx, double dy, double radius)
 	:
 	Position({ x,y }),
 	Velocity({ dx,dy }),
-	m_field(field),
 	m_radius(radius)
 {
 	TRACE("New rock - x: " << Position::x << ", y:" << Position::y << "dx: " << Velocity::dx << ", dy: " << Velocity::dy);
@@ -124,7 +123,6 @@ Rock::~Rock()
 
 bool Rock::TickTock()
 {
-	auto rockField = GetRockField();
 	auto universeW = g_universe->Size::w;
 	auto universeH = g_universe->Size::h;
 
@@ -172,20 +170,23 @@ void RockField::LaunchOne(double x, double y, double r)
 	double dx = random() * ROCK_SPEED / FPS * (random() < 0.5 ? 1 : -1);
 	double dy = random() * ROCK_SPEED / FPS * (random() < 0.5 ? 1 : -1);
 
-	m_rocks.emplace_back(std::make_unique<Rock>(*this, x, y, dx, dy, r));
+	RockPtr_t rock(new Rock(x, y, dx, dy, r));
+	m_rocks.push_back(std::move(rock));
 
 	//TRACE(__FUNCTION__ << "x: " << x << ", y: " << y); //  << ", radius: " << radius << ", " << m_rocks.size() << " rock(s) exist.");
 }
 
-void RockField::DestroyRock(std::shared_ptr<Rock> rock)
+void RockField::DestroyRock(RockIterator rockIt)
 {
-	m_rocks.remove(rock);
-	
-	double xPos = rock->Position::x;
-	double yPos = rock->Position::y;
-	double radius = rock->Radius();
+	Rock rock = *rockIt->get();
 
-	rock.reset();
+	m_rocks.erase(rockIt);
+	
+	double xPos = rock.Position::x;
+	double yPos = rock.Position::y;
+	double dx = rock.Velocity::dx;
+	double dy = rock.Velocity::dy;
+	double radius = rock.Radius();
 
 	//TRACE("Destroy Rock: X: " << rock->x << ", Y: " << rock->y << ", radius: " << rock->Radius());
 
@@ -203,7 +204,7 @@ void RockField::DestroyRock(std::shared_ptr<Rock> rock)
 
 void RockField::TickEvent() 
 {
-	for (auto rock : m_rocks)
+	for (auto& rock : m_rocks)
 	{
 		rock->TickTock();
 	}
@@ -557,14 +558,13 @@ void Universe::TickEvent()
 {
 	//U_TRACE(__FUNCTION__);
 
-	// Collision detection
-	// Rocks and/or Bullets to be destroyed AFTER all collision checks are complete.
-	// (deleting these in the collision detection loops causes mayhem)
-	RockField::RocksList_t collidedRocks;
-	Gun::BulletsList_t collidedBullets;
+	std::list<RockField::RockList_t::iterator> collidedRocks;
+	RockField::RockIterator rockIter;
+
+	auto& rocks = m_rockField.m_rocks;
 
 	// Bullets vs Rocks collisions. (brute force, no optimization)
-	for (auto rock : m_rockField.m_rocks)
+	for (rockIter = rocks.begin(); rockIter != rocks.end(); rockIter++)
 	{
 		for (auto pair : m_sessions.get_map())
 		{
@@ -575,22 +575,22 @@ void Universe::TickEvent()
 
 			for (auto bullet : bullets)
 			{
+				auto rock = rockIter->get();
+
 				if (session->DistanceBetweenPoints(*rock, *bullet) < rock->Radius())
 				{
-					collidedRocks.push_back(rock);
-					collidedBullets.push_back(bullet);
 					TRACE("Bullet Hit");
+					collidedRocks.push_back(rockIter);
 					break;
 				}
 			}
 
-			for (auto bullet : collidedBullets)
-				bullets.remove(bullet);
+			// delete collided bullets here
 		}
 	}
 
-	for (auto rock : collidedRocks)
-		m_rockField.DestroyRock(rock);
+	for (auto it : collidedRocks)
+		m_rockField.DestroyRock(it);
 
 	// update all Universe specfic state here.  (objects with TickEvent() handler)
 	m_rockField.TickEvent();
@@ -665,7 +665,7 @@ void Universe::PerSessionTickEvent(AsteroidsSession& session)
 
 		txBuff2->set_uint16(static_cast<uint16_t>(numRocks));
 
-		for (auto rock : g_universe->m_rockField.m_rocks)
+		for (auto& rock : g_universe->m_rockField.m_rocks)
 		{
 			txBuff2->set_uint16(static_cast<int16_t>(rock->x));
 			txBuff2->set_uint16(static_cast<int16_t>(rock->y));
