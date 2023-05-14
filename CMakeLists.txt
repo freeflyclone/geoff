@@ -12,9 +12,12 @@
 cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 project (geoff VERSION 0.1.0 LANGUAGES CXX)
 
+set(GEOFF_LIB_NAME GeoffLib)
+set(GEOFF_APP_NAME GeoffApp)
+
 # set this to ON to enable the message() calls below
 # that display various cmake path variable evaluations
-set(CMAKE_PROJECT_DEBUG OFF)
+set(CMAKE_PROJECT_DEBUG ON)
 
 # This is MSVC specific
 set(CMAKE_CONFIGURATION_TYPES Debug;Release)
@@ -32,11 +35,33 @@ file(GLOB APP_SRC_FILES
 	src/WebsockServer.cpp
 	src/WebsockSession.cpp)
 
+file(GLOB GEOFF_LIB_SRC_FILES
+	src/AppBuffer.cpp
+	src/GameSession.cpp
+	src/geoff.cpp
+	src/SSLContext.cpp
+	src/ServerUtils.cpp
+	src/WebsockServer.cpp
+	src/WebsockSession.cpp)
+
 # Files to appear in "Header Files" project folder are explicitly listed here
 file(GLOB APP_INC_FILES
 	src/AppBuffer.h
 	src/Asteroids.h
 	src/AsteroidsSession.h
+	src/GameSession.h
+	src/geoff.h
+    src/handle_request.h
+	src/server_certificate.hpp
+	src/ServerUtils.h
+	src/SSLContext.h
+	src/websocket_session.h
+	src/WebsockServer.h
+	src/WebsockSession.h
+	src/WebsockSessionManager.h)
+
+file(GLOB GEOFF_LIB_INC_FILES
+	src/AppBuffer.h
 	src/GameSession.h
 	src/geoff.h
     src/handle_request.h
@@ -101,12 +126,13 @@ file(GLOB_RECURSE BEAST_FILES
   ${Boost_INCLUDE_DIRS}/boost/beast/*.ipp)
 
 if(CMAKE_PROJECT_DEBUG)
+  message(STATUS "Project name: ${PROJECT_NAME}")
   message(STATUS "Boost: ${Boost_INCLUDE_DIRS}")
   message(STATUS "Boost: ${Boost_LIBRARY_DIRS}")
   message(STATUS "OpenSSL: ${OPENSSL_INCLUDE_DIR}")
   message(STATUS "OpenSSL: ${OPENSSL_LIBRARIES}")
   message(STATUS "OpenSSL version: ${OPENSSL_VERSION}")
-  message(STATUS "APP_WWW_FILES: ${APP_WWW_FILES}")
+  #message(STATUS "APP_WWW_FILES: ${APP_WWW_FILES}")
 endif()
 
 # explicitly add boost/beast files to project files.
@@ -119,17 +145,19 @@ if(MSVC)
   source_group(TREE ${PROJECT_SOURCE_DIR} FILES ${APP_WWW_FILES})
 endif()
 
-add_executable(${PROJECT_NAME} ${APP_SRC_FILES} ${APP_INC_FILES} ${APP_WWW_FILES} ${BEAST_FILES})
+add_executable(${GEOFF_APP_NAME} ${APP_SRC_FILES} ${APP_INC_FILES} ${APP_WWW_FILES} ${BEAST_FILES})
+add_library(${GEOFF_LIB_NAME} STATIC ${GEOFF_LIB_SRC_FILES} ${GEOFF_LIB_INC_FILES})
 
 find_package(Threads)
-target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads ${Boost_SYSTEM_LIBRARY})
-target_link_libraries(${PROJECT_NAME} PRIVATE OpenSSL::SSL)
+target_link_libraries(${GEOFF_APP_NAME} PRIVATE Threads::Threads ${Boost_SYSTEM_LIBRARY})
+target_link_libraries(${GEOFF_APP_NAME} PRIVATE OpenSSL::SSL)
+target_link_libraries(${GEOFF_APP_NAME} PRIVATE ${GEOFF_LIB_NAME})
 
 if(MSVC)
-  target_link_libraries(${PROJECT_NAME} PRIVATE Crypt32)
+  target_link_libraries(${GEOFF_APP_NAME} PRIVATE Crypt32)
 
-  set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-  set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_COMMAND_ARGUMENTS "0.0.0.0 8080 www 4")
-  set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
+  set_target_properties(${GEOFF_APP_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+  set_target_properties(${GEOFF_APP_NAME} PROPERTIES VS_DEBUGGER_COMMAND_ARGUMENTS "0.0.0.0 8080 www 4")
+  set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${GEOFF_APP_NAME})
 endif()
 
