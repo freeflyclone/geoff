@@ -26,7 +26,9 @@ class RockField
 {
 public:
     typedef std::unique_ptr<Rock> RockPtr_t;
-    typedef std::list<RockPtr_t> RocksList_t;
+    typedef std::list<RockPtr_t> RockList_t;
+    typedef RockList_t::iterator RockIterator;
+
 
     RockField() { 
         TRACE(__FUNCTION__); 
@@ -41,14 +43,14 @@ public:
         m_rocks.push_back(std::move(rock));
     }
 
-    void DeleteOne(RockField::RocksList_t::iterator rock)
+    void DeleteOne(RockField::RockList_t::iterator rock)
     {
         TRACE(__FUNCTION__);
 
         m_rocks.erase(rock);
     }
 
-    RocksList_t m_rocks;
+    RockList_t m_rocks;
 };
 
 int main()
@@ -62,10 +64,10 @@ int main()
     for (auto& rock : rf.m_rocks)
         TRACE(__FUNCTION__ << "Rock: x: " << rock->x << ", y: " << rock->y);
 
-    // Make list of RocksList_t iterators, each stores a rock to be deleted.
+    // Make list of RockList_t iterators, each stores a rock to be deleted.
     // (Deleting from a list while iterating through it causes mayhem)
-    std::list<RockField::RocksList_t::iterator> dt;
-    RockField::RocksList_t::iterator it;
+    std::list<RockField::RockList_t::iterator> dt;
+    RockField::RockList_t::iterator it;
 
     for (it = rf.m_rocks.begin(); it != rf.m_rocks.end(); it++)
     {
