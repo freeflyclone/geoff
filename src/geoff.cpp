@@ -573,10 +573,12 @@ private:
 
 //------------------------------------------------------------------------------
 
-int main(int argc, char* argv[])
+//int main(int argc, char* argv[])
+int Geoff(std::string addr, std::string prt, std::string www_root, std::string thrds)
 {
     boost::system::error_code ec;
     // Check command line arguments.
+/*
     if (argc != 5)
     {
         std::cerr <<
@@ -585,10 +587,12 @@ int main(int argc, char* argv[])
             "    geoff 0.0.0.0 8080 . 1\n";
         return EXIT_FAILURE;
     }
-    auto const address = net::ip::make_address(argv[1]);
-    auto const port = static_cast<unsigned short>(std::atoi(argv[2]));
-    auto const doc_root = std::make_shared<std::string>(argv[3]);
-    auto const threads = std::max<int>(1, std::atoi(argv[4]));
+*/
+
+    auto const address = net::ip::make_address(addr);
+    auto const port = static_cast<unsigned short>(std::atoi(prt.c_str()));
+    auto const doc_root = std::make_shared<std::string>(www_root);
+    auto const threads = std::max<int>(1, std::atoi(thrds.c_str()));
 
     // The io_context is required for all I/O
     net::io_context ioc{threads};
