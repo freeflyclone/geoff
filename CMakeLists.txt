@@ -26,6 +26,7 @@ set(CMAKE_CONFIGURATION_TYPES Debug;Release)
 # Files you want to appear in the "Source Files" project folder are explicitly listed here
 file(GLOB GEOFF_APP_SRC_FILES
 	src/Asteroids.cpp
+	src/AsteroidsMain.cpp
 	src/AsteroidsSession.cpp)
 	
 file(GLOB GEOFF_LIB_SRC_FILES
