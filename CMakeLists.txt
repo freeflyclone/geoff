@@ -17,24 +17,17 @@ set(GEOFF_APP_NAME GeoffApp)
 
 # set this to ON to enable the message() calls below
 # that display various cmake path variable evaluations
-set(CMAKE_PROJECT_DEBUG ON)
+set(CMAKE_PROJECT_DEBUG OFF)
 
 # This is MSVC specific
 set(CMAKE_CONFIGURATION_TYPES Debug;Release)
 
 # These are relative to ${PROJECT_SOURCE_DIR}, that is, where it was cloned to.
 # Files you want to appear in the "Source Files" project folder are explicitly listed here
-file(GLOB APP_SRC_FILES
-	src/AppBuffer.cpp
+file(GLOB GEOFF_APP_SRC_FILES
 	src/Asteroids.cpp
-	src/AsteroidsSession.cpp
-	src/GameSession.cpp
-	src/geoff.cpp
-	src/SSLContext.cpp
-	src/ServerUtils.cpp
-	src/WebsockServer.cpp
-	src/WebsockSession.cpp)
-
+	src/AsteroidsSession.cpp)
+	
 file(GLOB GEOFF_LIB_SRC_FILES
 	src/AppBuffer.cpp
 	src/GameSession.cpp
@@ -45,21 +38,10 @@ file(GLOB GEOFF_LIB_SRC_FILES
 	src/WebsockSession.cpp)
 
 # Files to appear in "Header Files" project folder are explicitly listed here
-file(GLOB APP_INC_FILES
-	src/AppBuffer.h
+file(GLOB GEOFF_APP_INC_FILES
 	src/Asteroids.h
-	src/AsteroidsSession.h
-	src/GameSession.h
-	src/geoff.h
-    src/handle_request.h
-	src/server_certificate.hpp
-	src/ServerUtils.h
-	src/SSLContext.h
-	src/websocket_session.h
-	src/WebsockServer.h
-	src/WebsockSession.h
-	src/WebsockSessionManager.h)
-
+	src/AsteroidsSession.h)
+	
 file(GLOB GEOFF_LIB_INC_FILES
 	src/AppBuffer.h
 	src/GameSession.h
@@ -132,7 +114,6 @@ if(CMAKE_PROJECT_DEBUG)
   message(STATUS "OpenSSL: ${OPENSSL_INCLUDE_DIR}")
   message(STATUS "OpenSSL: ${OPENSSL_LIBRARIES}")
   message(STATUS "OpenSSL version: ${OPENSSL_VERSION}")
-  #message(STATUS "APP_WWW_FILES: ${APP_WWW_FILES}")
 endif()
 
 # explicitly add boost/beast files to project files.
@@ -140,17 +121,19 @@ endif()
 source_group(TREE ${Boost_INCLUDE_DIRS}/boost/beast PREFIX beast FILES ${BEAST_FILES})
 
 if(MSVC)
-  source_group("Source Files" FILES ${APP_SRC_FILES})
-  source_group("Header Files" FILES ${APP_INC_FILES})
   source_group(TREE ${PROJECT_SOURCE_DIR} FILES ${APP_WWW_FILES})
 endif()
 
-add_executable(${GEOFF_APP_NAME} ${APP_SRC_FILES} ${APP_INC_FILES} ${APP_WWW_FILES} ${BEAST_FILES})
+add_executable(${GEOFF_APP_NAME} ${GEOFF_APP_SRC_FILES} ${GEOFF_APP_INC_FILES} ${APP_WWW_FILES} ${BEAST_FILES})
 add_library(${GEOFF_LIB_NAME} STATIC ${GEOFF_LIB_SRC_FILES} ${GEOFF_LIB_INC_FILES})
 
 find_package(Threads)
-target_link_libraries(${GEOFF_APP_NAME} PRIVATE Threads::Threads ${Boost_SYSTEM_LIBRARY})
-target_link_libraries(${GEOFF_APP_NAME} PRIVATE OpenSSL::SSL)
+
+# if GeoffLib is ever generated as a shared library, we want IT to be dependent on these.
+# (Note: doesn't seem to make any difference in VC when built as static library, which jives with what I know about linking)
+target_link_libraries(${GEOFF_LIB_NAME} PRIVATE Threads::Threads ${Boost_SYSTEM_LIBRARY})
+target_link_libraries(${GEOFF_LIB_NAME} PRIVATE OpenSSL::SSL)
+
 target_link_libraries(${GEOFF_APP_NAME} PRIVATE ${GEOFF_LIB_NAME})
 
 if(MSVC)
