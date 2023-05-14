@@ -25,35 +25,37 @@ set(CMAKE_CONFIGURATION_TYPES Debug;Release)
 # These are relative to ${PROJECT_SOURCE_DIR}, that is, where it was cloned to.
 # Files you want to appear in the "Source Files" project folder are explicitly listed here
 file(GLOB GEOFF_APP_SRC_FILES
-	src/Asteroids.cpp
-	src/AsteroidsSession.cpp)
+	apps/asteroids/src/Asteroids.cpp
+	apps/asteroids/src/AsteroidsMain.cpp
+	apps/asteroids/src/AsteroidsSession.cpp)
 	
-file(GLOB GEOFF_LIB_SRC_FILES
-	src/AppBuffer.cpp
-	src/GameSession.cpp
-	lib/src/geoff.cpp
-	src/SSLContext.cpp
-	src/ServerUtils.cpp
-	src/WebsockServer.cpp
-	src/WebsockSession.cpp)
-
 # Files to appear in "Header Files" project folder are explicitly listed here
 file(GLOB GEOFF_APP_INC_FILES
-	src/Asteroids.h
-	src/AsteroidsSession.h)
+	apps/asteroids/inc/Asteroids.h
+	apps/asteroids/inc/AsteroidsSession.h)
 	
+file(GLOB GEOFF_LIB_SRC_FILES
+	lib/src/AppBuffer.cpp
+	lib/src/GameSession.cpp
+	lib/src/geoff.cpp
+	lib/src/SSLContext.cpp
+	lib/src/ServerUtils.cpp
+	lib/src/WebsockServer.cpp
+	lib/src/WebsockSession.cpp)
+
 file(GLOB GEOFF_LIB_INC_FILES
-	src/AppBuffer.h
-	src/GameSession.h
+	apps/AppSession.h
+	lib/inc/AppBuffer.h
+	lib/inc/GameSession.h
 	lib/inc/geoff.h
-    src/handle_request.h
-	src/server_certificate.hpp
-	src/ServerUtils.h
-	src/SSLContext.h
-	src/websocket_session.h
-	src/WebsockServer.h
-	src/WebsockSession.h
-	src/WebsockSessionManager.h)
+    lib/inc/handle_request.h
+	lib/inc/server_certificate.hpp
+	lib/inc/ServerUtils.h
+	lib/inc/SSLContext.h
+	lib/inc/websocket_session.h
+	lib/inc/WebsockServer.h
+	lib/inc/WebsockSession.h
+	lib/inc/WebsockSessionManager.h)
 
 # Files within the source tree "www" tree are all implicitly (automatically) added.
 # Things like .html, .js, .gif, etc. The tree structure is preserved. 
@@ -128,6 +130,8 @@ add_executable(${GEOFF_APP_NAME} ${GEOFF_APP_SRC_FILES} ${GEOFF_APP_INC_FILES} $
 add_library(${GEOFF_LIB_NAME} STATIC ${GEOFF_LIB_SRC_FILES} ${GEOFF_LIB_INC_FILES})
 
 find_package(Threads)
+
+target_include_directories(${GEOFF_LIB_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/lib/inc ${PROJECT_SOURCE_DIR}/apps)
 
 # if GeoffLib is ever generated as a shared library, we want IT to be dependent on these.
 # (Note: doesn't seem to make any difference in VC when built as static library, which jives with what I know about linking)
