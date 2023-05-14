@@ -35,19 +35,32 @@ namespace Asteroids
     struct Context
     {
         void Resize(uint16_t width, uint16_t height);
+        void Move(uint16_t x, uint16_t y);
         
         uint16_t width;
         uint16_t height;
+
+        // offset of upper left corner in Universe coordinates.
+        uint16_t offsetX;
+        uint16_t offsetY;
+    };
+
+    struct Size
+    {
+        double w;
+        double h;
     };
 
     struct Position
     {
-        double x, y;
+        double x;
+        double y;
     };
 
     struct Velocity
     {
-        double dx, dy;
+        double dx;
+        double dy;
     };
 
     class Bullet : public Position, public Velocity
@@ -67,7 +80,11 @@ namespace Asteroids
 
     class Gun {
     public:
-        typedef std::list<std::shared_ptr<Bullet>> BulletsList_t;
+        //typedef std::list<std::shared_ptr<Bullet>> BulletsList_t;
+
+        typedef std::unique_ptr<Bullet> BulletPtr_t;
+        typedef std::list<BulletPtr_t> BulletList_t;
+        typedef BulletList_t::iterator BulletIterator;
 
         Gun(Ship& s) : m_ship(s) {}
         ~Gun() {}
@@ -77,7 +94,7 @@ namespace Asteroids
         std::unique_ptr<AppBuffer> MakeBulletsPacket(bool isLittleEndian);
         Ship& GetShip() { return m_ship; }
 
-        BulletsList_t m_bullets;
+        BulletList_t m_bullets;
 
     private:
         Ship& m_ship;
@@ -115,45 +132,44 @@ namespace Asteroids
     class Rock : public Position, public Velocity
     {
     public:
-        Rock(RockField& field, double x, double y, double dx, double dy, double radius);
+        Rock(double x, double y, double dx, double dy, double radius);
         ~Rock();
 
         bool TickTock();
 
-        RockField& GetRockField() { return m_field; };
         double Radius() { return m_radius;  }
 
     private:
-        RockField& m_field;
-
         double m_radius;
     };
 
     class RockField : public Context
     {
     public:
-        typedef std::list<std::shared_ptr<Rock>> RocksList_t;
+        typedef std::unique_ptr<Rock> RockPtr_t;
+        typedef std::list<RockPtr_t> RockList_t;
+        typedef RockList_t::iterator RockIterator;
 
         RockField(Universe& universe, int w, int h);
         ~RockField();
 
         void LaunchOne(double x, double y, double r);
-        void DestroyRock(std::shared_ptr<Rock>);
+        void DestroyRock(RockIterator rock);
 
-        void ResizeEvent(int w, int h);
-        void TickEvent(AsteroidsSession&);
+        void TickEvent();
 
         Universe& m_universe;
-        RocksList_t& m_rocks;
+        RockList_t m_rocks;
     };
 
-    class Player : public Context
+    class Player : public Size, public Position, public Context
     {
     public:
         Player(AsteroidsSession& session, int width, int height);
         ~Player();
 
         void KeyEvent(int key, bool isDown);
+        void ClickEvent(int x, int y);
         void ResizeEvent(int w, int h);
         void TickEvent(AsteroidsSession&);
     
@@ -163,25 +179,35 @@ namespace Asteroids
 
 	// For multiplayer support, objects from ALL AsteroidsSessions
 	// need to be conveyed to each client.
+    // 
 	// We'll use a separate packet to the client for the Universe update "tick"
-    class Universe : public Context
+    class Universe : public Size
     {
     public:
-        Universe(AsteroidsSession& session, int width, int height);
+        Universe(int width, int height, uint32_t interval);
         ~Universe();
 
-        void ClickEvent(uint16_t x, uint16_t y);
-        void KeyEvent(int key, bool isDown);
-        void ResizeEvent(int w, int h);
-        void TickEvent(AsteroidsSession &);
+        void PerSessionTickEvent(AsteroidsSession &);
+
+        // borrow from GameSession
+        void TickEvent();
+        void TimerTicker();
+        uint32_t GetTimerTick() { return m_timer_tick; }
 
         RockField m_rockField;
 
     private:
-        AsteroidsSession& m_session;
         WebsockSessionManager<AsteroidsSession>& m_sessions;
+
+        std::unique_ptr<net::deadline_timer> m_timer;
+        uint32_t m_tick_interval_in_us;
+        bool m_timer_complete;
+        bool m_run_timer;
+        uint32_t m_timer_tick;
     };
 
+    extern std::unique_ptr<Universe> g_universe;
+    const Universe& Init(int w, int h);
 };
 
 #endif // ASTEROIDS

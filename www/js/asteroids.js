@@ -31,6 +31,13 @@ var universeRocks = [];
 var universeShips = [];
 var universeBullets = [];
 
+var universeWidth;
+var universeHeight;
+var contextWidth;
+var contextHeight;
+var contextOffsetX;
+var contextOffsetY;
+
 function newGame() {
     level = 0;
     lives = GAME_LIVES;
@@ -455,6 +462,73 @@ function drawRocks() {
     }
 }
 
+function drawRadar() {
+/*   console.log(
+          "uw: " + universeWidth +
+          "uw: " + universeWidth +
+        ", uh: " + universeHeight +
+        ", cx: " + contextOffsetX +
+        ", cy: " + contextOffsetY);
+*/
+    var radarScaler = 32;
+
+    // size of radar window
+    var radarWidth = universeWidth / radarScaler;
+    var radarHeight = universeHeight / radarScaler;
+
+    // size of player window, in radar window units
+    var radarWW = contextWidth / radarScaler;
+    var radarWH = contextHeight / radarScaler;
+
+    // screen coordinates of radar top/left
+    var radarStartX = contextWidth - radarWidth;
+    var radarStartY = 0;
+
+    // screen coordinates of radar center
+    var radarCenterX = radarStartX + radarWidth / 2;
+    var radarCenterY = radarStartY + radarHeight / 2;
+
+    ctx.strokeStyle = "blue";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.rect(contextWidth - radarWidth, 0, radarWidth, radarHeight);
+    ctx.closePath();
+    ctx.stroke();
+
+    ctx.strokeStyle = "cyan";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.rect(radarCenterX - radarWW / 2, radarCenterY - radarWH / 2, radarWW, radarWH);
+    ctx.closePath();
+    ctx.stroke();
+
+    // draw the universeRocks in the radarView
+    for (i = 0; i < universeRocks.length; i++) {
+        var rockX = universeRocks[i].x;
+        var rockY = universeRocks[i].y;
+
+        rockX /= radarScaler;
+        rockY /= radarScaler;
+
+        rockX += radarCenterX - radarWW / 2;
+        rockY += radarCenterY - radarWH / 2;
+
+        drawBullet(rockX, rockY, 2, "green");
+    }
+
+    // draw player's ship
+    var shipX = ship.x + contextOffsetX;
+    var shipY = ship.y + contextOffsetY;
+
+    shipX /= radarScaler;
+    shipY /= radarScaler;
+
+    shipX += radarStartX;
+    shipY += radarStartY;
+
+    drawBullet(shipX, shipY, 2, "white");
+}
+
 function drawGameInfo() {
     var exploding = ship.explodeTime > 0;
 
@@ -638,6 +712,7 @@ function update() {
     drawOtherShips();
     drawOtherBullets();
     drawRocks();
+    drawRadar();
 
     //drawLasers();
     //drawGameInfo();
@@ -682,18 +757,44 @@ function OnPlayerTickMessage(data) {
     view = new DataView(data);
     //console.log("PlayerTickMessage");
 
-    sessionID = view.getUint32(2);
-    tickCount = view.getUint32(6);
+    offset = 2;
+    sessionID = view.getUint32(offset);
+    offset += 4;
 
-    ship.Move(view.getInt16(10), view.getInt16(12), view.getInt16(14) / FP_4_12);
+    tickCount = view.getUint32(offset);
+    offset += 4;
 
-    if (view.byteLength == 18) {
+    contextWidth = view.getUint16(offset);
+    offset += 2;
+
+    contextHeight = view.getUint16(offset);
+    offset += 2;
+
+    contextOffsetX = view.getUint16(offset);
+    offset += 2;
+
+    contextOffsetY = view.getUint16(offset);
+    offset += 2;
+
+    shipX = view.getUint16(offset) - contextOffsetX;
+    offset += 2;
+
+    shipY = view.getUint16(offset) - contextOffsetY;
+    offset += 2;
+
+    shipAngle = view.getUint16(offset) / FP_4_12;
+    offset += 2;
+
+    ship.Move(shipX, shipY, shipAngle);
+
+    if (offset == view.byteLength) {
         ship.bullets = [];
         update();
         return;
     }
 
-    numBullets = view.getUint16(16);
+    numBullets = view.getUint16(offset);
+    offset += 2;
 
     if (numBullets > 0) {
         if (typeof ship.bullets == 'undefined') {
@@ -704,10 +805,17 @@ function OnPlayerTickMessage(data) {
         ship.bullets = [];
 
         for (i = 0; i < numBullets; i++) {
-            x = view.getUint16(18 + i * 4);
-            y = view.getUint16(20 + i * 4);
+            x = view.getUint16(offset) - contextOffsetX;
+            offset += 2;
+
+            y = view.getUint16(offset) - contextOffsetY;
+            offset += 2;
+
             ship.bullets.push({ x, y });
         }
+    }
+    else {
+        ship.bullets = [];
     }
 
     // some JavaScript file needs to define a single update() function
@@ -718,7 +826,7 @@ function OnPlayerTickMessage(data) {
 }
 
 function OnUniverseTickMessage(data) {
-    if (data.byteLength < 10)
+    if (data.byteLength < 14)
         return;
 
     view = new DataView(data);
@@ -736,6 +844,12 @@ function OnUniverseTickMessage(data) {
     tickCount = view.getUint32(offset);
     offset += 4;
 
+    universeWidth = view.getUint16(offset);
+    offset += 2;
+
+    universeHeight = view.getUint16(offset);
+    offset += 2;
+
     // there are no rocks, ships, or bullets
     if (offset == data.byteLength) {
         //console.log("no extra data");
@@ -749,10 +863,10 @@ function OnUniverseTickMessage(data) {
         //console.log("numRocks: " + numRocks);
 
         for (i = 0; i < numRocks; i++) {
-            x = view.getUint16(offset);
+            x = view.getUint16(offset) - contextOffsetX;
             offset += 2;
 
-            y = view.getUint16(offset);
+            y = view.getUint16(offset) - contextOffsetY;
             offset += 2;
 
             r = view.getUint16(offset);

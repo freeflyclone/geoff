@@ -3,6 +3,7 @@
 #include "Asteroids.h"
 #include "AsteroidsSession.h"
 #include "WebsockSessionManager.h"
+#include "WebsockServer.h"
 
 using namespace Asteroids;
 
@@ -18,8 +19,16 @@ using namespace Websock;
 // in single and/or multiplayer mode.
 namespace Asteroids
 {
-	std::mutex g_rocks_mutex;
-	RockField::RocksList_t g_rocks;
+	// we want just one of these, but we want to control when it gets created.
+	std::unique_ptr<Universe> g_universe;
+
+	const Universe& Init(int w, int h)
+	{
+		if (!g_universe)
+			g_universe = std::make_unique<Universe>(w, h, 1000000 / FPS);
+
+		return *g_universe;
+	}
 };
 
 #define CTX_TRACE(...)
@@ -30,8 +39,30 @@ void Context::Resize(uint16_t w, uint16_t h)
 	width = w;
 	height = h;
 
-	CTX_TRACE(__FUNCTION__ << "width: " << width << ", height : " << height);
+	if (g_universe)
+	{
+		auto universeWidth = static_cast<uint16_t>(g_universe->Size::w);
+		auto universeHeight = static_cast<uint16_t>(g_universe->Size::h);
+		
+		offsetX = universeWidth / 2 - width / 2;
+		offsetY = universeHeight / 2 - height / 2;
+	}
+	CTX_TRACE(__FUNCTION__ 
+		<< "w: " << width 
+		<< ", h: " << height
+		<< ", ox: " << offsetX
+		<< ", oy: " << offsetY);
 }
+
+void Context::Move(uint16_t x, uint16_t y)
+{
+	offsetX = x;
+	offsetY = y;
+
+	CTX_TRACE(__FUNCTION__ << "offsetX: " << offsetX << ", offsetY: " << offsetY);
+}
+
+#define B_TRACE(...)
 
 Bullet::Bullet(Gun &g, double x, double y, double dx, double dy)
 	:
@@ -40,11 +71,12 @@ Bullet::Bullet(Gun &g, double x, double y, double dx, double dy)
 	m_gun(g),
 	ticksLeft(3 * FPS)
 {
-	//TRACE("New bullet - x: " << Position::x << ", y:" << Position::y << "dx: " << Velocity::dx << ", dy: " << Velocity::dy);
+	B_TRACE("New bullet - x: " << Position::x << ", y:" << Position::y << "dx: " << Velocity::dx << ", dy: " << Velocity::dy);
 }
 
 Bullet::~Bullet()
 {
+	B_TRACE("Bullet destroyed");
 }
 
 bool Bullet::TickTock()
@@ -55,71 +87,79 @@ bool Bullet::TickTock()
 	if (ticksLeft)
 	{
 		auto ship = GetGun().GetShip();
-		auto ctx = (Asteroids::Context&)ship;
+		auto universeW = g_universe->Size::w;
+		auto universeH = g_universe->Size::h;
 
 		Position::x += Velocity::dx;
 		Position::y += Velocity::dy;
 
-		if (Position::x > ctx.width)
+		if (Position::x > universeW)
 			Position::x = 0.0;
 		if (Position::x < 0.0)
-			Position::x = (double)ctx.width;
+			Position::x = universeW;
 
-		if (Position::y > ctx.height)
+		if (Position::y > universeH)
 			Position::y = 0.0;
 		if (Position::y < 0.0)
-			Position::y = (double)ctx.height;
+			Position::y = universeH;
 
-		//TRACE("x: " << Position::x << ", y: " << Position::y);
+		B_TRACE("x: " << Position::x << ", y: " << Position::y);
 	}
 
 	return ticksLeft == 0;
 }
 
-Rock::Rock(RockField& field, double x, double y, double dx, double dy, double radius)
+#define R_TRACE(...)
+
+Rock::Rock(double x, double y, double dx, double dy, double radius)
 	:
 	Position({ x,y }),
 	Velocity({ dx,dy }),
-	m_field(field),
 	m_radius(radius)
 {
-	//TRACE("New rock - x: " << Position::x << ", y:" << Position::y << "dx: " << Velocity::dx << ", dy: " << Velocity::dy);
+	R_TRACE("New rock - x: " << Position::x << ", y:" << Position::y << "dx: " << Velocity::dx << ", dy: " << Velocity::dy);
 }
 
 Rock::~Rock()
 {
+	R_TRACE("Rock destroyed");
 }
 
 bool Rock::TickTock()
 {
-	auto rockField = GetRockField();
-	auto ctx = (Asteroids::Context&)rockField;
+	auto universeW = g_universe->Size::w;
+	auto universeH = g_universe->Size::h;
 
 	Position::x += Velocity::dx;
 	Position::y += Velocity::dy;
 
-	if (Position::x > ctx.width)
+	if (Position::x > universeW)
 		Position::x = 0.0;
 	if (Position::x < 0.0)
-		Position::x = (double)ctx.width;
+		Position::x = universeW;
 
-	if (Position::y > ctx.height)
+	if (Position::y > universeH)
 		Position::y = 0.0;
 	if (Position::y < 0.0)
-		Position::y = (double)ctx.height;
+		Position::y = universeH;
 
-	//TRACE(__FUNCTION__ << "x: " << Position::x << ", y: " << Position::y);
+	R_TRACE(__FUNCTION__ << "x: " << Position::x << ", y: " << Position::y);
 
 	return true;
 }
 
+#define RF_TRACE(...)
+
 RockField::RockField(Universe& universe, int w, int h)
 	:
-	Context({ static_cast<uint16_t>(w), static_cast<uint16_t>(h) }),
-	m_universe(universe),
-	m_rocks(g_rocks)
+	Context({ 
+		static_cast<uint16_t>(w), 
+		static_cast<uint16_t>(h), 
+		static_cast<uint16_t>(w/2),
+		static_cast<uint16_t>(h/2)
+	}),
+	m_universe(universe)
 {
-
 }
 
 RockField::~RockField()
@@ -135,37 +175,41 @@ void RockField::LaunchOne(double x, double y, double r)
 	double dx = random() * ROCK_SPEED / FPS * (random() < 0.5 ? 1 : -1);
 	double dy = random() * ROCK_SPEED / FPS * (random() < 0.5 ? 1 : -1);
 
-	m_rocks.emplace_back(std::make_unique<Rock>(*this, x, y, dx, dy, r));
+	RockPtr_t rock(new Rock(x, y, dx, dy, r));
+	m_rocks.push_back(std::move(rock));
 
-	//TRACE(__FUNCTION__ << "x: " << x << ", y: " << y << ", radius: " << radius << ", " << m_rocks.size() << " rock(s) exist.");
+	RF_TRACE(__FUNCTION__ << "x: " << x << ", y: " << y << ", radius: " << radius << ", " << m_rocks.size() << " rock(s) exist.");
 }
 
-void RockField::DestroyRock(std::shared_ptr<Rock> rock)
+void RockField::DestroyRock(RockIterator rockIt)
 {
-	m_rocks.remove(rock);
+	Rock rock = *rockIt->get();
 
-	//TRACE("Destroy Rock: X: " << rock->x << ", Y: " << rock->y << ", radius: " << rock->Radius());
+	m_rocks.erase(rockIt);
+	
+	double xPos = rock.Position::x;
+	double yPos = rock.Position::y;
+	double dx = rock.Velocity::dx;
+	double dy = rock.Velocity::dy;
+	double radius = rock.Radius();
 
-	if (rock->Radius() >= ROCK_RADIUS)
+	RF_TRACE("Destroy Rock: X: " << rock->x << ", Y: " << rock->y << ", radius: " << rock->Radius());
+
+	if (radius >= ROCK_RADIUS)
 	{
-		LaunchOne(rock->x, rock->y, rock->Radius() / 2);
-		LaunchOne(rock->x, rock->y, rock->Radius() / 2);
+		LaunchOne(xPos, yPos, radius / 2);
+		LaunchOne(xPos, yPos, radius / 2);
 	}
-	else if (rock->Radius() >= ROCK_RADIUS / 2)
+	else if (radius >= ROCK_RADIUS / 2)
 	{
-		LaunchOne(rock->x, rock->y, rock->Radius() / 2);
-		LaunchOne(rock->x, rock->y, rock->Radius() / 2);
+		LaunchOne(xPos, yPos, radius / 2);
+		LaunchOne(xPos, yPos, radius / 2);
 	}
 }
 
-void RockField::ResizeEvent(int w, int h)
+void RockField::TickEvent() 
 {
-	Resize(static_cast<uint16_t>(w), static_cast<uint16_t>(h));
-}
-
-void RockField::TickEvent(AsteroidsSession&) 
-{
-	for (auto rock : m_rocks)
+	for (auto& rock : m_rocks)
 	{
 		rock->TickTock();
 	}
@@ -173,6 +217,7 @@ void RockField::TickEvent(AsteroidsSession&)
 
 #define G_TRACE(...)
 //#define G_TRACE TRACE
+
 void Gun::Fire(double x, double y, double dx, double dy)
 {
 	m_bullets.emplace_back(std::make_unique<Bullet>(*this, x, y, dx, dy));
@@ -192,7 +237,7 @@ std::unique_ptr<AppBuffer> Gun::MakeBulletsPacket(bool isLittleEndian)
 	txBuff->set_uint16(static_cast<uint16_t>(m_bullets.size()));
 
 	size_t i = 0;
-	for (auto bullet : m_bullets)
+	for (auto& bullet : m_bullets)
 	{
 		auto cx = static_cast<uint16_t>(bullet->x);
 		auto cy = static_cast<uint16_t>(bullet->y);
@@ -214,44 +259,13 @@ void Gun::TickTock()
 
 	bool bulletDone = false;
 
-	// Rocks and/or Bullets to be destroyed AFTER all collision checks are complete.
-	// (deleting these in the collision detection loops causes mayhem)
-	RockField::RocksList_t collidedRocks;
-	Gun::BulletsList_t collidedBullets                                                                                                                                                                                               ;
-
-	// TODO: this is crap accessing technique.  Fix it with more elegance.
-	RockField::RocksList_t& rocks = GetShip().m_player.m_session.m_universe->m_rockField.m_rocks;
-
-	// Check each Player Bullet...
-	for (auto bullet : m_bullets)
+	for (auto& bullet : m_bullets)
 	{
-		bool bulletHit = false;
-
-		//...against bullet lifetime expiration...
 		if (bullet->TickTock())
 		{
 			G_TRACE(__FUNCTION__ << "bulletDone, m_bullets.size(): " << m_bullets.size());
 			bulletDone = true;
 		}
-
-		//... and against ALL Universe rocks
-		for (auto rock : rocks)
-		{
-			auto distance = m_ship.m_player.m_session.DistanceBetweenPoints(*bullet, *rock);
-			if (distance < rock->Radius())
-			{
-				G_TRACE("Hit: @ x: " << bullet->x << ", y: " << bullet->y);
-				bulletHit = true;
-				collidedRocks.push_back(rock);
-				break;
-			}
-		}
-
-		if (bulletHit)
-		{
-			collidedBullets.push_back(bullet);
-		}
-		G_TRACE("There are " << rocks.size() << " rocks.");
 	}
 
 	if (bulletDone)
@@ -262,21 +276,18 @@ void Gun::TickTock()
 			G_TRACE(__FUNCTION__ << "bulletDone, no more m_bullets");
 		}
 	}
-
-	// remove any collidedRocks
-	for (auto rock : collidedRocks)
-		GetShip().m_player.m_session.m_universe->m_rockField.DestroyRock(rock);
-
-	// remove any collidedBullets
-	for (auto bullet : collidedBullets)
-		m_bullets.remove(bullet);
 }
 
 #define SH_TRACE TRACE
 //#define SH_TRACE(...)
 
-Ship::Ship(Player& player, int windowWidth, int windowHeight, double x, double y, double angle) :
-	Context({ static_cast<uint16_t>(windowWidth), static_cast<uint16_t>(windowHeight)}),
+Ship::Ship(Player& player, int windowW, int windowH, double x, double y, double angle) :
+	Context({
+		static_cast<uint16_t>(windowW),
+		static_cast<uint16_t>(windowH),
+		static_cast<uint16_t>(g_universe->Size::w / 2 - windowW / 2),
+		static_cast<uint16_t>(g_universe->Size::h / 2 - windowH / 2)
+		}),
 	Position({ x,y }),
 	Velocity({ 0,0 }),
 	m_player(player),
@@ -290,11 +301,12 @@ Ship::Ship(Player& player, int windowWidth, int windowHeight, double x, double y
 	m_thrusting(false),
 	m_show_position(false)
 {
+	SH_TRACE(__FUNCTION__ << "@ " << Position::x << "," << Position::y)
 }
 
 Ship::~Ship()
 {
-	//SH_TRACE("");
+	SH_TRACE("");
 }
 
 void Ship::GetXY(int16_t& xPos, int16_t& yPos)
@@ -331,20 +343,25 @@ void Ship::MoveShip()
 
 	Position::x += Velocity::dx;
 	Position::y += Velocity::dy;
+	
+	auto offX = static_cast<double>(Context::offsetX);
+	auto offY = static_cast<double>(Context::offsetY);
+	auto windowW = static_cast<double>(Context::width);
+	auto windowH = static_cast<double>(Context::height);
 
 	// handle edge of screen
-	if (Position::x < 0 - m_radius) {
-		Position::x = Context::width + m_radius;
+	if (Position::x < offX - m_radius) {
+		Position::x = offX + windowW + m_radius;
 	}
-	else if (Position::x > Context::width + m_radius) {
-		Position::x = 0 - m_radius;
+	else if (Position::x > offsetX + windowW + m_radius) {
+		Position::x = offX - m_radius;
 	}
 
-	if (Position::y < 0 - m_radius) {
-		Position::y = Context::height + m_radius;
+	if (Position::y < offY - m_radius) {
+		Position::y = offY + windowH + m_radius;
 	}
-	else if (Position::y > Context::height + m_radius) {
-		Position::y = 0 - m_radius;
+	else if (Position::y > offY + windowH + m_radius) {
+		Position::y = offY - m_radius;
 	}
 }
 
@@ -353,8 +370,13 @@ void Ship::FireShot()
 	if (!m_gun)
 		return;
 
-	auto px = Position::x + 4 / 3 * m_radius * cos(m_angle);
-	auto py = Position::y - 4 / 3 * m_radius * sin(m_angle);
+	double offX = static_cast<double>(Context::offsetX);
+	double offY = static_cast<double>(Context::offsetY);
+	double posX = Position::x - offX;
+	double posY = Position::y - offY;
+
+	auto px = (posX + 4 / 3 * m_radius * cos(m_angle)) + offX;
+	auto py = (posY - 4 / 3 * m_radius * sin(m_angle)) + offY;
 	
 	auto mvx = (double)MUZZLE_VELOCITY * cos(m_angle) / (double)FPS;
 	auto mvy = (double)MUZZLE_VELOCITY * -sin(m_angle) / (double)FPS;
@@ -399,13 +421,20 @@ void Ship::TickEvent()
 //#define P_TRACE TRACE
 #define P_TRACE(...)
 
-Player::Player(AsteroidsSession& session, int width, int height)
+Player::Player(AsteroidsSession& session, int windowW, int windowH)
 	:
-	Context({ static_cast<uint16_t>(width), static_cast<uint16_t>(height) }),
+	Context({
+		static_cast<uint16_t>(windowW),
+		static_cast<uint16_t>(windowH),
+		static_cast<uint16_t>(g_universe->Size::w / 2 - windowW / 2),
+		static_cast<uint16_t>(g_universe->Size::h / 2 - windowH / 2),
+		}),
 	m_session(session),
-	m_ship(*this, width, height, width / 2, height / 2, static_cast<float>(M_PI / 2.0f))
+	m_ship(*this, windowW, windowH, (g_universe->Size::w / 2), (g_universe->Size::h / 2), static_cast<float>(M_PI / 2.0f))
 {
 	P_TRACE(__FUNCTION__);
+
+	TRACE(__FUNCTION__ << "Ship@ " << m_ship.Position::x << "," << m_ship.Position::y);
 }
 
 Player::~Player()
@@ -419,27 +448,39 @@ void Player::KeyEvent(int key, bool isDown)
 	m_ship.KeyEvent(key, isDown);
 }
 
-void Player::ResizeEvent(int w, int h)
+void Player::ClickEvent(int clickX, int clickY)
 {
-	Context::Resize(static_cast<uint16_t>(w), static_cast<uint16_t>(h));
-	
+	P_TRACE(__FUNCTION__);
+
+	int universeClickX = clickX + static_cast<int>(Context::offsetX);
+	int universeClickY = clickY + static_cast<int>(Context::offsetY);
+
+	g_universe->m_rockField.LaunchOne(universeClickX, universeClickY, ROCK_RADIUS);
+}
+
+void Player::ResizeEvent(int eventW, int eventH)
+{
+	Context::Resize(static_cast<uint16_t>(eventW), static_cast<uint16_t>(eventH));
+
 	// Any Context derived child objects should also have their
 	// Context::Resize() methods called here.
-	m_ship.Resize(static_cast<uint16_t>(w), static_cast<uint16_t>(h));
+	m_ship.Resize(static_cast<uint16_t>(eventW), static_cast<uint16_t>(eventH));
 }
 
 void Player::TickEvent(AsteroidsSession& session)
 {
 	P_TRACE(__FUNCTION__ << ", sessionID: " << session.SessionID());
 
+	// update all Player specfic state here. (objects with TickEvent() handler)
 	m_ship.TickEvent();
 
+	// dump all player-specific state to the client
 	int16_t shipX, shipY, shipA;
 
 	m_ship.GetXY(shipX, shipY);
 	m_ship.GetAngle(shipA);
 
-	size_t outSize = 18;
+	size_t outSize = 26;
 
 	// Handle m_bullets from gun
 	std::unique_ptr<AppBuffer> bulletsBuffer;
@@ -460,7 +501,15 @@ void Player::TickEvent(AsteroidsSession& session)
 	txBuff->set_uint8(0xBB);
 	txBuff->set_uint8(static_cast<uint8_t>(WebsockSession::MessageType_t::PlayerTickMessage));
 	txBuff->set_uint32(session.SessionID());
-	txBuff->set_uint32(session.GetTimerTick());
+	txBuff->set_uint32(g_universe->GetTimerTick());
+
+	//TRACE(__FUNCTION__ << "ctx::w: " << Context::width << ", ctx::h: " << Context::height);
+
+	txBuff->set_uint16(Context::width);
+	txBuff->set_uint16(Context::height);
+	txBuff->set_uint16(Context::offsetX);
+	txBuff->set_uint16(Context::offsetY);
+
 	txBuff->set_uint16(shipX);
 	txBuff->set_uint16(shipY);
 	txBuff->set_uint16(shipA);
@@ -468,78 +517,173 @@ void Player::TickEvent(AsteroidsSession& session)
 	// default bullet count to 0
 	txBuff->set_uint16(0);
 
-	if (outSize > 18)
+	if (outSize > 26)
 	{
 		auto offset = txBuff->allocate(static_cast<int>(bulletsBuffer->size()));
-		txBuff->set_uint16(16, bulletsBuffer->get_uint16(0));
+		txBuff->set_uint16(24, bulletsBuffer->get_uint16(0));
 		memcpy(txBuff->data() + offset, bulletsBuffer->data() + 2, bulletsBuffer->size() - 2);
-
-		//TRACE("");
 	}
 
 	session.CommitTxBuffer(txBuff);
 }
 
-//#define U_TRACE TRACE
-#define U_TRACE(...)
+#define U_TRACE TRACE
+//#define U_TRACE(...)
 
-Universe::Universe(AsteroidsSession& session, int width, int height)
+Universe::Universe(int w, int h, uint32_t interval)
 	:
-	Context({ static_cast<uint16_t>(width), static_cast<uint16_t>(height) }),
-	m_rockField(*this, width, height),
-	m_session(session),
-	m_sessions(g_sessions)
+	Size({static_cast<double>(w), static_cast<double>(h)}),
+
+	m_rockField(*this, w, h),
+	m_sessions(g_sessions),
+	m_tick_interval_in_us(interval)
 {
-	U_TRACE(__FUNCTION__ << ", Session count:" << m_sessions.get_count());
+	U_TRACE(__FUNCTION__ << ", width: " << w << ", height: " << h << ", interval: " << interval << ", Session count : " << m_sessions.get_count());
+
+	m_timer = std::make_unique<net::deadline_timer>(*WebsockServer::GetInstance().IoContext(), boost::posix_time::microseconds(m_tick_interval_in_us));
+	m_run_timer = true;
+	TimerTicker();
 }
 
 Universe::~Universe()
 {
 	U_TRACE(__FUNCTION__);
+
+	m_run_timer = false;
+	m_timer_complete = false;
+	int retries = 50;
+	while (!m_timer_complete && retries)
+	{
+		m_run_timer = false;
+		std::this_thread::sleep_for(std::chrono::duration(std::chrono::milliseconds(10)));
+		retries--;
+	}
 }
 
-void Universe::ResizeEvent(int w, int h)
+void Universe::TickEvent()
 {
-	Context::Resize(static_cast<uint16_t>(w), static_cast<uint16_t>(h));
+	//U_TRACE(__FUNCTION__);
+
+	// update all Universe specfic state here.  (objects with TickEvent() handler)
+	m_rockField.TickEvent();
+
+	// Fire all TickEvent handlers on each session.
+	for (auto pair : m_sessions.get_map())
+	{
+		//auto sessionID = pair.first;
+		auto session = pair.second;
+
+		session->HandleTimerTick();
+		PerSessionTickEvent(*session);
+	}
+
+	m_timer_tick++;
+	std::list<RockField::RockIterator> collidedRocks;
+	RockField::RockIterator rockIter;
+
+	std::list<Gun::BulletIterator> collidedBullets;
+	Gun::BulletIterator bulletIter;
+
+	auto& rocks = m_rockField.m_rocks;
+
+	// Bullets vs Rocks collisions. (brute force, no optimization)
+	for (rockIter = rocks.begin(); rockIter != rocks.end(); rockIter++)
+	{
+		for (auto pair : m_sessions.get_map())
+		{
+			//auto sessionID = pair.first;
+			auto session = pair.second;
+
+			auto& bullets = session->m_player->m_ship.m_gun->m_bullets;
+
+			for (bulletIter = bullets.begin(); bulletIter != bullets.end(); bulletIter++)
+			{
+				auto rock = rockIter->get();
+				auto bullet = bulletIter->get();
+
+				if (session->DistanceBetweenPoints(*rock, *bullet) < rock->Radius())
+				{
+					//TRACE("Bullet Hit");
+					collidedRocks.push_back(rockIter);
+					collidedBullets.push_back(bulletIter);
+				}
+			}
+
+			for (auto bullet : collidedBullets)
+				bullets.erase(bullet);
+
+			// Once the all of the collidedBullets have been erased,
+			// clear the collidedBullets list, else mayhem on next rock in
+			// the outer loop.
+			collidedBullets.clear();
+		}
+	}
+
+	for (auto it : collidedRocks)
+		m_rockField.DestroyRock(it);
+
+	collidedRocks.clear();
 }
 
-void Universe::ClickEvent(uint16_t x, uint16_t y)
+
+void Universe::TimerTicker()
 {
-	m_rockField.LaunchOne(static_cast<double>(x), static_cast<double>(y), ROCK_RADIUS);
+	TickEvent();
+
+	boost::system::error_code ec;
+
+	if (!m_timer)
+	{
+		TRACE("")
+		m_timer_complete = true;
+		return;
+	}
+
+	if (!m_run_timer)
+	{
+		//TRACE("")
+		m_timer_complete = true;
+		return;
+	}
+
+	m_timer->expires_from_now(boost::posix_time::microseconds(m_tick_interval_in_us), ec);
+	if (ec)
+	{
+		TRACE(ec);
+		return;
+	}
+
+	m_timer->async_wait([this](const boost::system::error_code& e) {
+		(void)e;
+		TimerTicker();
+	});
 }
 
-void Universe::KeyEvent(int key, bool isDown)
-{
-	(void)key;
-	(void)isDown;
-	U_TRACE(__FUNCTION__);
-}
-
-void Universe::TickEvent(AsteroidsSession& session)
+void Universe::PerSessionTickEvent(AsteroidsSession& session)
 {
 	//U_TRACE(__FUNCTION__ << ", session ID : " << session.SessionID());
 
-	m_rockField.TickEvent(session);
-
 	// initial AppBuffer: just the UniverseTickMessage header
-	auto txBuff = std::make_unique<AppBuffer>(10, session.IsLittleEndian());
+	auto txBuff = std::make_unique<AppBuffer>(14, session.IsLittleEndian());
 
 	txBuff->set_uint8(0xBB);
 	txBuff->set_uint8(static_cast<uint8_t>(WebsockSession::MessageType_t::UniverseTickMessage));
 	txBuff->set_uint32(session.SessionID());
-	txBuff->set_uint32(session.GetTimerTick());
+	txBuff->set_uint32(g_universe->GetTimerTick());
+	txBuff->set_uint16(static_cast<uint16_t>(Size::w));
+	txBuff->set_uint16(static_cast<uint16_t>(Size::h));
 
 	// Update all AsteroidSession state for single/multiplayer modes.
 	{
-		auto numRocks = session.m_universe->m_rockField.m_rocks.size();
+		auto numRocks = g_universe->m_rockField.m_rocks.size();
 		size_t outsize = sizeof(int16_t) + (numRocks * (3 * sizeof(int16_t)));
 
-		U_TRACE("numRocks: " << numRocks << ", outsize: " << outsize);
+		//U_TRACE("numRocks: " << numRocks << ", outsize: " << outsize);
 		auto txBuff2 = std::make_unique<AppBuffer>(*txBuff, outsize, session.IsLittleEndian());
 
 		txBuff2->set_uint16(static_cast<uint16_t>(numRocks));
 
-		for (auto rock : session.m_universe->m_rockField.m_rocks)
+		for (auto& rock : g_universe->m_rockField.m_rocks)
 		{
 			txBuff2->set_uint16(static_cast<int16_t>(rock->x));
 			txBuff2->set_uint16(static_cast<int16_t>(rock->y));
@@ -621,7 +765,7 @@ void Universe::TickEvent(AsteroidsSession& session)
 				if (sessionID == session.SessionID() || !sessPtr->m_player)
 					continue;
 
-				for (auto bullet : sessPtr->m_player->m_ship.m_gun->m_bullets)
+				for (auto& bullet : sessPtr->m_player->m_ship.m_gun->m_bullets)
 				{
 					txBuff3->set_uint16(static_cast<int16_t>(bullet->x));
 					txBuff3->set_uint16(static_cast<int16_t>(bullet->y));
