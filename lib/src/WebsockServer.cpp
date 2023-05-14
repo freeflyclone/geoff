@@ -1,12 +1,8 @@
 #include "WebsockServer.h"
-#include "AsteroidsSession.h"
+#include "AppSession.h"
 
 #include <ios>
 #include <iostream>
-
-namespace Websock {
-	WebsockSessionManager<AsteroidsSession> g_sessions;
-};
 
 using namespace Websock;
 

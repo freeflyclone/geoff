@@ -1,17 +1,19 @@
 #include "geoff.h"
 
-#include "Asteroids.h"
-#include "AsteroidsSession.h"
+#include "asteroids/inc/Asteroids.h"
+#include "asteroids/inc/AsteroidsSession.h"
 #include "WebsockSessionManager.h"
 #include "WebsockServer.h"
 
 using namespace Asteroids;
 
 // The Universe class needs access to the WebsockSessionManager, to know
-// about other players;
+// about other players.
+//
+// Might as well define it here.
 namespace Websock
 {
-	extern WebsockSessionManager<AsteroidsSession> g_sessions;
+	WebsockSessionManager<AsteroidsSession> g_sessions;
 };
 using namespace Websock;
 

@@ -132,6 +132,7 @@ add_library(${GEOFF_LIB_NAME} STATIC ${GEOFF_LIB_SRC_FILES} ${GEOFF_LIB_INC_FILE
 find_package(Threads)
 
 target_include_directories(${GEOFF_LIB_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/lib/inc ${PROJECT_SOURCE_DIR}/apps)
+target_include_directories(${GEOFF_APP_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/lib/inc ${PROJECT_SOURCE_DIR}/apps)
 
 # if GeoffLib is ever generated as a shared library, we want IT to be dependent on these.
 # (Note: doesn't seem to make any difference in VC when built as static library, which jives with what I know about linking)
