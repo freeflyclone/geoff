@@ -31,8 +31,8 @@ namespace Asteroids
 	}
 };
 
-//#define CTX_TRACE(...)
-#define CTX_TRACE TRACE
+#define CTX_TRACE(...)
+//#define CTX_TRACE TRACE
 
 void Context::Resize(uint16_t w, uint16_t h)
 {
@@ -62,6 +62,8 @@ void Context::Move(uint16_t x, uint16_t y)
 	CTX_TRACE(__FUNCTION__ << "offsetX: " << offsetX << ", offsetY: " << offsetY);
 }
 
+#define B_TRACE(...)
+
 Bullet::Bullet(Gun &g, double x, double y, double dx, double dy)
 	:
 	Position({ x,y }),
@@ -69,12 +71,12 @@ Bullet::Bullet(Gun &g, double x, double y, double dx, double dy)
 	m_gun(g),
 	ticksLeft(3 * FPS)
 {
-	//TRACE("New bullet - x: " << Position::x << ", y:" << Position::y << "dx: " << Velocity::dx << ", dy: " << Velocity::dy);
+	B_TRACE("New bullet - x: " << Position::x << ", y:" << Position::y << "dx: " << Velocity::dx << ", dy: " << Velocity::dy);
 }
 
 Bullet::~Bullet()
 {
-	//TRACE("Bullet destroyed");
+	B_TRACE("Bullet destroyed");
 }
 
 bool Bullet::TickTock()
@@ -101,11 +103,13 @@ bool Bullet::TickTock()
 		if (Position::y < 0.0)
 			Position::y = universeH;
 
-		//TRACE("x: " << Position::x << ", y: " << Position::y);
+		B_TRACE("x: " << Position::x << ", y: " << Position::y);
 	}
 
 	return ticksLeft == 0;
 }
+
+#define R_TRACE(...)
 
 Rock::Rock(double x, double y, double dx, double dy, double radius)
 	:
@@ -113,12 +117,12 @@ Rock::Rock(double x, double y, double dx, double dy, double radius)
 	Velocity({ dx,dy }),
 	m_radius(radius)
 {
-	TRACE("New rock - x: " << Position::x << ", y:" << Position::y << "dx: " << Velocity::dx << ", dy: " << Velocity::dy);
+	R_TRACE("New rock - x: " << Position::x << ", y:" << Position::y << "dx: " << Velocity::dx << ", dy: " << Velocity::dy);
 }
 
 Rock::~Rock()
 {
-	//TRACE("Rock destroyed");
+	R_TRACE("Rock destroyed");
 }
 
 bool Rock::TickTock()
@@ -139,10 +143,12 @@ bool Rock::TickTock()
 	if (Position::y < 0.0)
 		Position::y = universeH;
 
-	//TRACE(__FUNCTION__ << "x: " << Position::x << ", y: " << Position::y);
+	R_TRACE(__FUNCTION__ << "x: " << Position::x << ", y: " << Position::y);
 
 	return true;
 }
+
+#define RF_TRACE(...)
 
 RockField::RockField(Universe& universe, int w, int h)
 	:
@@ -154,7 +160,6 @@ RockField::RockField(Universe& universe, int w, int h)
 	}),
 	m_universe(universe)
 {
-
 }
 
 RockField::~RockField()
@@ -173,7 +178,7 @@ void RockField::LaunchOne(double x, double y, double r)
 	RockPtr_t rock(new Rock(x, y, dx, dy, r));
 	m_rocks.push_back(std::move(rock));
 
-	//TRACE(__FUNCTION__ << "x: " << x << ", y: " << y); //  << ", radius: " << radius << ", " << m_rocks.size() << " rock(s) exist.");
+	RF_TRACE(__FUNCTION__ << "x: " << x << ", y: " << y << ", radius: " << radius << ", " << m_rocks.size() << " rock(s) exist.");
 }
 
 void RockField::DestroyRock(RockIterator rockIt)
@@ -188,7 +193,7 @@ void RockField::DestroyRock(RockIterator rockIt)
 	double dy = rock.Velocity::dy;
 	double radius = rock.Radius();
 
-	//TRACE("Destroy Rock: X: " << rock->x << ", Y: " << rock->y << ", radius: " << rock->Radius());
+	RF_TRACE("Destroy Rock: X: " << rock->x << ", Y: " << rock->y << ", radius: " << rock->Radius());
 
 	if (radius >= ROCK_RADIUS)
 	{
@@ -212,6 +217,7 @@ void RockField::TickEvent()
 
 #define G_TRACE(...)
 //#define G_TRACE TRACE
+
 void Gun::Fire(double x, double y, double dx, double dy)
 {
 	m_bullets.emplace_back(std::make_unique<Bullet>(*this, x, y, dx, dy));
@@ -262,7 +268,6 @@ void Gun::TickTock()
 		}
 	}
 
-	/*
 	if (bulletDone)
 	{
 		m_bullets.pop_front();
@@ -271,7 +276,6 @@ void Gun::TickTock()
 			G_TRACE(__FUNCTION__ << "bulletDone, no more m_bullets");
 		}
 	}
-	*/
 }
 
 #define SH_TRACE TRACE
@@ -302,7 +306,7 @@ Ship::Ship(Player& player, int windowW, int windowH, double x, double y, double 
 
 Ship::~Ship()
 {
-	//SH_TRACE("");
+	SH_TRACE("");
 }
 
 void Ship::GetXY(int16_t& xPos, int16_t& yPos)
@@ -599,17 +603,28 @@ void Universe::TickEvent()
 
 				if (session->DistanceBetweenPoints(*rock, *bullet) < rock->Radius())
 				{
-					TRACE("Bullet Hit");
+					//TRACE("Bullet Hit");
 					collidedRocks.push_back(rockIter);
 					collidedBullets.push_back(bulletIter);
 				}
 			}
+
+			for (auto bullet : collidedBullets)
+				bullets.erase(bullet);
+
+			// Once the all of the collidedBullets have been erased,
+			// clear the collidedBullets list, else mayhem on next rock in
+			// the outer loop.
+			collidedBullets.clear();
 		}
 	}
 
 	for (auto it : collidedRocks)
 		m_rockField.DestroyRock(it);
+
+	collidedRocks.clear();
 }
+
 
 void Universe::TimerTicker()
 {
