@@ -1,5 +1,5 @@
-#include "AsteroidsSession.h"
-#include "Asteroids.h"
+#include "asteroids/inc/AsteroidsSession.h"
+#include "asteroids/inc/Asteroids.h"
 
 //#define AS_TRACE TRACE
 #define AS_TRACE(...)

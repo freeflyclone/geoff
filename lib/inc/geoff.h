@@ -35,4 +35,7 @@ using tcp = boost::asio::ip::tcp;               // from <boost/asio/ip/tcp.hpp>
 
 #define GEOFF_Version "1.0"
 #define TRACE(...) {std::cerr << __FILE__ << ":" << __LINE__ << ", " << __VA_ARGS__ << std::endl;}
+
+int Geoff(std::string addr, std::string prt, std::string www_root, std::string thrds);
+
 #endif

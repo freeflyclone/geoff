@@ -12,6 +12,9 @@
 cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 project (geoff VERSION 0.1.0 LANGUAGES CXX)
 
+set(GEOFF_LIB_NAME GeoffLib)
+set(GEOFF_APP_NAME GeoffApp)
+
 # set this to ON to enable the message() calls below
 # that display various cmake path variable evaluations
 set(CMAKE_PROJECT_DEBUG OFF)
@@ -21,32 +24,38 @@ set(CMAKE_CONFIGURATION_TYPES Debug;Release)
 
 # These are relative to ${PROJECT_SOURCE_DIR}, that is, where it was cloned to.
 # Files you want to appear in the "Source Files" project folder are explicitly listed here
-file(GLOB APP_SRC_FILES
-	src/AppBuffer.cpp
-	src/Asteroids.cpp
-	src/AsteroidsSession.cpp
-	src/GameSession.cpp
-	src/geoff.cpp
-	src/SSLContext.cpp
-	src/ServerUtils.cpp
-	src/WebsockServer.cpp
-	src/WebsockSession.cpp)
-
+file(GLOB GEOFF_APP_SRC_FILES
+	apps/asteroids/src/Asteroids.cpp
+	apps/asteroids/src/AsteroidsMain.cpp
+	apps/asteroids/src/AsteroidsSession.cpp)
+	
 # Files to appear in "Header Files" project folder are explicitly listed here
-file(GLOB APP_INC_FILES
-	src/AppBuffer.h
-	src/Asteroids.h
-	src/AsteroidsSession.h
-	src/GameSession.h
-	src/geoff.h
-    src/handle_request.h
-	src/server_certificate.hpp
-	src/ServerUtils.h
-	src/SSLContext.h
-	src/websocket_session.h
-	src/WebsockServer.h
-	src/WebsockSession.h
-	src/WebsockSessionManager.h)
+file(GLOB GEOFF_APP_INC_FILES
+	apps/asteroids/inc/Asteroids.h
+	apps/asteroids/inc/AsteroidsSession.h)
+	
+file(GLOB GEOFF_LIB_SRC_FILES
+	lib/src/AppBuffer.cpp
+	lib/src/GameSession.cpp
+	lib/src/geoff.cpp
+	lib/src/SSLContext.cpp
+	lib/src/ServerUtils.cpp
+	lib/src/WebsockServer.cpp
+	lib/src/WebsockSession.cpp)
+
+file(GLOB GEOFF_LIB_INC_FILES
+	apps/AppSession.h
+	lib/inc/AppBuffer.h
+	lib/inc/GameSession.h
+	lib/inc/geoff.h
+    lib/inc/handle_request.h
+	lib/inc/server_certificate.hpp
+	lib/inc/ServerUtils.h
+	lib/inc/SSLContext.h
+	lib/inc/websocket_session.h
+	lib/inc/WebsockServer.h
+	lib/inc/WebsockSession.h
+	lib/inc/WebsockSessionManager.h)
 
 # Files within the source tree "www" tree are all implicitly (automatically) added.
 # Things like .html, .js, .gif, etc. The tree structure is preserved. 
@@ -101,12 +110,12 @@ file(GLOB_RECURSE BEAST_FILES
   ${Boost_INCLUDE_DIRS}/boost/beast/*.ipp)
 
 if(CMAKE_PROJECT_DEBUG)
+  message(STATUS "Project name: ${PROJECT_NAME}")
   message(STATUS "Boost: ${Boost_INCLUDE_DIRS}")
   message(STATUS "Boost: ${Boost_LIBRARY_DIRS}")
   message(STATUS "OpenSSL: ${OPENSSL_INCLUDE_DIR}")
   message(STATUS "OpenSSL: ${OPENSSL_LIBRARIES}")
   message(STATUS "OpenSSL version: ${OPENSSL_VERSION}")
-  message(STATUS "APP_WWW_FILES: ${APP_WWW_FILES}")
 endif()
 
 # explicitly add boost/beast files to project files.
@@ -114,22 +123,29 @@ endif()
 source_group(TREE ${Boost_INCLUDE_DIRS}/boost/beast PREFIX beast FILES ${BEAST_FILES})
 
 if(MSVC)
-  source_group("Source Files" FILES ${APP_SRC_FILES})
-  source_group("Header Files" FILES ${APP_INC_FILES})
   source_group(TREE ${PROJECT_SOURCE_DIR} FILES ${APP_WWW_FILES})
 endif()
 
-add_executable(${PROJECT_NAME} ${APP_SRC_FILES} ${APP_INC_FILES} ${APP_WWW_FILES} ${BEAST_FILES})
+add_executable(${GEOFF_APP_NAME} ${GEOFF_APP_SRC_FILES} ${GEOFF_APP_INC_FILES} ${APP_WWW_FILES} ${BEAST_FILES})
+add_library(${GEOFF_LIB_NAME} STATIC ${GEOFF_LIB_SRC_FILES} ${GEOFF_LIB_INC_FILES})
 
 find_package(Threads)
-target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads ${Boost_SYSTEM_LIBRARY})
-target_link_libraries(${PROJECT_NAME} PRIVATE OpenSSL::SSL)
+
+target_include_directories(${GEOFF_LIB_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/lib/inc ${PROJECT_SOURCE_DIR}/apps)
+target_include_directories(${GEOFF_APP_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/lib/inc ${PROJECT_SOURCE_DIR}/apps)
+
+# if GeoffLib is ever generated as a shared library, we want IT to be dependent on these.
+# (Note: doesn't seem to make any difference in VC when built as static library, which jives with what I know about linking)
+target_link_libraries(${GEOFF_LIB_NAME} PRIVATE Threads::Threads ${Boost_SYSTEM_LIBRARY})
+target_link_libraries(${GEOFF_LIB_NAME} PRIVATE OpenSSL::SSL)
+
+target_link_libraries(${GEOFF_APP_NAME} PRIVATE ${GEOFF_LIB_NAME})
 
 if(MSVC)
-  target_link_libraries(${PROJECT_NAME} PRIVATE Crypt32)
+  target_link_libraries(${GEOFF_APP_NAME} PRIVATE Crypt32)
 
-  set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-  set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_COMMAND_ARGUMENTS "0.0.0.0 8080 www 4")
-  set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
+  set_target_properties(${GEOFF_APP_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+  set_target_properties(${GEOFF_APP_NAME} PROPERTIES VS_DEBUGGER_COMMAND_ARGUMENTS "0.0.0.0 8080 www 4")
+  set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${GEOFF_APP_NAME})
 endif()
 
