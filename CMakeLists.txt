@@ -31,7 +31,7 @@ file(GLOB GEOFF_APP_SRC_FILES
 file(GLOB GEOFF_LIB_SRC_FILES
 	src/AppBuffer.cpp
 	src/GameSession.cpp
-	src/geoff.cpp
+	lib/src/geoff.cpp
 	src/SSLContext.cpp
 	src/ServerUtils.cpp
 	src/WebsockServer.cpp
@@ -45,7 +45,7 @@ file(GLOB GEOFF_APP_INC_FILES
 file(GLOB GEOFF_LIB_INC_FILES
 	src/AppBuffer.h
 	src/GameSession.h
-	src/geoff.h
+	lib/inc/geoff.h
     src/handle_request.h
 	src/server_certificate.hpp
 	src/ServerUtils.h
