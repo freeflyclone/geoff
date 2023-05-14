@@ -80,7 +80,11 @@ namespace Asteroids
 
     class Gun {
     public:
-        typedef std::list<std::shared_ptr<Bullet>> BulletsList_t;
+        //typedef std::list<std::shared_ptr<Bullet>> BulletsList_t;
+
+        typedef std::unique_ptr<Bullet> BulletPtr_t;
+        typedef std::list<BulletPtr_t> BulletList_t;
+        typedef BulletList_t::iterator BulletIterator;
 
         Gun(Ship& s) : m_ship(s) {}
         ~Gun() {}
@@ -90,7 +94,7 @@ namespace Asteroids
         std::unique_ptr<AppBuffer> MakeBulletsPacket(bool isLittleEndian);
         Ship& GetShip() { return m_ship; }
 
-        BulletsList_t m_bullets;
+        BulletList_t m_bullets;
 
     private:
         Ship& m_ship;

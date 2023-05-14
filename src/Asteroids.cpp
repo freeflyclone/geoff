@@ -74,7 +74,7 @@ Bullet::Bullet(Gun &g, double x, double y, double dx, double dy)
 
 Bullet::~Bullet()
 {
-	TRACE("Bullet destroyed");
+	//TRACE("Bullet destroyed");
 }
 
 bool Bullet::TickTock()
@@ -118,7 +118,7 @@ Rock::Rock(double x, double y, double dx, double dy, double radius)
 
 Rock::~Rock()
 {
-	TRACE("Rock destroyed");
+	//TRACE("Rock destroyed");
 }
 
 bool Rock::TickTock()
@@ -231,7 +231,7 @@ std::unique_ptr<AppBuffer> Gun::MakeBulletsPacket(bool isLittleEndian)
 	txBuff->set_uint16(static_cast<uint16_t>(m_bullets.size()));
 
 	size_t i = 0;
-	for (auto bullet : m_bullets)
+	for (auto& bullet : m_bullets)
 	{
 		auto cx = static_cast<uint16_t>(bullet->x);
 		auto cy = static_cast<uint16_t>(bullet->y);
@@ -253,7 +253,7 @@ void Gun::TickTock()
 
 	bool bulletDone = false;
 
-	for (auto bullet : m_bullets)
+	for (auto& bullet : m_bullets)
 	{
 		if (bullet->TickTock())
 		{
@@ -262,6 +262,7 @@ void Gun::TickTock()
 		}
 	}
 
+	/*
 	if (bulletDone)
 	{
 		m_bullets.pop_front();
@@ -270,6 +271,7 @@ void Gun::TickTock()
 			G_TRACE(__FUNCTION__ << "bulletDone, no more m_bullets");
 		}
 	}
+	*/
 }
 
 #define SH_TRACE TRACE
@@ -558,40 +560,6 @@ void Universe::TickEvent()
 {
 	//U_TRACE(__FUNCTION__);
 
-	std::list<RockField::RockList_t::iterator> collidedRocks;
-	RockField::RockIterator rockIter;
-
-	auto& rocks = m_rockField.m_rocks;
-
-	// Bullets vs Rocks collisions. (brute force, no optimization)
-	for (rockIter = rocks.begin(); rockIter != rocks.end(); rockIter++)
-	{
-		for (auto pair : m_sessions.get_map())
-		{
-			//auto sessionID = pair.first;
-			auto session = pair.second;
-
-			auto bullets = session->m_player->m_ship.m_gun->m_bullets;
-
-			for (auto bullet : bullets)
-			{
-				auto rock = rockIter->get();
-
-				if (session->DistanceBetweenPoints(*rock, *bullet) < rock->Radius())
-				{
-					TRACE("Bullet Hit");
-					collidedRocks.push_back(rockIter);
-					break;
-				}
-			}
-
-			// delete collided bullets here
-		}
-	}
-
-	for (auto it : collidedRocks)
-		m_rockField.DestroyRock(it);
-
 	// update all Universe specfic state here.  (objects with TickEvent() handler)
 	m_rockField.TickEvent();
 
@@ -606,6 +574,41 @@ void Universe::TickEvent()
 	}
 
 	m_timer_tick++;
+	std::list<RockField::RockIterator> collidedRocks;
+	RockField::RockIterator rockIter;
+
+	std::list<Gun::BulletIterator> collidedBullets;
+	Gun::BulletIterator bulletIter;
+
+	auto& rocks = m_rockField.m_rocks;
+
+	// Bullets vs Rocks collisions. (brute force, no optimization)
+	for (rockIter = rocks.begin(); rockIter != rocks.end(); rockIter++)
+	{
+		for (auto pair : m_sessions.get_map())
+		{
+			//auto sessionID = pair.first;
+			auto session = pair.second;
+
+			auto& bullets = session->m_player->m_ship.m_gun->m_bullets;
+
+			for (bulletIter = bullets.begin(); bulletIter != bullets.end(); bulletIter++)
+			{
+				auto rock = rockIter->get();
+				auto bullet = bulletIter->get();
+
+				if (session->DistanceBetweenPoints(*rock, *bullet) < rock->Radius())
+				{
+					TRACE("Bullet Hit");
+					collidedRocks.push_back(rockIter);
+					collidedBullets.push_back(bulletIter);
+				}
+			}
+		}
+	}
+
+	for (auto it : collidedRocks)
+		m_rockField.DestroyRock(it);
 }
 
 void Universe::TimerTicker()
@@ -747,7 +750,7 @@ void Universe::PerSessionTickEvent(AsteroidsSession& session)
 				if (sessionID == session.SessionID() || !sessPtr->m_player)
 					continue;
 
-				for (auto bullet : sessPtr->m_player->m_ship.m_gun->m_bullets)
+				for (auto& bullet : sessPtr->m_player->m_ship.m_gun->m_bullets)
 				{
 					txBuff3->set_uint16(static_cast<int16_t>(bullet->x));
 					txBuff3->set_uint16(static_cast<int16_t>(bullet->y));
