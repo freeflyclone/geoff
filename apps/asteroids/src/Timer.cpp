@@ -4,6 +4,8 @@
 #include "Timer.h"
 #include "Session.h"
 
+using namespace as2;
+
 #define TM_TE_TRACE TRACE
 
 Timer::Timer(Session& session, uint32_t intervalInUs)

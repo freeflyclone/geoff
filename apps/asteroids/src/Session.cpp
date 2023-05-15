@@ -6,8 +6,9 @@
 #undef SS_TRACE
 #define SS_TRACE TRACE
 
+using namespace as2;
+
 namespace Websock {	WebsockSessionManager<Session> g_sessions; };
-using namespace Websock;
 
 Session::Session(uint32_t sessionID)
 	:

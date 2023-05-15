@@ -8,21 +8,24 @@
 
 #define SS_TRACE(...)
 
-class Session : public GameSession
+namespace as2
 {
-public:
-	Session(uint32_t sessionID);
-	~Session();
+	class Session : public GameSession
+	{
+	public:
+		Session(uint32_t sessionID);
+		~Session();
 
-	void TickEvent();
+		void TickEvent();
 
-private:
-	void HandleNewSession(AppBuffer& rxBuffer);
-	void HandleKeyEvent(AppBuffer& rxBuffer);
-	void HandleClickEvent(AppBuffer& rxBuffer);
-	void HandleResizeEvent(AppBuffer& rxBuffer);
+	private:
+		void HandleNewSession(AppBuffer& rxBuffer);
+		void HandleKeyEvent(AppBuffer& rxBuffer);
+		void HandleClickEvent(AppBuffer& rxBuffer);
+		void HandleResizeEvent(AppBuffer& rxBuffer);
 
-	Timer m_timer;
-};
+		Timer m_timer;
+	};
+}
 
 #endif

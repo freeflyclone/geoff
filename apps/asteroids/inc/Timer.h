@@ -5,26 +5,28 @@
 
 #define TM_TRACE(...)
 
-class Session;
-
-class Timer
+namespace as2
 {
-public:
-	Timer(Session& session, uint32_t intervalInUs);
-	~Timer();
+	class Session;
 
-	uint32_t GetTick();
-	void TickEvent();
+	class Timer
+	{
+	public:
+		Timer(Session& session, uint32_t intervalInUs);
+		~Timer();
 
-	void Ticker();
+		uint32_t GetTick();
+		void TickEvent();
 
-private:
-	Session& m_session;
-	std::unique_ptr<net::deadline_timer> m_timer;
-	uint32_t m_tick_interval_in_us;
-	uint32_t m_tick;
-	bool m_run_timer;
-	bool m_timer_complete;
-};
+		void Ticker();
 
+	private:
+		Session& m_session;
+		std::unique_ptr<net::deadline_timer> m_timer;
+		uint32_t m_tick_interval_in_us;
+		uint32_t m_tick;
+		bool m_run_timer;
+		bool m_timer_complete;
+	};
+}
 #endif
