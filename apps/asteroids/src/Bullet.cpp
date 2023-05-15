@@ -19,7 +19,7 @@ Bullet2::~Bullet2()
 	B_TRACE(__FUNCTION__);
 }
 
-bool Bullet2::TickEvent()
+bool Bullet2::TickEvent(Session& session)
 {
 	B_TRACE(__FUNCTION__);
 

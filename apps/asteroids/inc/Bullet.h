@@ -2,6 +2,7 @@
 #define BULLET_H
 
 #include "Structs.h"
+#include "Session.h"
 
 #define B_TRACE(...)
 
@@ -15,7 +16,7 @@ namespace as2
 		Bullet2(double x, double y, double dx, double dy);
 		~Bullet2();
 
-		bool TickEvent();
+		bool TickEvent(Session&);
 
 	private:
 		int m_ticks_left;

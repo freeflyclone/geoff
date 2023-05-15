@@ -41,4 +41,9 @@ std::unique_ptr<AppBuffer> Gun::MakeBulletsBuffer(Session& session)
 void Gun::TickEvent(Session& session)
 {
 	GN_TRACE(__FUNCTION__ << ", there are " << m_bullets.size() << " bullet(s)");
+
+	for (auto& bullet : m_bullets)
+	{
+		bullet->TickEvent(session);
+	}
 }
