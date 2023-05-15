@@ -676,6 +676,8 @@ void Universe::PerSessionTickEvent(AsteroidsSession& session)
 	txBuff->set_uint16(static_cast<uint16_t>(Size::h));
 
 	// Update all AsteroidSession state for single/multiplayer modes.
+	bool doRocks = true;
+	if (doRocks)
 	{
 		auto numRocks = g_universe->m_rockField.m_rocks.size();
 		size_t outsize = sizeof(int16_t) + (numRocks * (3 * sizeof(int16_t)));
@@ -735,15 +737,17 @@ void Universe::PerSessionTickEvent(AsteroidsSession& session)
 			if (sessionID == session.SessionID() || !sessPtr->m_player)
 				continue;
 
-			totalBullets += sessPtr->m_player->m_ship.m_gun->m_bullets.size();
+			auto  ship = sessPtr->m_player->m_ship;
+
+			totalBullets += ship.m_gun->m_bullets.size();
 
 			int16_t shipX, shipY, shipAngle;
 
-			sessPtr->m_player->m_ship.GetXY(shipX, shipY);
-			sessPtr->m_player->m_ship.GetAngle(shipAngle);
+			ship.GetXY(shipX, shipY);
+			ship.GetAngle(shipAngle);
 
-			txBuff2->set_uint16(shipX);
-			txBuff2->set_uint16(shipY);
+			txBuff2->set_uint16(shipX - ship.Context::offsetX);
+			txBuff2->set_uint16(shipY - ship.Context::offsetY);
 			txBuff2->set_uint16(shipAngle);
 		}
 
@@ -767,10 +771,12 @@ void Universe::PerSessionTickEvent(AsteroidsSession& session)
 				if (sessionID == session.SessionID() || !sessPtr->m_player)
 					continue;
 
+				auto  ship = sessPtr->m_player->m_ship;
+
 				for (auto& bullet : sessPtr->m_player->m_ship.m_gun->m_bullets)
 				{
-					txBuff3->set_uint16(static_cast<int16_t>(bullet->x));
-					txBuff3->set_uint16(static_cast<int16_t>(bullet->y));
+					txBuff3->set_uint16(static_cast<int16_t>(bullet->x - ship.Context::offsetX));
+					txBuff3->set_uint16(static_cast<int16_t>(bullet->y - ship.Context::offsetY));
 				}
 			}
 		}
