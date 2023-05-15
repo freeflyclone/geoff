@@ -49,11 +49,6 @@ void AsteroidsSession::HandleNewSession(AppBuffer& rxBuffer)
 	m_player = std::make_unique<Asteroids::Player>(*this, w, h);
 
 	AS_TRACE(*this);
-
-	//StartTimer();
-	//SetIntervalInUs(1000000 / Asteroids::FPS);
-
-	//SetIntervalInUs(1000000);
 }
 
 void AsteroidsSession::HandleKeyEvent(AppBuffer& rxBuffer)
