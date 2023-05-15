@@ -24,14 +24,12 @@ namespace as2
         void Fire();
 
         void TickEvent(Session&);
-/*
-        std::unique_ptr<AppBuffer> MakeBulletsPacket(bool isLittleEndian);
-        Ship2& GetShip() { return m_ship; }
-        BulletList_t m_bullets;
-*/
+
+        std::unique_ptr<AppBuffer> MakeBulletsBuffer(Session&);
 
     private:
         Ship2& m_ship;
+        BulletList_t m_bullets;
     };
 
 }
