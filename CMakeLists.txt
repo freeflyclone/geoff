@@ -59,8 +59,8 @@ file(GLOB GEOFF_LIB_INC_FILES
 
 # Files within the source tree "www" tree are all implicitly (automatically) added.
 # Things like .html, .js, .gif, etc. The tree structure is preserved. 
-file(GLOB_RECURSE APP_WWW_FILES
-	www/*)
+file(GLOB_RECURSE ASTEROIDS_WWW_FILES
+	www/asteroids/*)
 
 # I believe boost wants these specifically, I'm not sure geoff code cares otherwise. (yet)
 set(CMAKE_CXX_STANDARD 17)
@@ -123,10 +123,10 @@ endif()
 source_group(TREE ${Boost_INCLUDE_DIRS}/boost/beast PREFIX beast FILES ${BEAST_FILES})
 
 if(MSVC)
-  source_group(TREE ${PROJECT_SOURCE_DIR} FILES ${APP_WWW_FILES})
+	source_group(TREE ${PROJECT_SOURCE_DIR} FILES ${ASTEROIDS_WWW_FILES})
 endif()
 
-add_executable(${GEOFF_APP_NAME} ${GEOFF_APP_SRC_FILES} ${GEOFF_APP_INC_FILES} ${APP_WWW_FILES} ${BEAST_FILES})
+add_executable(${GEOFF_APP_NAME} ${GEOFF_APP_SRC_FILES} ${GEOFF_APP_INC_FILES} ${ASTEROIDS_WWW_FILES} ${BEAST_FILES})
 add_library(${GEOFF_LIB_NAME} STATIC ${GEOFF_LIB_SRC_FILES} ${GEOFF_LIB_INC_FILES})
 
 find_package(Threads)
