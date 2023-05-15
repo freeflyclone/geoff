@@ -88,11 +88,6 @@ void GameSession::HandleClickEvent(AppBuffer& rxBuffer)
 	CommitTxBuffer(txBuffer);
 };
 
-void GameSession::HandleTimerTick()
-{
-	GS_TRACE("tick: " << m_timer_tick);
-}
-
 void GameSession::CommsHandler(AppBuffer & rxBuffer)
 {
 	// non-destructive read of requestType, keep rxBuffer state intact
