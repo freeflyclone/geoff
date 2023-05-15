@@ -8,6 +8,8 @@
 
 namespace as2
 {
+	class Gun;
+
 	class Ship2 : public Context, public Position, public Orientation, public Velocity
 	{
 	public:
@@ -17,12 +19,13 @@ namespace as2
 		void GetXYA(double& x, double& y, double& a);
 
 		void MoveShip();
-		void FireShot();
+		void FireGuns();
 
 		void KeyEvent(int key, bool isDown);
 		void TickEvent(Session&);
 
 	private:
+		std::unique_ptr<Gun> m_gun;
 	};
 }
 #endif

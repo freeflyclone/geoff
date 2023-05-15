@@ -11,6 +11,7 @@ namespace Websock {	WebsockSessionManager<Session> g_sessions; };
 Session::Session(uint32_t sessionID)
 	:
 	GameSession(sessionID),
+	m_player(nullptr),
 	m_timer(*this, 1000000)
 {
 	SS_TRACE(__FUNCTION__);

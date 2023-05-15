@@ -11,7 +11,6 @@
 namespace as2
 {
 	class Player;
-
 	class Session : public GameSession
 	{
 	public:
@@ -26,8 +25,11 @@ namespace as2
 		void HandleClickEvent(AppBuffer& rxBuffer);
 		void HandleResizeEvent(AppBuffer& rxBuffer);
 
-		Timer m_timer;
 		std::unique_ptr<Player> m_player;
+
+		// Initialize AFTER m_player, else Player::TickEvent mayhem.
+		// at Session::Session() time.
+		Timer m_timer;
 	};
 }
 
