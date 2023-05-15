@@ -1,7 +1,6 @@
 #ifndef UNIVERSE_H
 #define UNIVERSE_H
 
-
 #include "Structs.h"
 #include "Session.h"
 #include "WebsockSessionManager.h"
@@ -21,8 +20,11 @@ namespace as2
     private:
         //RockField m_rockField;
 
-        void PerSessionTickEvent(Session&);
+        void OtherSessionsTickEvent(Session&);
     };
+
+    extern std::unique_ptr<Universe> g_universe;
+    const Universe& Init(int w, int h);
 }
 
 #endif

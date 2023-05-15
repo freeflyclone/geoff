@@ -3,6 +3,7 @@
 
 #include "Session.h"
 #include "Player.h"
+#include "Universe.h"
 
 using namespace as2;
 
@@ -13,6 +14,7 @@ Session::Session(uint32_t sessionID)
 	m_timer(*this, 1000000)
 {
 	SS_TRACE(__FUNCTION__);
+	Init(8192, 8192);
 }
 
 Session::~Session()
@@ -72,4 +74,7 @@ void Session::TickEvent()
 
 	if (m_player)
 		m_player->TickEvent(*this);
+
+	if (g_universe)
+		g_universe->TickEvent(*this);
 }
