@@ -2,23 +2,27 @@
 #define SHIP_H
 
 #include "Structs.h"
+#include "Session.h"
 
 #define SH_TRACE(...)
 
-class Ship2 : public Context, public Position, public Orientation, public Velocity
+namespace as2
 {
-public:
-	Ship2(uint16_t cw, uint16_t ch, double dx, double dy, double angle);
-	~Ship2();
+	class Ship2 : public Context, public Position, public Orientation, public Velocity
+	{
+	public:
+		Ship2(uint16_t cw, uint16_t ch, double dx, double dy, double angle);
+		~Ship2();
 
-	void GetXYA(double& x, double& y, double& a);
+		void GetXYA(double& x, double& y, double& a);
 
-	void MoveShip();
-	void FireShot();
+		void MoveShip();
+		void FireShot();
 
-	void KeyEvent(int key, bool isDown);
-	void TickEvent();
+		void KeyEvent(int key, bool isDown);
+		void TickEvent(Session&);
 
-private:
-};
+	private:
+	};
+}
 #endif

@@ -10,6 +10,8 @@
 
 namespace as2
 {
+	class Player;
+
 	class Session : public GameSession
 	{
 	public:
@@ -25,6 +27,7 @@ namespace as2
 		void HandleResizeEvent(AppBuffer& rxBuffer);
 
 		Timer m_timer;
+		std::unique_ptr<Player> m_player;
 	};
 }
 

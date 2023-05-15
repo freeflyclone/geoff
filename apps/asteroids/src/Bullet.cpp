@@ -1,6 +1,8 @@
 #include "geoff.h"
 #include "Bullet.h"
 
+using namespace as2;
+
 #undef B_TRACE
 #define B_TRACE TRACE
 

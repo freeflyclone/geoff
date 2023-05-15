@@ -5,21 +5,23 @@
 
 #define B_TRACE(...)
 
-class Gun2;
-
-class Bullet2 : public Position, public Velocity
+namespace as2
 {
-public:
-	Bullet2(Gun2& g, double x, double y, double dx, double dy);
-	~Bullet2();
+	class Gun2;
 
-	bool TickEvent();
+	class Bullet2 : public Position, public Velocity
+	{
+	public:
+		Bullet2(Gun2& g, double x, double y, double dx, double dy);
+		~Bullet2();
 
-	Gun2& GetGun();
+		bool TickEvent();
 
-private:
-	Gun2& m_gun;
-	int m_ticks_left;
-};
+		Gun2& GetGun();
 
+	private:
+		Gun2& m_gun;
+		int m_ticks_left;
+	};
+}
 #endif

@@ -2,6 +2,8 @@
 
 #include "Ship.h"
 
+using namespace as2;
+
 #undef SH_TRACE
 #define SH_TRACE TRACE
 
@@ -44,7 +46,7 @@ void Ship2::KeyEvent(int key, bool isDown)
 	SH_TRACE(__FUNCTION__);
 }
 
-void Ship2::TickEvent()
+void Ship2::TickEvent(Session& session)
 {
 	SH_TRACE(__FUNCTION__);
 }
