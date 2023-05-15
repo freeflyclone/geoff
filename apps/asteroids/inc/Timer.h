@@ -5,10 +5,12 @@
 
 #define TM_TRACE(...)
 
+class Session;
+
 class Timer
 {
 public:
-	Timer(uint32_t intervalInUs);
+	Timer(Session& session, uint32_t intervalInUs);
 	~Timer();
 
 	uint32_t GetTick();
@@ -17,6 +19,7 @@ public:
 	void Ticker();
 
 private:
+	Session& m_session;
 	std::unique_ptr<net::deadline_timer> m_timer;
 	uint32_t m_tick_interval_in_us;
 	uint32_t m_tick;

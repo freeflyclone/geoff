@@ -49,6 +49,7 @@ file(GLOB GEOFF_APP_INC_FILES
 	apps/asteroids/inc/RockField.h
 	apps/asteroids/inc/Session.h
 	apps/asteroids/inc/Ship.h
+	apps/asteroids/inc/Structs.h
 	apps/asteroids/inc/Timer.h
 	apps/asteroids/inc/Universe.h)
 	

@@ -1,12 +1,14 @@
 #include "geoff.h"
 #include "WebsockServer.h"
+
 #include "Timer.h"
+#include "Session.h"
 
-#undef TM_TRACE
-#define TM_TRACE TRACE
+#define TM_TE_TRACE TRACE
 
-Timer::Timer(uint32_t intervalInUs)
+Timer::Timer(Session& session, uint32_t intervalInUs)
 	:
+	m_session(session),
 	m_tick_interval_in_us(intervalInUs)
 {
 	TM_TRACE(__FUNCTION__);
@@ -40,27 +42,26 @@ uint32_t Timer::GetTick()
 void Timer::TickEvent()
 {
 	TM_TRACE(__FUNCTION__);
+	m_session.TickEvent();
 }
 
 void Timer::Ticker()
 {
-	TM_TRACE(__FUNCTION__);
-
 	TickEvent();
 
 	boost::system::error_code ec;
 
 	if (!m_timer)
 	{
-		TRACE("")
-			m_timer_complete = true;
+		m_timer_complete = true;
+		TM_TRACE(__FUNCTION__);
 		return;
 	}
 
 	if (!m_run_timer)
 	{
-		//TRACE("")
 		m_timer_complete = true;
+		TM_TRACE(__FUNCTION__);
 		return;
 	}
 
