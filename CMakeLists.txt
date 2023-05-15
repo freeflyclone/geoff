@@ -27,12 +27,26 @@ set(CMAKE_CONFIGURATION_TYPES Debug;Release)
 file(GLOB GEOFF_APP_SRC_FILES
 	apps/asteroids/src/Asteroids.cpp
 	apps/asteroids/src/AsteroidsMain.cpp
-	apps/asteroids/src/AsteroidsSession.cpp)
+	apps/asteroids/src/AsteroidsSession.cpp
+	apps/asteroids/src/Bullet.cpp
+	apps/asteroids/src/Gun.cpp
+	apps/asteroids/src/Player.cpp
+	apps/asteroids/src/Rock.cpp
+	apps/asteroids/src/RockField.cpp
+	apps/asteroids/src/Ship.cpp
+	apps/asteroids/src/Universe.cpp)
 	
 # Files to appear in "Header Files" project folder are explicitly listed here
 file(GLOB GEOFF_APP_INC_FILES
 	apps/asteroids/inc/Asteroids.h
-	apps/asteroids/inc/AsteroidsSession.h)
+	apps/asteroids/inc/AsteroidsSession.h
+	apps/asteroids/inc/Bullet.h
+	apps/asteroids/inc/Gun.h
+	apps/asteroids/inc/Player.h
+	apps/asteroids/inc/Rock.h
+	apps/asteroids/inc/RockField.h
+	apps/asteroids/inc/Ship.h
+	apps/asteroids/inc/Universe.h)
 	
 file(GLOB GEOFF_LIB_SRC_FILES
 	lib/src/AppBuffer.cpp
