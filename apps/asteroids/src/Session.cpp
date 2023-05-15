@@ -6,8 +6,6 @@
 
 using namespace as2;
 
-namespace Websock {	WebsockSessionManager<Session> g_sessions; };
-
 Session::Session(uint32_t sessionID)
 	:
 	GameSession(sessionID),
