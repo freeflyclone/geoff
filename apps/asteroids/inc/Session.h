@@ -4,6 +4,7 @@
 #include "geoff.h"
 #include "GameSession.h"
 
+#include "Structs.h"
 #include "Timer.h"
 
 #define SS_TRACE(...)
@@ -19,6 +20,8 @@ namespace asteroids
 
 		Player& GetPlayer() { return *m_player; }
 		Timer& GetTimer() { return m_timer; }
+
+		double Session::DistanceBetweenPoints(Position& p1, Position& p2);
 
 		void TickEvent();
 

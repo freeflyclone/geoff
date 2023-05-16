@@ -14,6 +14,7 @@ namespace asteroids
 		Rock(double x, double y, double dx, double dy, double radius);
 		~Rock();
 
+		double Radius();
 		void TickEvent(Session&);
 
 	private:

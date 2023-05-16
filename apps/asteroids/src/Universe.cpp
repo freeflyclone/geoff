@@ -3,6 +3,8 @@
 #include "Universe.h"
 #include "Session.h"
 #include "RockField.h"
+#include "Gun.h"
+#include "Player.h"
 
 #include "WebsockSessionManager.h"
 
@@ -52,12 +54,60 @@ void Universe::TickEvent(Session& session)
 {
 	UN_TRACE(__FUNCTION__);
 
-	OtherSessionsTickEvent(session);
-
 	if (m_rockField)
 		m_rockField->TickEvent(session);
 
+	CollisionDetection(session);
+
 	// TODO: output stuff to client
+}
+
+void Universe::CollisionDetection(Session& session)
+{
+	std::list<RockField::RockIterator> collidedRocks;
+	RockField::RockIterator rockIter;
+
+	std::list<Gun::BulletIterator> collidedBullets;
+	Gun::BulletIterator bulletIter;
+
+	auto& rocks = m_rockField->GetRocks();
+
+	for (rockIter = rocks.begin(); rockIter != rocks.end(); rockIter++)
+	{
+		for (auto pair : g_sessions.get_map())
+		{
+			//auto sessionID = pair.first;
+			auto sess = pair.second;
+
+			auto& bullets = sess->GetPlayer().GetShip().GetGun().GetBullets();
+
+			for (bulletIter = bullets.begin(); bulletIter != bullets.end(); bulletIter++)
+			{
+				auto rock = rockIter->get();
+				auto bullet = bulletIter->get();
+
+				if (session.DistanceBetweenPoints(*rock, *bullet) < rock->Radius())
+				{
+					//TRACE("Bullet Hit");
+					collidedRocks.push_back(rockIter);
+					collidedBullets.push_back(bulletIter);
+				}
+			}
+
+			for (auto bullet : collidedBullets)
+				bullets.erase(bullet);
+
+			// Once the all of the collidedBullets have been erased,
+			// clear the collidedBullets list, else mayhem on next rock in
+			// the outer loop.
+			collidedBullets.clear();
+		}
+	}
+
+	for (auto it : collidedRocks)
+		m_rockField->DestroyRock(it);
+
+	collidedRocks.clear();
 }
 
 void Universe::OtherSessionsTickEvent(Session& session)

@@ -20,6 +20,8 @@ namespace asteroids
         RockField(int w, int h);
         ~RockField();
 
+        RockList_t& GetRocks();
+
         void LaunchOne(double x, double y, double r);
         void DestroyRock(RockIterator rock);
 

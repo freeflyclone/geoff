@@ -21,6 +21,11 @@ RockField::~RockField()
 	RF_TRACE(__FUNCTION__);
 }
 
+RockField::RockList_t& RockField::GetRocks()
+{
+	return m_rocks;
+}
+
 void RockField::LaunchOne(double x, double y, double r)
 {
 	RF_TRACE(__FUNCTION__);

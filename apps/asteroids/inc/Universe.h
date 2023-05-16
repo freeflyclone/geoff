@@ -22,6 +22,7 @@ namespace asteroids
 
     private:
         void OtherSessionsTickEvent(Session&);
+        void CollisionDetection(Session&);
 
         std::unique_ptr<RockField> m_rockField;
     };

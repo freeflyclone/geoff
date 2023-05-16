@@ -19,6 +19,11 @@ Gun::~Gun()
 	GN_TRACE(__FUNCTION__);
 }
 
+Gun::BulletList_t& Gun::GetBullets()
+{
+	return m_bullets;
+}
+
 void Gun::Fire(Ship& ship)
 {
 	// Calculate firing solution from ship position & angle

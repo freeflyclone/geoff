@@ -21,6 +21,11 @@ Rock::~Rock()
 	RK_TRACE(__FUNCTION__);
 }
 
+double Rock::Radius()
+{
+	return m_radius;
+}
+
 void Rock::TickEvent(Session& session)
 {
 	auto universeW = g_universe->Size::sizeW;
