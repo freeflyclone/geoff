@@ -3,15 +3,13 @@
 
 #include "Structs.h"
 #include "Session.h"
-#include "Universe.h"
 #include "Rock.h"
+#include "Universe.h"
 
 #define UN_TRACE(...)
 
 namespace as2
 {
-    class Rock;
-
     class RockField : public Context
     {
     public:
@@ -24,9 +22,6 @@ namespace as2
 
         void LaunchOne(double x, double y, double r);
         void DestroyRock(RockIterator rock);
-
-        RockList_t& GetRocks();
-        void EraseRocks();
 
         void TickEvent();
 

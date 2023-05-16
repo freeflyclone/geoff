@@ -4,6 +4,8 @@
 #include "Session.h"
 #include "RockField.h"
 
+#include "WebsockSessionManager.h"
+
 using namespace as2;
 
 namespace Websock
@@ -30,7 +32,8 @@ namespace as2
 #define UN_TRACE TRACE
 
 Universe::Universe(int width, int height)
-	: Size({ static_cast<double>(width), static_cast<double>(height) })
+	: Size({ static_cast<double>(width), static_cast<double>(height) }),
+	m_rockField(std::make_unique<RockField>(width, height))
 {
 	UN_TRACE(__FUNCTION__);
 }
