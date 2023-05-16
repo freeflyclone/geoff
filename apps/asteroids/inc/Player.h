@@ -9,7 +9,7 @@
 
 namespace as2
 {
-    class Player : public Size, public Position, public Context
+    class Player : public Context, public Size
     {
     public:
         Player(Session& session, double width, double height);

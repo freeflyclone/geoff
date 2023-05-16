@@ -1,5 +1,6 @@
 #include "geoff.h"
 #include "Rock.h"
+#include "Universe.h"
 
 using namespace as2;
 
@@ -12,7 +13,7 @@ Rock::Rock(double x, double y, double dx, double dy, double radius)
 	Velocity({ dx,dy }),
 	m_radius(radius)
 {
-	RK_TRACE(__FUNCTION__);
+	RK_TRACE(__FUNCTION__ << ", x: " << posX << ", y: " << posY << ", dx: " << deltaX << ", dy: " << deltaY << ", radius: " << m_radius);
 }
 
 Rock::~Rock()
@@ -22,5 +23,21 @@ Rock::~Rock()
 
 void Rock::TickEvent(Session& session)
 {
-	RK_TRACE(__FUNCTION__);
+	auto universeW = g_universe->Size::sizeW;
+	auto universeH = g_universe->Size::sizeH;
+
+	Position::posX += Velocity::deltaX;
+	Position::posY += Velocity::deltaY;
+
+	if (Position::posX > universeW)
+		Position::posX = 0.0;
+	if (Position::posX < 0.0)
+		Position::posX = universeW;
+
+	if (Position::posY > universeH)
+		Position::posY = 0.0;
+	if (Position::posY < 0.0)
+		Position::posY = universeH;
+
+	RK_TRACE(__FUNCTION__ << ", x: " << posX << ", y: " << posY << ", dx: " << deltaX << ", dy: " << deltaY << ", radius: " << m_radius);
 }

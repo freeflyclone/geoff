@@ -5,9 +5,6 @@
 #include "Player.h"
 #include "Universe.h"
 
-#undef SS_TRACE
-#define SS_TRACE TRACE
-
 using namespace as2;
 
 Session::Session(uint32_t sessionID)

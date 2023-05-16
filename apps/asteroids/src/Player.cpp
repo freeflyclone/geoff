@@ -6,6 +6,9 @@
 #include "Player.h"
 #include "Universe.h"
 
+#undef PL_TRACE
+#define PL_TRACE TRACE
+
 using namespace as2;
 
 Player::Player(Session& session, double width, double height)
@@ -14,6 +17,11 @@ Player::Player(Session& session, double width, double height)
 	m_session(session),
 	m_ship(static_cast<uint16_t>(width), static_cast<uint16_t>(height), 0, 0, 90)
 {
+	ctxW = static_cast<uint16_t>(width);
+	ctxH = static_cast<uint16_t>(height);
+	ctxOX = static_cast<uint16_t>(g_universe->sizeW / 2) - ctxW / 2;
+	ctxOY = static_cast<uint16_t>(g_universe->sizeH / 2) - ctxH / 2;
+
 	PL_TRACE(__FUNCTION__);
 }
 
@@ -40,7 +48,15 @@ void Player::ClickEvent(int clickX, int clickY)
 
 void Player::ResizeEvent(int w, int h)
 {
-	PL_TRACE(__FUNCTION__);
+	sizeW = static_cast<double>(w);
+	sizeH = static_cast<double>(h);
+
+	ctxW = static_cast<uint16_t>(w);
+	ctxH = static_cast<uint16_t>(h);
+	ctxOX = static_cast<uint16_t>(g_universe->sizeW / 2) - ctxW / 2;
+	ctxOY = static_cast<uint16_t>(g_universe->sizeH / 2) - ctxH / 2;
+
+	//PL_TRACE(__FUNCTION__ << ", sizeW: " << sizeW << ", sizeH: " << sizeH << ", ctxOX: " << ctxOX << ", ctxOY: " << ctxOY);
 }
 
 void Player::TickEvent(Session& session)
