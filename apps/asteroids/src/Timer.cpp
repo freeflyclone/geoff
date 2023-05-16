@@ -3,6 +3,7 @@
 
 #include "Timer.h"
 #include "Session.h"
+#include "Universe.h"
 
 using namespace asteroids;
 
@@ -45,7 +46,9 @@ uint32_t Timer::GetTick()
 void Timer::TickEvent()
 {
 	TM_TRACE(__FUNCTION__);
-	m_session.TickEvent();
+
+	if(g_universe)
+		g_universe->TickEvent(m_session);
 }
 
 void Timer::Ticker()

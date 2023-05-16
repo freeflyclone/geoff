@@ -16,19 +16,19 @@ namespace asteroids
         Universe(int width, int height);
         ~Universe();
 
-        RockField& GetRockField();
+        RockField& GetRockField() { return *m_rockField; }
 
         void TickEvent(Session&);
 
-    private:
-        void OtherSessionsTickEvent(Session&);
-        void CollisionDetection(Session&);
-
         std::unique_ptr<RockField> m_rockField;
+
+    private:
+        void PerSessionTickEvent(Session&);
+        void CollisionDetection(Session&);
     };
 
     extern std::unique_ptr<Universe> g_universe;
-    const Universe& Init(int w, int h);
+    const Universe& GetUniverse();
 }
 
 #endif

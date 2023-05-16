@@ -4,7 +4,6 @@
 #include "Structs.h"
 #include "Session.h"
 #include "Rock.h"
-#include "Universe.h"
 
 #define RF_TRACE(...)
 

@@ -16,7 +16,7 @@ Session::Session(uint32_t sessionID)
 	//m_timer(*this, 250000)
 {
 	SS_TRACE(__FUNCTION__);
-	Init(8192, 8192);
+	GetUniverse();
 }
 
 Session::~Session()
@@ -80,9 +80,6 @@ void Session::HandleResizeEvent(AppBuffer& rxBuffer)
 void Session::TickEvent()
 {
 	SS_TRACE(__FUNCTION__);
-
-	if (g_universe)
-		g_universe->TickEvent(*this);
 
 	if (m_player)
 		m_player->TickEvent(*this);
