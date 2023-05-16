@@ -1,6 +1,9 @@
 #include "geoff.h"
+#include "Consts.h"
 
 #include "Player.h"
+#include "Universe.h"
+#include "RockField.h"
 
 using namespace as2;
 
@@ -24,9 +27,14 @@ void Player::KeyEvent(int key, bool isDown)
 	m_ship.KeyEvent(key, isDown);
 }
 
-void Player::ClickEvent(int x, int y)
+void Player::ClickEvent(int clickX, int clickY)
 {
 	PL_TRACE(__FUNCTION__);
+
+	int universeClickX = clickX + static_cast<int>(Context::ctxOX);
+	int universeClickY = clickY + static_cast<int>(Context::ctxOY);
+
+	g_universe->GetRockField().LaunchOne(universeClickX, universeClickY, ROCK_RADIUS);
 }
 
 void Player::ResizeEvent(int w, int h)

@@ -3,24 +3,29 @@
 
 #include "Structs.h"
 #include "Session.h"
+
 #include "WebsockSessionManager.h"
 
 #define UN_TRACE(...)
 
 namespace as2
 {
+    class RockField;
+
     class Universe : public Size
     {
     public:
         Universe(int width, int height);
         ~Universe();
 
+        RockField& GetRockField();
+
         void TickEvent(Session&);
 
     private:
-        //RockField m_rockField;
-
         void OtherSessionsTickEvent(Session&);
+
+        std::unique_ptr<RockField> m_rockField;
     };
 
     extern std::unique_ptr<Universe> g_universe;

@@ -2,6 +2,7 @@
 
 #include "Universe.h"
 #include "Session.h"
+#include "RockField.h"
 
 using namespace as2;
 
@@ -37,6 +38,11 @@ Universe::Universe(int width, int height)
 Universe::~Universe()
 {
 	UN_TRACE(__FUNCTION__);
+}
+
+RockField& Universe::GetRockField()
+{
+	return *m_rockField;
 }
 
 void Universe::TickEvent(Session& session)
