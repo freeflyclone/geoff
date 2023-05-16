@@ -2,7 +2,7 @@
 #include "Rock.h"
 #include "Universe.h"
 
-using namespace as2;
+using namespace asteroids;
 
 #undef RK_TRACE
 #define RK_TRACE TRACE

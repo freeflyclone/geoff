@@ -4,7 +4,7 @@
 #include "Timer.h"
 #include "Session.h"
 
-using namespace as2;
+using namespace asteroids;
 
 #define TM_TE_TRACE TRACE
 

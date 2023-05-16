@@ -6,15 +6,13 @@
 
 #define B_TRACE(...)
 
-namespace as2
+namespace asteroids
 {
-	class Gun2;
-
-	class Bullet2 : public Position, public Velocity
+	class Bullet : public Position, public Velocity
 	{
 	public:
-		Bullet2(double x, double y, double dx, double dy);
-		~Bullet2();
+		Bullet(double x, double y, double dx, double dy);
+		~Bullet();
 
 		bool TickEvent(Session&);
 

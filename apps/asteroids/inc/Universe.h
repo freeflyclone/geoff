@@ -4,11 +4,9 @@
 #include "Structs.h"
 #include "Session.h"
 
-//#include "WebsockSessionManager.h"
-
 #define UN_TRACE(...)
 
-namespace as2
+namespace asteroids
 {
     class RockField;
 

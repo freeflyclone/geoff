@@ -4,7 +4,7 @@
 #include "Gun.h"
 #include "Ship.h"
 
-using namespace as2;
+using namespace asteroids;
 
 //#undef GN_TRACE
 //#define GN_TRACE TRACE
@@ -19,7 +19,7 @@ Gun::~Gun()
 	GN_TRACE(__FUNCTION__);
 }
 
-void Gun::Fire(Ship2& ship)
+void Gun::Fire(Ship& ship)
 {
 	// Calculate firing solution from ship position & angle
 	double offX = static_cast<double>(ship.ctxOX);
@@ -35,7 +35,7 @@ void Gun::Fire(Ship2& ship)
 
 	GN_TRACE(__FUNCTION__ << "Ship: " << ship.posX << "," << ship.posY << "," << ship.angle);
 
-	m_bullets.emplace_back(std::make_unique<Bullet2>(px, py, mvx, mvy));
+	m_bullets.emplace_back(std::make_unique<Bullet>(px, py, mvx, mvy));
 }
 
 std::unique_ptr<AppBuffer> Gun::MakeBulletsBuffer(Session& session)

@@ -6,7 +6,7 @@
 
 #include "WebsockSessionManager.h"
 
-using namespace as2;
+using namespace asteroids;
 
 namespace Websock
 {
@@ -14,7 +14,7 @@ namespace Websock
 };
 using namespace Websock;
 
-namespace as2
+namespace asteroids
 {
 	// we want just one of these, but we want to control when it gets created.
 	std::unique_ptr<Universe> g_universe;

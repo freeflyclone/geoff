@@ -6,15 +6,15 @@
 
 #define SH_TRACE(...)
 
-namespace as2
+namespace asteroids
 {
 	class Gun;
 
-	class Ship2 : public Context, public Position, public Orientation, public Velocity, public Radius
+	class Ship : public Context, public Position, public Orientation, public Velocity, public Radius
 	{
 	public:
-		Ship2(uint16_t cw, uint16_t ch, double dx, double dy, double angle);
-		~Ship2();
+		Ship(uint16_t cw, uint16_t ch, double dx, double dy, double angle);
+		~Ship();
 
 		Gun& GetGun() { return *m_gun; }
 

@@ -8,7 +8,7 @@
 
 #define SS_TRACE(...)
 
-namespace as2
+namespace asteroids
 {
 	class Player;
 	class Session : public GameSession

@@ -21,6 +21,6 @@ namespace Websock {
 
 #include "asteroids/inc/Session.h"
 namespace Websock {
-	extern WebsockSessionManager<as2::Session> g_sessions;
+	extern WebsockSessionManager<asteroids::Session> g_sessions;
 }
 #endif

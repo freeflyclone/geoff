@@ -8,20 +8,20 @@
 
 #define GN_TRACE(...)
 
-namespace as2
+namespace asteroids
 {
-    class Ship2;
+    class Ship;
     class Gun {
     public:
 
-        typedef std::unique_ptr<Bullet2> BulletPtr_t;
+        typedef std::unique_ptr<Bullet> BulletPtr_t;
         typedef std::list<BulletPtr_t> BulletList_t;
         typedef BulletList_t::iterator BulletIterator;
 
         Gun();
         ~Gun();
 
-        void Fire(Ship2&);
+        void Fire(Ship&);
 
         void TickEvent(Session&);
 

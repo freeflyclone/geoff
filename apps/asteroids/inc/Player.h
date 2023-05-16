@@ -7,7 +7,7 @@
 
 #define PL_TRACE(...)
 
-namespace as2
+namespace asteroids
 {
     class Player : public Context, public Size
     {
@@ -15,7 +15,7 @@ namespace as2
         Player(Session& session, double width, double height);
         ~Player();
 
-        Ship2& GetShip() { return m_ship; }
+        Ship& GetShip() { return m_ship; }
 
         void KeyEvent(int key, bool isDown);
         void ClickEvent(int x, int y);
@@ -23,7 +23,7 @@ namespace as2
         void TickEvent(Session&);
 
         Session& m_session;
-        Ship2 m_ship;
+        Ship m_ship;
     };
 }
 

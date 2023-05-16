@@ -5,12 +5,12 @@
 #include "Bullet.h"
 
 #include "Universe.h"
-using namespace as2;
+using namespace asteroids;
 
 #undef B_TRACE
 #define B_TRACE TRACE
 
-Bullet2::Bullet2(double x, double y, double dx, double dy)
+Bullet::Bullet(double x, double y, double dx, double dy)
 	: 
 	Position({ x, y }),
 	Velocity({ dx, dy }),
@@ -19,12 +19,12 @@ Bullet2::Bullet2(double x, double y, double dx, double dy)
 	B_TRACE(__FUNCTION__);
 }
 
-Bullet2::~Bullet2()
+Bullet::~Bullet()
 {
 	B_TRACE(__FUNCTION__);
 }
 
-bool Bullet2::TickEvent(Session& session)
+bool Bullet::TickEvent(Session& session)
 {
 	if (m_ticks_left)
 		m_ticks_left--;

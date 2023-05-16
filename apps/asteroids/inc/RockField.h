@@ -8,7 +8,7 @@
 
 #define RF_TRACE(...)
 
-namespace as2
+namespace asteroids
 {
     class RockField : public Context
     {

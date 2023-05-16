@@ -5,7 +5,7 @@
 #include "Player.h"
 #include "Universe.h"
 
-using namespace as2;
+using namespace asteroids;
 
 Session::Session(uint32_t sessionID)
 	:

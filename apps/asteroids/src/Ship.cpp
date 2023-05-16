@@ -5,12 +5,12 @@
 #include "Ship.h"
 #include "Gun.h"
 
-using namespace as2;
+using namespace asteroids;
 
 #undef SH_TRACE
 #define SH_TRACE TRACE
 
-Ship2::Ship2(uint16_t cw, uint16_t ch, double x, double y, double angle)
+Ship::Ship(uint16_t cw, uint16_t ch, double x, double y, double angle)
 	:
 	Context({cw, ch}),
 	Position({ x, y }),
@@ -21,12 +21,12 @@ Ship2::Ship2(uint16_t cw, uint16_t ch, double x, double y, double angle)
 	SH_TRACE(__FUNCTION__);
 }
 
-Ship2::~Ship2()
+Ship::~Ship()
 {
 	SH_TRACE(__FUNCTION__);
 }
 
-void Ship2::FireGuns()
+void Ship::FireGuns()
 {
 	//SH_TRACE(__FUNCTION__);
 
@@ -34,7 +34,7 @@ void Ship2::FireGuns()
 		m_gun->Fire(*this);
 }
 
-void Ship2::KeyEvent(int key, bool isDown)
+void Ship::KeyEvent(int key, bool isDown)
 {
 	(void)key;
 	(void)isDown;
@@ -62,7 +62,7 @@ void Ship2::KeyEvent(int key, bool isDown)
 	}
 }
 
-void Ship2::TickEvent(Session& session)
+void Ship::TickEvent(Session& session)
 {
 	//SH_TRACE(__FUNCTION__);
 	MoveShip();
@@ -71,7 +71,7 @@ void Ship2::TickEvent(Session& session)
 		m_gun->TickEvent(session);
 }
 
-void Ship2::MoveShip()
+void Ship::MoveShip()
 {
 	SH_TRACE(__FUNCTION__);
 }

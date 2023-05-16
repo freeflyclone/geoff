@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-namespace as2
+namespace asteroids
 {
     // screen space dimensions, offset into virtual space of player's browser window
     struct Context

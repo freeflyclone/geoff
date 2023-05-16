@@ -9,7 +9,7 @@
 //#undef PL_TRACE
 //#define PL_TRACE TRACE
 
-using namespace as2;
+using namespace asteroids;
 
 Player::Player(Session& session, double width, double height)
 	:

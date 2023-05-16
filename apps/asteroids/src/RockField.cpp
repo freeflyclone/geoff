@@ -4,7 +4,7 @@
 #include "RockField.h"
 #include "Rock.h"
 
-using namespace as2;
+using namespace asteroids;
 
 //#undef RF_TRACE
 //#define RF_TRACE TRACE

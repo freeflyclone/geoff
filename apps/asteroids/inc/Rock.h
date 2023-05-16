@@ -6,7 +6,7 @@
 
 #define RK_TRACE(...)
 
-namespace as2
+namespace asteroids
 {
 	class Rock : public Position, public Velocity
 	{
