@@ -5,6 +5,9 @@
 #include "Player.h"
 #include "Universe.h"
 
+#undef SS_TRACE
+#define SS_TRACE TRACE
+
 using namespace as2;
 
 Session::Session(uint32_t sessionID)
@@ -52,7 +55,6 @@ void Session::HandleClickEvent(AppBuffer& rxBuffer)
 
 	if (m_player)
 		m_player->ClickEvent(clickX, clickY);
-
 }
 
 void Session::HandleResizeEvent(AppBuffer& rxBuffer)
@@ -62,7 +64,7 @@ void Session::HandleResizeEvent(AppBuffer& rxBuffer)
 	int width = static_cast<int>(rxBuffer.get_uint16(5));
 	int height = static_cast<int>(rxBuffer.get_uint16(7));
 
-	//SS_TRACE("sessionID: " << SessionID() << ", width: " << width << ", height: " << height);
+	SS_TRACE("sessionID: " << SessionID() << ", width: " << width << ", height: " << height);
 
 	if (m_player)
 		m_player->ResizeEvent(width, height);
@@ -72,9 +74,9 @@ void Session::TickEvent()
 {
 	SS_TRACE(__FUNCTION__);
 
-	if (m_player)
-		m_player->TickEvent(*this);
-
 	if (g_universe)
 		g_universe->TickEvent(*this);
+
+	if (m_player)
+		m_player->TickEvent(*this);
 }

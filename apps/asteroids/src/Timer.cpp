@@ -17,7 +17,7 @@ Timer::Timer(Session& session, uint32_t intervalInUs)
 
 	m_timer = std::make_unique<net::deadline_timer>(*WebsockServer::GetInstance().IoContext(), boost::posix_time::microseconds(m_tick_interval_in_us));
 	m_run_timer = true;
-	Ticker();
+	//Ticker();
 }
 
 Timer::~Timer()
