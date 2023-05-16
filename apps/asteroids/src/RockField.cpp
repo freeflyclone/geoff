@@ -42,9 +42,31 @@ void RockField::LaunchOne(double x, double y, double r)
 	m_rocks.push_back(std::move(rock));
 }
 
-void RockField::DestroyRock(RockIterator rock) 
+void RockField::DestroyRock(RockIterator rockIt) 
 {
 	RF_TRACE(__FUNCTION__);
+	Rock rock = *rockIt->get();
+
+	m_rocks.erase(rockIt);
+
+	double xPos = rock.posX;
+	double yPos = rock.posY;
+	double dx = rock.deltaX;
+	double dy = rock.deltaY;
+	double radius = rock.Radius();
+
+	RF_TRACE("Destroy Rock: X: " << rock->x << ", Y: " << rock->y << ", radius: " << rock->Radius());
+
+	if (radius >= ROCK_RADIUS)
+	{
+		LaunchOne(xPos, yPos, radius / 2);
+		LaunchOne(xPos, yPos, radius / 2);
+	}
+	else if (radius >= ROCK_RADIUS / 2)
+	{
+		LaunchOne(xPos, yPos, radius / 2);
+		LaunchOne(xPos, yPos, radius / 2);
+	}
 }
 
 void RockField::TickEvent(Session& session)
