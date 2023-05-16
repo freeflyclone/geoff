@@ -13,6 +13,7 @@ Session::Session(uint32_t sessionID)
 	GameSession(sessionID),
 	m_player(nullptr),
 	m_timer(*this, 1000000 / FPS)
+	//m_timer(*this, 250000)
 {
 	SS_TRACE(__FUNCTION__);
 	Init(8192, 8192);
@@ -77,4 +78,6 @@ void Session::TickEvent()
 
 	if (m_player)
 		m_player->TickEvent(*this);
+
+	OnTxReady(*this);
 }

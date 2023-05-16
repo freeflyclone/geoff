@@ -1,6 +1,9 @@
 #ifndef GEOFF_H
 #define GEOFF_H
 
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/beast/ssl.hpp>

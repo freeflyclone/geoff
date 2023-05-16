@@ -1,7 +1,6 @@
 #ifndef CONSTS_H
 #define CONSTS_H
 
-#include <cstdlib>
 namespace asteroids
 {
 	// Take from asteroids.js
@@ -19,6 +18,8 @@ namespace asteroids
 	const double SHIP_RADS_PER_TICK = 
 				 SHIP_TURN_SPEED / 180 
 				 * 3.1415 / FPS;			 // ship rotation increment per timer tick
+	const double FP_4_12 = 4096.0;			 // scale angle to fixed point 4.12 precision
+	const double DEGREES_TO_RADS = M_PI / 180;
 }
 
 #endif

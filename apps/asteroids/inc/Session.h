@@ -18,6 +18,7 @@ namespace asteroids
 		~Session();
 
 		Player& GetPlayer() { return *m_player; }
+		Timer& GetTimer() { return m_timer; }
 
 		void TickEvent();
 

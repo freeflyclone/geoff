@@ -94,8 +94,8 @@ void Ship::MoveShip()
 	if (m_thrusting)
 	{
 		// accelerate
-		auto thrustX = (double)SHIP_THRUST * cos(angle) / (double)FPS;
-		auto thrustY = (double)SHIP_THRUST * sin(angle) / (double)FPS;
+		auto thrustX = (double)  SHIP_THRUST * cos(angle) / (double)FPS;
+		auto thrustY = (double) -SHIP_THRUST * sin(angle) / (double)FPS;
 
 		deltaX += thrustX;
 		deltaY += thrustY;

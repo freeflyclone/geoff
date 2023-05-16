@@ -41,8 +41,30 @@ void Gun::Fire(Ship& ship)
 std::unique_ptr<AppBuffer> Gun::MakeBulletsBuffer(Session& session)
 {
 	GN_TRACE(__FUNCTION__);
+	if (m_bullets.size() == 0)
+		return std::move(nullptr);
 
-	return nullptr;
+	auto bulletDataSize = 2 * sizeof(int16_t);
+
+	auto appBufferSize = 2 + (m_bullets.size() * bulletDataSize);
+	auto txBuff = std::make_unique<AppBuffer>(appBufferSize, session.IsLittleEndian());
+
+	txBuff->set_uint16(static_cast<uint16_t>(m_bullets.size()));
+
+	size_t i = 0;
+	for (auto& bullet : m_bullets)
+	{
+		auto cx = static_cast<uint16_t>(bullet->posX);
+		auto cy = static_cast<uint16_t>(bullet->posY);
+
+		GN_TRACE("bullet[" << i << "]: " << bullet->posX << "(" << cx << ")," << bullet->posY << "(" << cy << ")");
+
+		txBuff->set_uint16(cx);
+		txBuff->set_uint16(cy);
+		i++;
+	}
+
+	return txBuff;
 }
 
 void Gun::TickEvent(Session& session)
