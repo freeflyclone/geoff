@@ -56,6 +56,8 @@ void Player::ResizeEvent(int w, int h)
 	ctxOX = static_cast<uint16_t>(g_universe->sizeW / 2) - ctxW / 2;
 	ctxOY = static_cast<uint16_t>(g_universe->sizeH / 2) - ctxH / 2;
 
+	m_ship.ResizeEvent(w, h);
+
 	//PL_TRACE(__FUNCTION__ << ", sizeW: " << sizeW << ", sizeH: " << sizeH << ", ctxOX: " << ctxOX << ", ctxOY: " << ctxOY);
 }
 

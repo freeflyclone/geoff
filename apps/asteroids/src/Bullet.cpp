@@ -7,14 +7,14 @@
 #include "Universe.h"
 using namespace asteroids;
 
-#undef B_TRACE
-#define B_TRACE TRACE
+//#undef B_TRACE
+//#define B_TRACE TRACE
 
 Bullet::Bullet(double x, double y, double dx, double dy)
 	: 
 	Position({ x, y }),
 	Velocity({ dx, dy }),
-	m_ticks_left(5)
+	m_ticks_left(180)
 {
 	B_TRACE(__FUNCTION__);
 }

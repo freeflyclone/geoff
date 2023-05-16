@@ -21,6 +21,7 @@ namespace asteroids
 		void FireGuns();
 
 		void KeyEvent(int key, bool isDown);
+		void ResizeEvent(int w, int h);
 		void TickEvent(Session&);
 
 	private:

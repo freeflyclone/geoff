@@ -4,8 +4,8 @@
 
 using namespace asteroids;
 
-#undef RK_TRACE
-#define RK_TRACE TRACE
+//#undef RK_TRACE
+//#define RK_TRACE TRACE
 
 Rock::Rock(double x, double y, double dx, double dy, double radius)
 	:
@@ -26,18 +26,18 @@ void Rock::TickEvent(Session& session)
 	auto universeW = g_universe->Size::sizeW;
 	auto universeH = g_universe->Size::sizeH;
 
-	Position::posX += Velocity::deltaX;
-	Position::posY += Velocity::deltaY;
+	posX += deltaX;
+	posY += deltaY;
 
-	if (Position::posX > universeW)
-		Position::posX = 0.0;
-	if (Position::posX < 0.0)
-		Position::posX = universeW;
+	if (posX > universeW)
+		posX = 0.0;
+	if (posX < 0.0)
+		posX = universeW;
 
-	if (Position::posY > universeH)
-		Position::posY = 0.0;
-	if (Position::posY < 0.0)
-		Position::posY = universeH;
+	if (posY > universeH)
+		posY = 0.0;
+	if (posY < 0.0)
+		posY = universeH;
 
 	RK_TRACE(__FUNCTION__ << ", x: " << posX << ", y: " << posY << ", dx: " << deltaX << ", dy: " << deltaY << ", radius: " << m_radius);
 }
