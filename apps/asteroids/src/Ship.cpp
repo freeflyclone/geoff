@@ -10,14 +10,14 @@
 
 using namespace asteroids;
 
-#undef SH_TRACE
-#define SH_TRACE TRACE
+//#undef SH_TRACE
+//#define SH_TRACE TRACE
 
 Ship::Ship(uint16_t cw, uint16_t ch, double x, double y, double angle)
 	:
 	Context({cw, ch, static_cast<uint16_t>(g_universe->sizeW / 2 - cw / 2), static_cast<uint16_t>(g_universe->sizeH / 2 - ch / 2)}),
 	Position({ x, y }),
-	Velocity({ 0,0 }),
+	Velocity({ 0, 0 }),
 	Orientation({ angle }),
 	Radius({SHIP_SIZE}),
 	m_gun(std::make_unique<Gun>()),
