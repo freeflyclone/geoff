@@ -18,7 +18,7 @@ namespace asteroids
 		Session(uint32_t sessionID);
 		~Session();
 
-		Player& GetPlayer() { return *m_player; }
+		Player* GetPlayer() { return m_player.get(); }
 		Timer& GetTimer() { return m_timer; }
 
 		double Session::DistanceBetweenPoints(Position& p1, Position& p2);

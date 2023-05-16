@@ -12,7 +12,8 @@ using namespace asteroids;
 Timer::Timer(Session& session, uint32_t intervalInUs)
 	:
 	m_session(session),
-	m_tick_interval_in_us(intervalInUs)
+	m_tick_interval_in_us(intervalInUs),
+	m_tick(0)
 {
 	TM_TRACE(__FUNCTION__);
 
@@ -40,7 +41,7 @@ Timer::~Timer()
 uint32_t Timer::GetTick()
 {
 	TM_TRACE(__FUNCTION__);
-	return m_tick;
+	return m_tick++;
 }
 
 void Timer::TickEvent()

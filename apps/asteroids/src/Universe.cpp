@@ -89,7 +89,13 @@ void Universe::CollisionDetection(Session& session)
 			//auto sessionID = pair.first;
 			auto sess = pair.second;
 
-			auto& bullets = sess->GetPlayer().GetShip().GetGun().GetBullets();
+			if (!sess->GetPlayer())
+			{
+				TRACE("found session with no Player yet.");
+				continue;
+			}
+
+			auto& bullets = sess->GetPlayer()->GetShip().GetGun().GetBullets();
 
 			for (bulletIter = bullets.begin(); bulletIter != bullets.end(); bulletIter++)
 			{
@@ -137,6 +143,8 @@ void Universe::PerSessionTickEvent(Session& session)
 	txBuff->set_uint16(static_cast<uint16_t>(sizeW));
 	txBuff->set_uint16(static_cast<uint16_t>(sizeH));
 
+	// Update all Session state for single/multiplayer modes.
+
 	bool doRocks = true;
 	if (doRocks)
 	{
@@ -160,7 +168,37 @@ void Universe::PerSessionTickEvent(Session& session)
 		txBuff = std::move(txBuff2);
 	}
 
-	// Update all Session state for single/multiplayer modes.
+	bool doShips = true;
+	if (doShips)
+	{
+		// the number of active sessions gives us the (possible) number of ships in the Universe
+		// Possible because a session doesn't have a ship until the client side registers new session.
+		size_t numShips = 0;
+
+		// go through all sessions looking for those with valid Asteroids::Player
+		// and hence a valid ship
+		for (auto pair : g_sessions.get_map())
+		{
+			auto sessionID = pair.first;
+			auto sessPtr = pair.second;
+
+			// don't count ourself, and don't count unregistered sessions
+			if (sessionID == session.SessionID() || !sessPtr->GetPlayer())
+			{
+				if (!sessPtr->GetPlayer())
+					TRACE("Found session with no Player yet.");
+				continue;
+			}
+
+			numShips++;
+		}
+
+		if (numShips)
+		{
+			//TRACE("there are " << numShips << " other ship(s)");
+		}
+	}
+
 	// Send all of it to the client side
 	session.CommitTxBuffer(txBuff);
 }
