@@ -54,6 +54,9 @@ void Universe::TickEvent(Session& session)
 
 	OtherSessionsTickEvent(session);
 
+	if (m_rockField)
+		m_rockField->TickEvent(session);
+
 	// TODO: output stuff to client
 }
 

@@ -23,7 +23,7 @@ namespace as2
         void LaunchOne(double x, double y, double r);
         void DestroyRock(RockIterator rock);
 
-        void TickEvent();
+        void TickEvent(Session&);
 
     private:
         RockList_t m_rocks;
