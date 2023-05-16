@@ -10,22 +10,25 @@ namespace as2
 {
 	class Gun;
 
-	class Ship2 : public Context, public Position, public Orientation, public Velocity
+	class Ship2 : public Context, public Position, public Orientation, public Velocity, public Radius
 	{
 	public:
 		Ship2(uint16_t cw, uint16_t ch, double dx, double dy, double angle);
 		~Ship2();
 
-		void GetXYA(double& x, double& y, double& a);
+		Gun& GetGun() { return *m_gun; }
 
-		void MoveShip();
 		void FireGuns();
 
 		void KeyEvent(int key, bool isDown);
 		void TickEvent(Session&);
 
 	private:
+		void MoveShip();
+
 		std::unique_ptr<Gun> m_gun;
+		double m_rotation;
+		bool m_thrusting;
 	};
 }
 #endif

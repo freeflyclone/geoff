@@ -19,7 +19,7 @@ namespace as2
 		bool TickEvent(Session&);
 
 	private:
-		int m_ticks_left;
+		unsigned m_ticks_left;
 	};
 }
 #endif

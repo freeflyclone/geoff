@@ -6,7 +6,7 @@
 #include "Rock.h"
 #include "Universe.h"
 
-#define UN_TRACE(...)
+#define RF_TRACE(...)
 
 namespace as2
 {

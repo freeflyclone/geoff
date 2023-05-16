@@ -15,6 +15,8 @@ namespace as2
         Player(Session& session, double width, double height);
         ~Player();
 
+        Ship2& GetShip() { return m_ship; }
+
         void KeyEvent(int key, bool isDown);
         void ClickEvent(int x, int y);
         void ResizeEvent(int w, int h);

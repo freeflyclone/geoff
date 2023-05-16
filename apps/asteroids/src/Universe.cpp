@@ -28,8 +28,8 @@ namespace as2
 	}
 };
 
-#undef UN_TRACE
-#define UN_TRACE TRACE
+//#undef UN_TRACE
+//#define UN_TRACE TRACE
 
 Universe::Universe(int width, int height)
 	: Size({ static_cast<double>(width), static_cast<double>(height) }),

@@ -17,6 +17,8 @@ namespace as2
 		Session(uint32_t sessionID);
 		~Session();
 
+		Player& GetPlayer() { return *m_player; }
+
 		void TickEvent();
 
 	private:

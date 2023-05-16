@@ -11,7 +11,7 @@ Session::Session(uint32_t sessionID)
 	:
 	GameSession(sessionID),
 	m_player(nullptr),
-	m_timer(*this, 1000000)
+	m_timer(*this, 50000)
 {
 	SS_TRACE(__FUNCTION__);
 	Init(8192, 8192);

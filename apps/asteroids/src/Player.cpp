@@ -6,8 +6,8 @@
 #include "Player.h"
 #include "Universe.h"
 
-#undef PL_TRACE
-#define PL_TRACE TRACE
+//#undef PL_TRACE
+//#define PL_TRACE TRACE
 
 using namespace as2;
 
@@ -15,7 +15,7 @@ Player::Player(Session& session, double width, double height)
 	:
 	Size({ width, height }),
 	m_session(session),
-	m_ship(static_cast<uint16_t>(width), static_cast<uint16_t>(height), 0, 0, 90)
+	m_ship(static_cast<uint16_t>(width), static_cast<uint16_t>(height), g_universe->sizeW / 2, g_universe->sizeH / 2, 90)
 {
 	ctxW = static_cast<uint16_t>(width);
 	ctxH = static_cast<uint16_t>(height);

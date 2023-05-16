@@ -41,6 +41,11 @@ namespace as2
     {
         double angle;
     };
+
+    struct Radius
+    {
+        double radius;
+    };
 }
 
 #endif

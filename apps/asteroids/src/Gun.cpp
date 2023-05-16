@@ -1,16 +1,15 @@
 #include "geoff.h"
 
+#include "Consts.h"
 #include "Gun.h"
 #include "Ship.h"
 
 using namespace as2;
 
-#undef GN_TRACE
-#define GN_TRACE TRACE
+//#undef GN_TRACE
+//#define GN_TRACE TRACE
 
-Gun::Gun(Ship2& s)
-	:
-	m_ship(s)
+Gun::Gun()
 {
 	GN_TRACE(__FUNCTION__);
 }
@@ -20,15 +19,23 @@ Gun::~Gun()
 	GN_TRACE(__FUNCTION__);
 }
 
-void Gun::Fire()
+void Gun::Fire(Ship2& ship)
 {
-	// TODO: calculate firing solution from ship position & angle
-	double sx, sy, sa;
-	m_ship.GetXYA(sx, sy, sa);
+	// Calculate firing solution from ship position & angle
+	double offX = static_cast<double>(ship.ctxOX);
+	double offY = static_cast<double>(ship.ctxOY);
+	double posX = ship.posX - offX;
+	double posY = ship.posY - offY;
 
-	GN_TRACE(__FUNCTION__ << "Ship: " << sx << "," << sy << "," << sa);
+	auto px = (posX + ship.radius * cos(ship.angle)) + offX;
+	auto py = (posY - ship.radius * sin(ship.angle)) + offY;
 
-	m_bullets.emplace_back(std::make_unique<Bullet2>(0,0,0,0));
+	auto mvx = (double)MUZZLE_VELOCITY * cos(ship.angle) / (double)FPS;
+	auto mvy = (double)MUZZLE_VELOCITY * -sin(ship.angle) / (double)FPS;
+
+	GN_TRACE(__FUNCTION__ << "Ship: " << ship.posX << "," << ship.posY << "," << ship.angle);
+
+	m_bullets.emplace_back(std::make_unique<Bullet2>(px, py, mvx, mvy));
 }
 
 std::unique_ptr<AppBuffer> Gun::MakeBulletsBuffer(Session& session)
@@ -40,10 +47,28 @@ std::unique_ptr<AppBuffer> Gun::MakeBulletsBuffer(Session& session)
 
 void Gun::TickEvent(Session& session)
 {
+	if (m_bullets.empty())
+		return;
+
 	GN_TRACE(__FUNCTION__ << ", there are " << m_bullets.size() << " bullet(s)");
+	
+	bool timedOut = false;
 
 	for (auto& bullet : m_bullets)
 	{
-		bullet->TickEvent(session);
+		if (bullet->TickEvent(session))
+		{
+			GN_TRACE(__FUNCTION__ << ", bullet timed out");
+			timedOut = true;
+		}
+	}
+
+	if (timedOut)
+	{
+		m_bullets.pop_front();
+		if (m_bullets.size() == 0)
+		{
+			GN_TRACE(__FUNCTION__ << ", no more bullets");
+		}
 	}
 }

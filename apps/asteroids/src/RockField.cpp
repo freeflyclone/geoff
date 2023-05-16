@@ -6,8 +6,8 @@
 
 using namespace as2;
 
-#undef RF_TRACE
-#define RF_TRACE TRACE
+//#undef RF_TRACE
+//#define RF_TRACE TRACE
 
 RockField::RockField(int w, int h)
 	:

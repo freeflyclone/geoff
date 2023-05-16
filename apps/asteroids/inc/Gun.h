@@ -10,7 +10,7 @@
 
 namespace as2
 {
-    class Ship;
+    class Ship2;
     class Gun {
     public:
 
@@ -18,17 +18,16 @@ namespace as2
         typedef std::list<BulletPtr_t> BulletList_t;
         typedef BulletList_t::iterator BulletIterator;
 
-        Gun(Ship2& s);
+        Gun();
         ~Gun();
 
-        void Fire();
+        void Fire(Ship2&);
 
         void TickEvent(Session&);
 
         std::unique_ptr<AppBuffer> MakeBulletsBuffer(Session&);
 
     private:
-        Ship2& m_ship;
         BulletList_t m_bullets;
     };
 

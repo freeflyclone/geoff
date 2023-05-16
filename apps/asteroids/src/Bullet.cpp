@@ -1,6 +1,10 @@
 #include "geoff.h"
+
+#include "Consts.h"
+
 #include "Bullet.h"
 
+#include "Universe.h"
 using namespace as2;
 
 #undef B_TRACE
@@ -9,7 +13,8 @@ using namespace as2;
 Bullet2::Bullet2(double x, double y, double dx, double dy)
 	: 
 	Position({ x, y }),
-	Velocity({ dx, dy })
+	Velocity({ dx, dy }),
+	m_ticks_left(5)
 {
 	B_TRACE(__FUNCTION__);
 }
@@ -21,7 +26,26 @@ Bullet2::~Bullet2()
 
 bool Bullet2::TickEvent(Session& session)
 {
-	B_TRACE(__FUNCTION__);
+	if (m_ticks_left)
+		m_ticks_left--;
 
-	return false;
+	if (m_ticks_left)
+	{
+		posX += deltaX;
+		posY += deltaY;
+
+		if (posX > g_universe->sizeW)
+			posX = 0.0;
+		if (posX < 0.0)
+			posX = g_universe->sizeW;
+
+		if (posY > g_universe->sizeH)
+			posY = 0.0;
+		if (posY < 0.0)
+			posY = g_universe->sizeH;
+
+		B_TRACE(__FUNCTION__ << ", posX: " << posX << ", posY: " << posY << ", ticks left: " << m_ticks_left);
+	}
+
+	return m_ticks_left == 0;
 }

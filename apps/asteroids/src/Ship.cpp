@@ -1,5 +1,7 @@
 #include "geoff.h"
 
+#include "Consts.h"
+
 #include "Ship.h"
 #include "Gun.h"
 
@@ -13,7 +15,8 @@ Ship2::Ship2(uint16_t cw, uint16_t ch, double x, double y, double angle)
 	Context({cw, ch}),
 	Position({ x, y }),
 	Orientation({ angle }),
-	m_gun(std::make_unique<Gun>(*this))
+	Radius({SHIP_SIZE}),
+	m_gun(std::make_unique<Gun>())
 {
 	SH_TRACE(__FUNCTION__);
 }
@@ -23,25 +26,12 @@ Ship2::~Ship2()
 	SH_TRACE(__FUNCTION__);
 }
 
-void Ship2::GetXYA(double& x, double& y, double& a)
-{
-	x = Position::posX;
-	y = Position::posY;
-	a = Orientation::angle;
-	SH_TRACE(__FUNCTION__);
-}
-
-void Ship2::MoveShip()
-{
-	SH_TRACE(__FUNCTION__);
-}
-
 void Ship2::FireGuns()
 {
 	//SH_TRACE(__FUNCTION__);
 
 	if(m_gun)
-		m_gun->Fire();
+		m_gun->Fire(*this);
 }
 
 void Ship2::KeyEvent(int key, bool isDown)
@@ -53,17 +43,36 @@ void Ship2::KeyEvent(int key, bool isDown)
 
 	switch (key)
 	{
-		case 32:
+	case 37:
+		m_rotation = (isDown) ? SHIP_RADS_PER_TICK : 0;
+		break;
+
+	case 39:
+		m_rotation = (isDown) ? -SHIP_RADS_PER_TICK : 0;
+		break;
+
+	case 38:
+		m_thrusting = isDown;
+		break;
+
+	case 32:
 			if (isDown)
 				FireGuns();
 			break;
 	}
-
 }
 
 void Ship2::TickEvent(Session& session)
 {
 	//SH_TRACE(__FUNCTION__);
+	MoveShip();
+
 	if(m_gun)
 		m_gun->TickEvent(session);
 }
+
+void Ship2::MoveShip()
+{
+	SH_TRACE(__FUNCTION__);
+}
+
