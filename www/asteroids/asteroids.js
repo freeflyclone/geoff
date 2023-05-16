@@ -755,7 +755,7 @@ function OnKeyMessage(data) {
 
 function OnPlayerTickMessage(data) {
     view = new DataView(data);
-    console.log("PlayerTickMessage");
+    //console.log("PlayerTickMessage");
 
     offset = 2;
     sessionID = view.getUint32(offset);
