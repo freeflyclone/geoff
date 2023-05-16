@@ -25,11 +25,9 @@ set(CMAKE_CONFIGURATION_TYPES Debug;Release)
 # These are relative to ${PROJECT_SOURCE_DIR}, that is, where it was cloned to.
 # Files you want to appear in the "Source Files" project folder are explicitly listed here
 file(GLOB GEOFF_APP_SRC_FILES
-	apps/asteroids/src/Asteroids.cpp
-	apps/asteroids/src/AsteroidsMain.cpp
-	apps/asteroids/src/AsteroidsSession.cpp
 	apps/asteroids/src/Bullet.cpp
 	apps/asteroids/src/Gun.cpp
+	apps/asteroids/src/Main.cpp
 	apps/asteroids/src/Player.cpp
 	apps/asteroids/src/Rock.cpp
 	apps/asteroids/src/RockField.cpp
@@ -40,8 +38,6 @@ file(GLOB GEOFF_APP_SRC_FILES
 	
 # Files to appear in "Header Files" project folder are explicitly listed here
 file(GLOB GEOFF_APP_INC_FILES
-	apps/asteroids/inc/Asteroids.h
-	apps/asteroids/inc/AsteroidsSession.h
 	apps/asteroids/inc/Bullet.h
 	apps/asteroids/inc/Gun.h
 	apps/asteroids/inc/Player.h
