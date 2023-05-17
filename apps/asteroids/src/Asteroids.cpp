@@ -580,6 +580,7 @@ void Universe::TickEvent()
 	}
 
 	m_timer_tick++;
+
 	std::list<RockField::RockIterator> collidedRocks;
 	RockField::RockIterator rockIter;
 

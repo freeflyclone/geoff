@@ -46,7 +46,6 @@ protected:
 	virtual void HandleKeyEvent(AppBuffer& rxBuffer);
 	virtual void HandleClickEvent(AppBuffer& rxBuffer);
 	virtual void HandleResizeEvent(AppBuffer& rxBuffer);
-	virtual void HandleTimerTick();
 };
 
 #endif
