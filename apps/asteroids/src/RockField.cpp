@@ -69,11 +69,11 @@ void RockField::DestroyRock(RockIterator rockIt)
 	}
 }
 
-void RockField::TickEvent(Session& session)
+void RockField::TickEvent()
 {
 	RF_TRACE(__FUNCTION__);
 	for (auto& rock : m_rocks)
 	{
-		rock->TickEvent(session);
+		rock->TickEvent();
 	}
 }

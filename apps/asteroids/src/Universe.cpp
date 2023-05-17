@@ -52,10 +52,10 @@ void Universe::TickEvent(uint32_t tickCount)
 
 	m_ticks = tickCount;
 
-	/*
 	if (m_rockField)
-		m_rockField->TickEvent(session);
+		m_rockField->TickEvent();
 
+	/*
 	CollisionDetection(session);
 	*/
 

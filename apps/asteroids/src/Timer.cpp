@@ -56,7 +56,8 @@ void Timer::TickEvent()
 {
 	TM_TRACE(__FUNCTION__);
 
-	g_universe->TickEvent(m_tick);
+	if(g_universe)
+		g_universe->TickEvent(m_tick);
 
 	// TODO get access to g_sessions 
 	for (auto pair : g_sessions.get_map())
