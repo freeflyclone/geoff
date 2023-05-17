@@ -20,7 +20,7 @@ namespace asteroids
 
 		Player* GetPlayer() { return m_player.get(); }
 
-		double Session::DistanceBetweenPoints(Position& p1, Position& p2);
+		double DistanceBetweenPoints(Position& p1, Position& p2);
 
 		void TickEvent(uint32_t sessionID, uint32_t tickCount);
 
