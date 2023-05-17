@@ -78,6 +78,7 @@ void Session::HandleResizeEvent(AppBuffer& rxBuffer)
 
 void Session::TickEvent(uint32_t sessionID, uint32_t tickCount)
 {
+	(void)sessionID;
 	SS_TRACE(__FUNCTION__);
 	if (m_player)
 		m_player->TickEvent(*this);

@@ -26,6 +26,8 @@ Bullet::~Bullet()
 
 bool Bullet::TickEvent(Session& session)
 {
+	(void)session;
+
 	if (m_ticks_left)
 		m_ticks_left--;
 
