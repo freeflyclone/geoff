@@ -16,6 +16,7 @@ namespace asteroids
         ~Player();
 
         Ship* GetShip() { return &m_ship; }
+        Session* GetSession() { return &m_session; }
 
         void KeyEvent(int key, bool isDown);
         void ClickEvent(int x, int y);

@@ -80,43 +80,31 @@ void Universe::CollisionDetection(Session& session)
 	Gun::BulletIterator bulletIter;
 
 	auto& rocks = m_rockField->GetRocks();
+	auto player = session.GetPlayer();
+
+	if (!player)
+		return;
+
+	auto bullets = player->GetShip()->GetGun()->GetBullets();
 
 	for (rockIter = rocks.begin(); rockIter != rocks.end(); rockIter++)
 	{
-		for (auto pair : g_sessions.get_map())
+		for (bulletIter = bullets->begin(); bulletIter != bullets->end(); bulletIter++)
 		{
-			//auto sessionID = pair.first;
-			auto sess = pair.second;
+			auto rock = rockIter->get();
+			auto bullet = bulletIter->get();
 
-			if (!sess->GetPlayer())
+			if (session.DistanceBetweenPoints(*rock, *bullet) < rock->Radius())
 			{
-				//TRACE("found session with no Player yet.");
-				continue;
+				//TRACE("Bullet Hit");
+				collidedRocks.push_back(rockIter);
+				collidedBullets.push_back(bulletIter);
 			}
-
-			auto bullets = sess->GetPlayer()->GetShip()->GetGun()->GetBullets();
-
-			for (bulletIter = bullets->begin(); bulletIter != bullets->end(); bulletIter++)
-			{
-				auto rock = rockIter->get();
-				auto bullet = bulletIter->get();
-
-				if (session.DistanceBetweenPoints(*rock, *bullet) < rock->Radius())
-				{
-					//TRACE("Bullet Hit");
-					collidedRocks.push_back(rockIter);
-					collidedBullets.push_back(bulletIter);
-				}
-			}
-
-			for (auto bullet : collidedBullets)
-				bullets->erase(bullet);
-
-			// Once the all of the collidedBullets have been erased,
-			// clear the collidedBullets list, else mayhem on next rock in
-			// the outer loop.
-			collidedBullets.clear();
 		}
+		for (auto bullet : collidedBullets)
+			bullets->erase(bullet);
+
+		collidedBullets.clear();
 	}
 
 	for (auto it : collidedRocks)
