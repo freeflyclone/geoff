@@ -46,16 +46,18 @@ Universe::~Universe()
 	UN_TRACE(__FUNCTION__);
 }
 
-void Universe::TickEvent(Session& session, uint32_t tickCount)
+void Universe::TickEvent(uint32_t tickCount)
 {
 	UN_TRACE(__FUNCTION__);
 
 	m_ticks = tickCount;
 
+	/*
 	if (m_rockField)
 		m_rockField->TickEvent(session);
 
 	CollisionDetection(session);
+	*/
 
 	for (auto pair : g_sessions.get_map())
 	{

@@ -2,6 +2,7 @@
 #define TIMER_H
 
 #include "geoff.h"
+#include "Session.h"
 
 #define TM_TRACE(...)
 

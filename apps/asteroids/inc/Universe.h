@@ -19,7 +19,7 @@ namespace asteroids
         RockField* GetRockField() { return m_rockField.get(); }
         uint32_t GetTicks() { return m_ticks;}
 
-        void TickEvent(Session&, uint32_t tickCount);
+        void TickEvent(uint32_t tickCount);
 
     private:
         void PerSessionTickEvent(Session&);

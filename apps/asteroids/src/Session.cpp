@@ -83,8 +83,5 @@ void Session::TickEvent(uint32_t sessionID, uint32_t tickCount)
 	if (m_player)
 		m_player->TickEvent(*this);
 
-	if (g_universe)
-		g_universe->TickEvent(*this, tickCount);
-
 	OnTxReady(*this);
 }
