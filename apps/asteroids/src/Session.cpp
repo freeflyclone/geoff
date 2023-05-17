@@ -5,15 +5,14 @@
 #include "Session.h"
 #include "Player.h"
 #include "Universe.h"
+#include "AppSession.h"
 
 using namespace asteroids;
 
 Session::Session(uint32_t sessionID)
 	:
 	GameSession(sessionID),
-	m_player(nullptr),
-	m_timer(*this, 1000000 / FPS)
-	//m_timer(*this, 250000)
+	m_player(nullptr)
 {
 	SS_TRACE(__FUNCTION__);
 	GetUniverse();
@@ -77,12 +76,14 @@ void Session::HandleResizeEvent(AppBuffer& rxBuffer)
 		m_player->ResizeEvent(width, height);
 }
 
-void Session::TickEvent()
+void Session::TickEvent(uint32_t sessionID, uint32_t tickCount)
 {
 	SS_TRACE(__FUNCTION__);
-
 	if (m_player)
 		m_player->TickEvent(*this);
+
+	if (g_universe)
+		g_universe->TickEvent(*this, tickCount);
 
 	OnTxReady(*this);
 }

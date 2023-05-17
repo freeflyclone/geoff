@@ -1,17 +1,25 @@
 #include "geoff.h"
 #include "WebsockServer.h"
+#include "WebsockSessionManager.h"
 
 #include "Timer.h"
 #include "Session.h"
 #include "Universe.h"
+#include "AppSession.h"
 
 using namespace asteroids;
 
 #define TM_TE_TRACE TRACE
 
-Timer::Timer(Session& session, uint32_t intervalInUs)
+namespace Websock
+{
+	WebsockSessionManager<Session> g_sessions;
+};
+using namespace Websock;
+
+
+Timer::Timer(uint32_t intervalInUs)
 	:
-	m_session(session),
 	m_tick_interval_in_us(intervalInUs),
 	m_tick(0)
 {
@@ -48,8 +56,14 @@ void Timer::TickEvent()
 {
 	TM_TRACE(__FUNCTION__);
 
-	if(g_universe)
-		g_universe->TickEvent(m_session);
+	// TODO get access to g_sessions 
+	for (auto pair : g_sessions.get_map())
+	{
+		auto sessionID = pair.first;
+		auto session = pair.second;
+
+		session->TickEvent(sessionID, m_tick);
+	}
 }
 
 void Timer::Ticker()

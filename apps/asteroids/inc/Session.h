@@ -19,11 +19,10 @@ namespace asteroids
 		~Session();
 
 		Player* GetPlayer() { return m_player.get(); }
-		Timer& GetTimer() { return m_timer; }
 
 		double Session::DistanceBetweenPoints(Position& p1, Position& p2);
 
-		void TickEvent();
+		void TickEvent(uint32_t sessionID, uint32_t tickCount);
 
 	private:
 		void HandleNewSession(AppBuffer& rxBuffer);
@@ -32,10 +31,6 @@ namespace asteroids
 		void HandleResizeEvent(AppBuffer& rxBuffer);
 
 		std::unique_ptr<Player> m_player;
-
-		// Initialize AFTER m_player, else Player::TickEvent mayhem.
-		// at Session::Session() time.
-		Timer m_timer;
 	};
 }
 

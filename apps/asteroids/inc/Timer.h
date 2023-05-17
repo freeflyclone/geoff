@@ -12,7 +12,7 @@ namespace asteroids
 	class Timer
 	{
 	public:
-		Timer(Session& session, uint32_t intervalInUs);
+		Timer(uint32_t intervalInUs);
 		~Timer();
 
 		uint32_t GetTick();
@@ -21,7 +21,6 @@ namespace asteroids
 		void Ticker();
 
 	private:
-		Session& m_session;
 		std::unique_ptr<net::deadline_timer> m_timer;
 		uint32_t m_tick_interval_in_us;
 		uint32_t m_tick;

@@ -11,13 +11,9 @@
 #include "Session.h"
 
 #include "WebsockSessionManager.h"
+#include "AppSession.h"
 
 using namespace asteroids;
-
-namespace Websock
-{
-	WebsockSessionManager<Session> g_sessions;
-};
 using namespace Websock;
 
 namespace asteroids
@@ -39,7 +35,8 @@ namespace asteroids
 
 Universe::Universe(int width, int height)
 	: Size({ static_cast<double>(width), static_cast<double>(height) }),
-	m_rockField(std::make_unique<RockField>(width, height))
+	m_rockField(std::make_unique<RockField>(width, height)),
+	m_timer(std::make_unique<Timer>(1000000 / FPS))
 {
 	UN_TRACE(__FUNCTION__);
 }
@@ -49,27 +46,29 @@ Universe::~Universe()
 	UN_TRACE(__FUNCTION__);
 }
 
-void Universe::TickEvent(Session& session)
+void Universe::TickEvent(Session& session, uint32_t tickCount)
 {
 	UN_TRACE(__FUNCTION__);
+
+	m_ticks = tickCount;
 
 	if (m_rockField)
 		m_rockField->TickEvent(session);
 
-	// Fire all TickEvent handlers on each session.
-	for (auto pair : g_sessions.get_map())
-	{
-		//auto sessionID = pair.first;
-		auto sessPtr = pair.second;
-
-		sessPtr->TickEvent();
-
-		PerSessionTickEvent(*sessPtr);
-	}
-
 	CollisionDetection(session);
 
-	// TODO: output stuff to client
+	for (auto pair : g_sessions.get_map())
+	{
+		auto sess = pair.second;
+
+		if (!sess->GetPlayer())
+		{
+			TRACE("found session with no Player yet.");
+			continue;
+		}
+
+		PerSessionTickEvent(*sess);
+	}
 }
 
 void Universe::CollisionDetection(Session& session)
@@ -139,7 +138,7 @@ void Universe::PerSessionTickEvent(Session& session)
 	txBuff->set_uint8(0xBB);
 	txBuff->set_uint8(static_cast<uint8_t>(WebsockSession::MessageType_t::UniverseTickMessage));
 	txBuff->set_uint32(session.SessionID());
-	txBuff->set_uint32(session.GetTimer().GetTick());
+	txBuff->set_uint32(g_universe->GetTicks());
 	txBuff->set_uint16(static_cast<uint16_t>(sizeW));
 	txBuff->set_uint16(static_cast<uint16_t>(sizeH));
 

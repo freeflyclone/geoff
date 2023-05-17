@@ -84,7 +84,7 @@ void Player::TickEvent(Session& session)
 	txBuff->set_uint8(0xBB);
 	txBuff->set_uint8(static_cast<uint8_t>(WebsockSession::MessageType_t::PlayerTickMessage));
 	txBuff->set_uint32(session.SessionID());
-	txBuff->set_uint32(session.GetTimer().GetTick());
+	txBuff->set_uint32(g_universe->GetTicks());
 
 	//TRACE(__FUNCTION__ << "ctx::w: " << Context::width << ", ctx::h: " << Context::height);
 
