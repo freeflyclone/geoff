@@ -44,7 +44,7 @@ void Player::ClickEvent(int clickX, int clickY)
 	int universeClickX = clickX + static_cast<int>(Context::ctxOX);
 	int universeClickY = clickY + static_cast<int>(Context::ctxOY);
 
-	g_universe->GetRockField().LaunchOne(universeClickX, universeClickY, ROCK_RADIUS);
+	g_universe->GetRockField()->LaunchOne(universeClickX, universeClickY, ROCK_RADIUS);
 }
 
 void Player::ResizeEvent(int w, int h)

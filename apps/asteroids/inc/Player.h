@@ -22,6 +22,7 @@ namespace asteroids
         void ResizeEvent(int w, int h);
         void TickEvent(Session&);
 
+    private:
         Session& m_session;
         Ship m_ship;
     };

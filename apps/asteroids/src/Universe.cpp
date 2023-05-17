@@ -147,7 +147,7 @@ void Universe::PerSessionTickEvent(Session& session)
 	bool doRocks = true;
 	if (doRocks)
 	{
-		auto& rocks = g_universe->GetRockField().GetRocks();
+		auto& rocks = g_universe->GetRockField()->GetRocks();
 		auto numRocks = rocks.size();
 
 		size_t outsize = sizeof(int16_t) + (numRocks * (3 * sizeof(int16_t)));
