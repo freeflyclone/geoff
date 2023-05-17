@@ -21,7 +21,7 @@ namespace asteroids
         Gun();
         ~Gun();
 
-        BulletList_t& GetBullets();
+        BulletList_t* GetBullets();
 
         void Fire(Ship&);
 

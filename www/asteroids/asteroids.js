@@ -907,6 +907,10 @@ function OnUniverseTickMessage(data) {
         universeShips.push({ x, y, angle });
     }
 
+    if (offset == view.byteLength) {
+        return;
+    }
+
     numBullets = view.getUint16(offset);
     offset += 2;
 
