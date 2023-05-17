@@ -12,9 +12,11 @@ using namespace asteroids;
 Session::Session(uint32_t sessionID)
 	:
 	GameSession(sessionID),
+	m_sessionID(sessionID),
 	m_player(nullptr)
 {
 	SS_TRACE(__FUNCTION__);
+
 	GetUniverse();
 }
 
@@ -79,7 +81,10 @@ void Session::HandleResizeEvent(AppBuffer& rxBuffer)
 void Session::TickEvent(uint32_t sessionID, uint32_t tickCount)
 {
 	(void)sessionID;
+	(void)tickCount;
+
 	SS_TRACE(__FUNCTION__);
+
 	if (m_player)
 		m_player->TickEvent(*this);
 
