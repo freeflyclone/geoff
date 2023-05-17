@@ -21,8 +21,8 @@ Ship::Ship(uint16_t cw, uint16_t ch, double x, double y, double angle)
 	Orientation({ angle }),
 	Radius({SHIP_SIZE}),
 	m_gun(std::make_unique<Gun>()),
-	m_thrusting(false),
-	m_rotation(0)
+	m_rotation(0),
+	m_thrusting(false)
 {
 	SH_TRACE(__FUNCTION__);
 }

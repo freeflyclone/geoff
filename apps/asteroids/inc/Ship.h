@@ -10,7 +10,7 @@ namespace asteroids
 {
 	class Gun;
 
-	class Ship : public Context, public Position, public Orientation, public Velocity, public Radius
+	class Ship : public Context, public Position, public Velocity, public Orientation, public Radius
 	{
 	public:
 		Ship(uint16_t cw, uint16_t ch, double dx, double dy, double angle);

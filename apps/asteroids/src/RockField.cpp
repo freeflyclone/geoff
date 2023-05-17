@@ -11,7 +11,7 @@ using namespace asteroids;
 
 RockField::RockField(int w, int h)
 	:
-	Context({  (uint16_t)w, (uint16_t)h })
+	Context({  (uint16_t)w, (uint16_t)h, 0, 0 })
 {
 	RF_TRACE(__FUNCTION__);
 }
