@@ -16,7 +16,7 @@ namespace asteroids
 		Ship(uint16_t cw, uint16_t ch, double dx, double dy, double angle);
 		~Ship();
 
-		Gun& GetGun() { return *m_gun; }
+		Gun* GetGun() { return m_gun.get(); }
 
 		void FireGuns();
 

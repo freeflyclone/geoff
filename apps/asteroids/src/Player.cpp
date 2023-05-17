@@ -73,9 +73,9 @@ void Player::TickEvent(Session& session)
 
 	// Handle m_bullets from gun
 	std::unique_ptr<AppBuffer> bulletsBuffer;
-	auto& gun = m_ship.GetGun();
+	auto gun = m_ship.GetGun();
 
-	bulletsBuffer = gun.MakeBulletsBuffer(session);
+	bulletsBuffer = gun->MakeBulletsBuffer(session);
 	if (bulletsBuffer.get())
 		outSize += bulletsBuffer->size();
 

@@ -19,9 +19,9 @@ Gun::~Gun()
 	GN_TRACE(__FUNCTION__);
 }
 
-Gun::BulletList_t& Gun::GetBullets()
+Gun::BulletList_t* Gun::GetBullets()
 {
-	return m_bullets;
+	return &m_bullets;
 }
 
 void Gun::Fire(Ship& ship)
