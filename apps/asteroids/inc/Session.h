@@ -31,7 +31,7 @@ namespace asteroids
 		void HandleResizeEvent(AppBuffer& rxBuffer);
 
 		uint32_t m_sessionID;
-		std::unique_ptr<Player> m_player;
+		std::shared_ptr<Player> m_player;
 	};
 }
 

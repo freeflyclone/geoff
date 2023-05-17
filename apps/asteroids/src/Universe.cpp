@@ -47,6 +47,17 @@ Universe::~Universe()
 	UN_TRACE(__FUNCTION__);
 }
 
+void Universe::NewPlayer(Session& session, int w, int h)
+{
+	m_players[session.SessionID()] = std::make_shared<Player>(session, w, h);
+
+	TRACE(__FUNCTION__);
+}
+std::shared_ptr<Player> Universe::GetPlayerById(uint32_t sessionID)
+{
+	return m_players[sessionID];
+}
+
 void Universe::TickEvent(uint32_t tickCount)
 {
 	UN_TRACE(__FUNCTION__);

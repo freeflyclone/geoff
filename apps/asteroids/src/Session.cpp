@@ -40,7 +40,11 @@ void Session::HandleNewSession(AppBuffer& rxBuffer)
 	auto w = rxBuffer.get_uint16(3);
 	auto h = rxBuffer.get_uint16(5);
 
-	m_player = std::make_unique<Player>(*this, static_cast<double>(w), static_cast<double>(h));
+	if (g_universe)
+	{
+		g_universe->NewPlayer(*this, w, h);
+		m_player = g_universe->GetPlayerById(m_sessionID);
+	}
 }
 
 void Session::HandleKeyEvent(AppBuffer& rxBuffer)
