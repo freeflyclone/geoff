@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
     {
         Geoff(argv[1], argv[2], argv[3], argv[4]);
     }
-    catch (std::exception e)
+    catch (std::exception& e)
     {
         TRACE("Exception: " << e.what());
     }
