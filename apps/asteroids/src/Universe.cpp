@@ -94,7 +94,7 @@ void Universe::CollisionDetection(Session& session)
 				continue;
 			}
 
-			auto& bullets = sess->GetPlayer()->GetShip().GetGun().GetBullets();
+			auto& bullets = sess->GetPlayer()->GetShip()->GetGun().GetBullets();
 
 			for (bulletIter = bullets.begin(); bulletIter != bullets.end(); bulletIter++)
 			{
@@ -181,7 +181,7 @@ void Universe::PerSessionTickEvent(Session& session)
 			auto sessionID = pair.first;
 			auto sessPtr = pair.second;
 
-			// don't count ourself, and don't count unregistered sessions
+			// skip ourself, and don't count unregistered sessions
 			if (sessionID == session.SessionID() || !sessPtr->GetPlayer())
 			{
 				if (!sessPtr->GetPlayer())
@@ -194,7 +194,31 @@ void Universe::PerSessionTickEvent(Session& session)
 
 		if (numShips)
 		{
+			size_t outsize = sizeof(int16_t) + (numShips * (3 * sizeof(int16_t)));
+
+			// new AppBuffer with contents of initial AppBuffer (header), plus room for ships data
+			auto txBuff2 = std::make_unique<AppBuffer>(*txBuff, outsize, session.IsLittleEndian());
+			txBuff2->set_uint16(static_cast<uint16_t>(numShips));
+
 			//TRACE("there are " << numShips << " other ship(s)");
+			for (auto pair : g_sessions.get_map())
+			{
+				auto sessionID = pair.first;
+				auto sessPtr = pair.second;
+
+				if (sessionID == session.SessionID() || !sessPtr->GetPlayer())
+				{
+					continue;
+				}
+				
+				auto ship = sessPtr->GetPlayer()->GetShip();
+
+				txBuff2->set_uint16(static_cast<uint16_t>(ship->posX) - ship->ctxOX);
+				txBuff2->set_uint16(static_cast<uint16_t>(ship->posY) - ship->ctxOY);
+				txBuff2->set_uint16(static_cast<uint16_t>(ship->angle * FP_4_12));
+			}
+
+			txBuff = std::move(txBuff2);
 		}
 	}
 
