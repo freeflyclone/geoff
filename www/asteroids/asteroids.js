@@ -290,7 +290,7 @@ function drawShipFully() {
     // draw the triangular ship
     if (!exploding) {
         if (blinkOn && !ship.dead) {
-            drawShip(ship.x, ship.y, ship.a)
+            drawShip(ship.x - contextOffsetX, ship.y - contextOffsetY, ship.a)
         }
 
         // handle blinking
@@ -428,7 +428,8 @@ function drawOtherShips() {
     }
 
     for (i = 0; i < numberOfOtherShips; i++) {
-        drawShip(universeShips[i].x, universeShips[i].y, universeShips[i].angle, "yellow");
+        //console.log("usX: " + universeShips[i].x + ", usY: " + universeShips[i].y);
+        drawShip(universeShips[i].x - contextOffsetX, universeShips[i].y - contextOffsetY, universeShips[i].angle, "yellow");
     }
 }
 
@@ -520,8 +521,8 @@ function drawRadar() {
     }
 
     // draw player's ship
-    var shipX = ship.x + contextOffsetX;
-    var shipY = ship.y + contextOffsetY;
+    var shipX = ship.x;
+    var shipY = ship.y;
 
     shipX /= radarScaler;
     shipY /= radarScaler;
@@ -530,6 +531,20 @@ function drawRadar() {
     shipY += radarStartY;
 
     drawBullet(shipX, shipY, 2, "white");
+
+    // draw other player's ships
+    for (i = 0; i < universeShips.length; i++) {
+        otherShipX = universeShips[i].x;
+        otherShipY = universeShips[i].y;
+
+        otherShipX /= radarScaler;
+        otherShipY /= radarScaler;
+
+        otherShipX += radarStartX;
+        otherShipY += radarStartY;
+
+        drawBullet(otherShipX, otherShipY, 2, "yellow");
+    }
 }
 
 function drawGameInfo() {
@@ -779,10 +794,10 @@ function OnPlayerTickMessage(data) {
     contextOffsetY = view.getUint16(offset);
     offset += 2;
 
-    shipX = view.getUint16(offset) - contextOffsetX;
+    shipX = view.getUint16(offset);
     offset += 2;
 
-    shipY = view.getUint16(offset) - contextOffsetY;
+    shipY = view.getUint16(offset);
     offset += 2;
 
     shipAngle = view.getUint16(offset) / FP_4_12;
