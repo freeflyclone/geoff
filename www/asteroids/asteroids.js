@@ -444,7 +444,7 @@ function drawOtherBullets() {
         return;
 
     for (i = 0; i < numberOfOtherBullets; i++) {
-        drawBullet(universeBullets[i].x, universeBullets[i].y, universeBullets[i].radius, universeBullets[i].color);
+        drawBullet(universeBullets[i].x - contextOffsetX, universeBullets[i].y - contextOffsetY, universeBullets[i].radius, universeBullets[i].color);
     }
 }
 

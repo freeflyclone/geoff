@@ -250,8 +250,8 @@ void Universe::PerSessionTickEvent(Session& session)
 
 					for (auto& bullet : *bullets)
 					{
-						txBuff2->set_uint16(static_cast<int16_t>(bullet->posX) - ship->ctxOX);
-						txBuff2->set_uint16(static_cast<int16_t>(bullet->posY) - ship->ctxOY);
+						txBuff2->set_uint16(static_cast<int16_t>(bullet->posX));
+						txBuff2->set_uint16(static_cast<int16_t>(bullet->posY));
 					}
 				}
 
