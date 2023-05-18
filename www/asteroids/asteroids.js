@@ -480,6 +480,9 @@ function drawRadar() {
     var radarWW = contextWidth / radarScaler;
     var radarWH = contextHeight / radarScaler;
 
+    var radarOX = contextOffsetX / radarScaler;
+    var radarOY = contextOffsetY / radarScaler;
+
     // screen coordinates of radar top/left
     var radarStartX = contextWidth - radarWidth;
     var radarStartY = 0;
@@ -498,7 +501,7 @@ function drawRadar() {
     ctx.strokeStyle = "cyan";
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.rect(radarCenterX - radarWW / 2, radarCenterY - radarWH / 2, radarWW, radarWH);
+    ctx.rect(radarStartX + radarOX, radarStartY + radarOY, radarWW, radarWH);
     ctx.closePath();
     ctx.stroke();
 

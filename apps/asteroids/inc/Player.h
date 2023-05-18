@@ -26,6 +26,15 @@ namespace asteroids
     private:
         Session& m_session;
         Ship m_ship;
+
+        int16_t m_deltaX;
+        int16_t m_deltaY;
+
+        bool m_left_down;
+        bool m_right_down;
+        bool m_up_down;
+        bool m_down_down;
+        bool m_shift_down;
     };
 }
 

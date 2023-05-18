@@ -136,7 +136,7 @@ void Ship::MoveShip()
 	auto windowH = static_cast<double>(ctxH);
 
 	// handle wrapping at edge of screen
-	// (eventually: move the Context within the Universe)
+	// (eventually: move the Context within the Universe)a
 	if (posX < offX - radius) {
 		posX = offX + windowW + radius;
 	}
