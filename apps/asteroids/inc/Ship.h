@@ -30,6 +30,8 @@ namespace asteroids
 		std::unique_ptr<Gun> m_gun;
 		double m_rotation;
 		bool m_thrusting;
+		bool m_left;
+		bool m_right;
 	};
 }
 #endif

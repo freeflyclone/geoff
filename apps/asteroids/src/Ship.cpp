@@ -50,11 +50,11 @@ void Ship::KeyEvent(int key, bool isDown)
 	switch (key)
 	{
 	case 37:
-		m_rotation = (isDown) ? SHIP_RADS_PER_TICK : 0;
+		m_left = isDown;
 		break;
 
 	case 39:
-		m_rotation = (isDown) ? -SHIP_RADS_PER_TICK : 0;
+		m_right = isDown;
 		break;
 
 	case 38:
@@ -90,6 +90,10 @@ void Ship::TickEvent(Session& session)
 void Ship::MoveShip()
 {
 	//SH_TRACE(__FUNCTION__ << "Ship: " << posX << "," << posY << " - " << deltaX << "," << deltaY << ", angle: " << angle << ", " << (m_thrusting ? "thrusting" : ""));
+
+	m_rotation = 0;
+	m_rotation += m_left ? SHIP_RADS_PER_TICK : 0;
+	m_rotation -= m_right ? SHIP_RADS_PER_TICK : 0;
 
 	if (m_thrusting)
 	{
