@@ -96,16 +96,16 @@ void Universe::CollisionDetection()
 		auto sessionID = pair.first;
 		auto player = pair.second;
 
-		auto bullets = player->GetShip()->GetGun()->GetBullets();
+		auto& rocks = m_rockField->GetRocks();
 
-		for (bulletIter = bullets->begin(); bulletIter != bullets->end(); bulletIter++)
+		for (rockIter = rocks.begin(); rockIter != rocks.end(); rockIter++)
 		{
-			auto bullet = bulletIter->get();
-			auto& rocks = m_rockField->GetRocks();
-
-			for (rockIter = rocks.begin(); rockIter != rocks.end(); rockIter++)
+			auto bullets = player->GetShip()->GetGun()->GetBullets();
+			for (bulletIter = bullets->begin(); bulletIter != bullets->end(); bulletIter++)
 			{
+				auto bullet = bulletIter->get();
 				auto rock = rockIter->get();
+
 				if (DistanceBetweenPoints(*rock, *bullet) < rock->Radius())
 				{
 					TRACE("Bullet Hit");
@@ -113,19 +113,18 @@ void Universe::CollisionDetection()
 					collidedRocks.push_back(rockIter);
 				}
 			}
-
-			for (auto& rock : collidedRocks)
+			for (auto& bullet : collidedBullets)
 			{
- 				m_rockField->DestroyRock(rock);
+				bullets->erase(bullet);
 			}
-			collidedRocks.clear();
+			collidedBullets.clear();
 		}
 
-		for (auto& bullet : collidedBullets)
+		for (auto& rock : collidedRocks)
 		{
-			bullets->erase(bullet);
+ 			m_rockField->DestroyRock(rock);
 		}
-		collidedBullets.clear();
+		collidedRocks.clear();
 	}
 }
 
