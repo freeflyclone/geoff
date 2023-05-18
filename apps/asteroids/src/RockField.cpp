@@ -55,7 +55,7 @@ void RockField::DestroyRock(RockIterator rockIt)
 	//double dy = rock.deltaY;
 	double radius = rock.Radius();
 
-	TRACE("Destroy Rock: X: " << xPos << ", Y: " << yPos << ", radius: " << radius);
+	RF_TRACE("Destroy Rock: X: " << xPos << ", Y: " << yPos << ", radius: " << radius);
 
 	if (radius >= ROCK_RADIUS)
 	{

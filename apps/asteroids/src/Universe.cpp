@@ -108,22 +108,18 @@ void Universe::CollisionDetection()
 
 				if (DistanceBetweenPoints(*rock, *bullet) < rock->Radius())
 				{
-					TRACE("Bullet Hit");
+					UN_TRACE("Bullet Hit");
 					collidedBullets.push_back(bulletIter);
 					collidedRocks.push_back(rockIter);
 				}
 			}
 			for (auto& bullet : collidedBullets)
-			{
 				bullets->erase(bullet);
-			}
 			collidedBullets.clear();
 		}
 
 		for (auto& rock : collidedRocks)
-		{
  			m_rockField->DestroyRock(rock);
-		}
 		collidedRocks.clear();
 	}
 }
