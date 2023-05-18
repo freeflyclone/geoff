@@ -25,14 +25,6 @@ Session::~Session()
 	SS_TRACE(__FUNCTION__);
 }
 
-double Session::DistanceBetweenPoints(Position& p1, Position& p2)
-{
-	auto dxSquared = std::pow(p2.posX - p1.posX, 2);
-	auto dySquared = std::pow(p2.posY - p1.posY, 2);
-
-	return std::sqrt(dxSquared + dySquared);
-}
-
 void Session::HandleNewSession(AppBuffer& rxBuffer)
 {
 	SS_TRACE(__FUNCTION__);
@@ -93,4 +85,12 @@ void Session::TickEvent(uint32_t sessionID, uint32_t tickCount)
 		m_player->TickEvent(*this);
 
 	OnTxReady(*this);
+}
+
+double asteroids::DistanceBetweenPoints(Position& p1, Position& p2)
+{
+	auto dxSquared = std::pow(p2.posX - p1.posX, 2);
+	auto dySquared = std::pow(p2.posY - p1.posY, 2);
+
+	return std::sqrt(dxSquared + dySquared);
 }
