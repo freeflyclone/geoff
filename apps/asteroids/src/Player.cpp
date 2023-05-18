@@ -16,8 +16,16 @@ Player::Player(Session& session, double width, double height)
 	:
 	Size({ width, height }),
 	m_session(session),
-	m_ship(static_cast<uint16_t>(width), static_cast<uint16_t>(height), g_universe->sizeW / 2, g_universe->sizeH / 2, 90 * DEGREES_TO_RADS)
+	m_ship(static_cast<uint16_t>(width), static_cast<uint16_t>(height), g_universe->sizeW / 2, g_universe->sizeH / 2, 90 * DEGREES_TO_RADS),
+	m_deltaX(1),
+	m_deltaY(1),
+	m_left_down(false),
+	m_right_down(false),
+	m_up_down(false),
+	m_down_down(false),
+	m_shift_down(false)
 {
+	// initialize Context: our browser's window size and offset within the g_universe virtual size
 	ctxW = static_cast<uint16_t>(width);
 	ctxH = static_cast<uint16_t>(height);
 	ctxOX = static_cast<uint16_t>(g_universe->sizeW / 2) - ctxW / 2;
@@ -33,16 +41,46 @@ Player::~Player()
 
 void Player::KeyEvent(int key, bool isDown)
 {
-	PL_TRACE(__FUNCTION__);
 	m_ship.KeyEvent(key, isDown);
+
+	switch (key)
+	{
+		case 'a':
+		case'A':
+			m_left_down = isDown;
+			break;
+
+		case 'd':
+		case'D':
+			m_right_down = isDown;
+			break;
+
+		case 'w':
+		case'W':
+			m_up_down = isDown;
+			break;
+
+		case 's':
+		case'S':
+			m_down_down = isDown;
+			break;
+
+		case 16:
+			m_shift_down = isDown;
+			break;
+
+		default:
+			PL_TRACE("Key: " << key << ", isDown: " << (isDown ? "true" : "false"));
+			break;
+	}
 }
 
 void Player::ClickEvent(int clickX, int clickY)
 {
-	PL_TRACE(__FUNCTION__);
-
 	int universeClickX = clickX + static_cast<int>(Context::ctxOX);
 	int universeClickY = clickY + static_cast<int>(Context::ctxOY);
+
+	PL_TRACE("clickX: " << clickX << ", clickY: " << clickY << "ucX: " << universeClickX << ", ucY: " << universeClickY);
 
 	g_universe->GetRockField()->LaunchOne(universeClickX, universeClickY, ROCK_RADIUS);
 }
@@ -64,7 +102,23 @@ void Player::ResizeEvent(int w, int h)
 
 void Player::TickEvent(Session& session)
 {
-	PL_TRACE(__FUNCTION__);
+	int16_t deltaX = m_deltaX + (m_shift_down ? 10 : 0);
+	int16_t deltaY = m_deltaY + (m_shift_down ? 10 : 0);
+
+	if (ctxOX > deltaX)
+		ctxOX -= m_left_down ? deltaX : 0;
+
+	if (ctxOX < static_cast<uint16_t>(g_universe->sizeW - sizeW - deltaX))
+		ctxOX += m_right_down ? deltaX : 0;
+
+	if (ctxOY > deltaY)
+		ctxOY -= m_up_down ? deltaY : 0;
+
+	if (ctxOY < static_cast<uint16_t>(g_universe->sizeH - sizeH - deltaY))
+		ctxOY += m_down_down ? deltaY : 0;
+
+	m_ship.ctxOX = ctxOX;
+	m_ship.ctxOY = ctxOY;
 
 	m_ship.TickEvent(session);
 
@@ -86,7 +140,7 @@ void Player::TickEvent(Session& session)
 	txBuff->set_uint32(session.SessionID());
 	txBuff->set_uint32(g_universe->GetTicks());
 
-	//TRACE(__FUNCTION__ << "ctx::w: " << Context::width << ", ctx::h: " << Context::height);
+	//TRACE(__FUNCTION__ << "ctxW: " << ctxW << ", ctxH: " << ctxH << ", ctxOX: " << ctxOX << ", ctxOY: " << ctxOY);
 
 	txBuff->set_uint16(ctxW);
 	txBuff->set_uint16(ctxH);

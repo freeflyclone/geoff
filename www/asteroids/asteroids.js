@@ -290,7 +290,7 @@ function drawShipFully() {
     // draw the triangular ship
     if (!exploding) {
         if (blinkOn && !ship.dead) {
-            drawShip(ship.x, ship.y, ship.a)
+            drawShip(ship.x - contextOffsetX, ship.y - contextOffsetY, ship.a)
         }
 
         // handle blinking
@@ -428,7 +428,8 @@ function drawOtherShips() {
     }
 
     for (i = 0; i < numberOfOtherShips; i++) {
-        drawShip(universeShips[i].x, universeShips[i].y, universeShips[i].angle, "yellow");
+        //console.log("usX: " + universeShips[i].x + ", usY: " + universeShips[i].y);
+        drawShip(universeShips[i].x - contextOffsetX, universeShips[i].y - contextOffsetY, universeShips[i].angle, "yellow");
     }
 }
 
@@ -443,7 +444,7 @@ function drawOtherBullets() {
         return;
 
     for (i = 0; i < numberOfOtherBullets; i++) {
-        drawBullet(universeBullets[i].x, universeBullets[i].y, universeBullets[i].radius, universeBullets[i].color);
+        drawBullet(universeBullets[i].x - contextOffsetX, universeBullets[i].y - contextOffsetY, universeBullets[i].radius, universeBullets[i].color);
     }
 }
 
@@ -458,7 +459,7 @@ function drawRocks() {
         return;
 
     for (i = 0; i < numberOfRocks; i++) {
-        drawBullet(universeRocks[i].x, universeRocks[i].y, universeRocks[i].r, "green");
+        drawBullet(universeRocks[i].x - contextOffsetX, universeRocks[i].y - contextOffsetY, universeRocks[i].r, "green");
     }
 }
 
@@ -480,6 +481,9 @@ function drawRadar() {
     var radarWW = contextWidth / radarScaler;
     var radarWH = contextHeight / radarScaler;
 
+    var radarOX = contextOffsetX / radarScaler;
+    var radarOY = contextOffsetY / radarScaler;
+
     // screen coordinates of radar top/left
     var radarStartX = contextWidth - radarWidth;
     var radarStartY = 0;
@@ -498,7 +502,7 @@ function drawRadar() {
     ctx.strokeStyle = "cyan";
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.rect(radarCenterX - radarWW / 2, radarCenterY - radarWH / 2, radarWW, radarWH);
+    ctx.rect(radarStartX + radarOX, radarStartY + radarOY, radarWW, radarWH);
     ctx.closePath();
     ctx.stroke();
 
@@ -510,15 +514,15 @@ function drawRadar() {
         rockX /= radarScaler;
         rockY /= radarScaler;
 
-        rockX += radarCenterX - radarWW / 2;
-        rockY += radarCenterY - radarWH / 2;
+        rockX += radarStartX;
+        rockY += radarStartY;
 
         drawBullet(rockX, rockY, 2, "green");
     }
 
     // draw player's ship
-    var shipX = ship.x + contextOffsetX;
-    var shipY = ship.y + contextOffsetY;
+    var shipX = ship.x;
+    var shipY = ship.y;
 
     shipX /= radarScaler;
     shipY /= radarScaler;
@@ -527,6 +531,20 @@ function drawRadar() {
     shipY += radarStartY;
 
     drawBullet(shipX, shipY, 2, "white");
+
+    // draw other player's ships
+    for (i = 0; i < universeShips.length; i++) {
+        otherShipX = universeShips[i].x;
+        otherShipY = universeShips[i].y;
+
+        otherShipX /= radarScaler;
+        otherShipY /= radarScaler;
+
+        otherShipX += radarStartX;
+        otherShipY += radarStartY;
+
+        drawBullet(otherShipX, otherShipY, 2, "yellow");
+    }
 }
 
 function drawGameInfo() {
@@ -776,10 +794,10 @@ function OnPlayerTickMessage(data) {
     contextOffsetY = view.getUint16(offset);
     offset += 2;
 
-    shipX = view.getUint16(offset) - contextOffsetX;
+    shipX = view.getUint16(offset);
     offset += 2;
 
-    shipY = view.getUint16(offset) - contextOffsetY;
+    shipY = view.getUint16(offset);
     offset += 2;
 
     shipAngle = view.getUint16(offset) / FP_4_12;
@@ -863,10 +881,10 @@ function OnUniverseTickMessage(data) {
         //console.log("numRocks: " + numRocks);
 
         for (i = 0; i < numRocks; i++) {
-            x = view.getUint16(offset) - contextOffsetX;
+            x = view.getUint16(offset);
             offset += 2;
 
-            y = view.getUint16(offset) - contextOffsetY;
+            y = view.getUint16(offset);
             offset += 2;
 
             r = view.getUint16(offset);

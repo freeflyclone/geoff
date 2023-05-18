@@ -12,15 +12,9 @@
 // 
 // It is expected that only a single "g_sessions" object will
 // ever exist.  AsteroidsSession is just the first example.
-/*
-#include "asteroids/inc/AsteroidsSession.h"
-namespace Websock {
-	extern WebsockSessionManager<AsteroidsSession> g_sessions;
-};
-*/
-
 #include "asteroids/inc/Session.h"
 namespace Websock {
 	extern WebsockSessionManager<asteroids::Session> g_sessions;
 }
+
 #endif

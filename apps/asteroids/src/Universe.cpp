@@ -93,9 +93,7 @@ void Universe::CollisionDetection()
 
 	for (auto pair : m_players)
 	{
-		auto sessionID = pair.first;
 		auto player = pair.second;
-
 		auto& rocks = m_rockField->GetRocks();
 
 		for (rockIter = rocks.begin(); rockIter != rocks.end(); rockIter++)
@@ -217,8 +215,8 @@ void Universe::PerSessionTickEvent(Session& session)
 				
 				auto ship = sessPtr->GetPlayer()->GetShip();
 
-				txBuff2->set_uint16(static_cast<uint16_t>(ship->posX) - ship->ctxOX);
-				txBuff2->set_uint16(static_cast<uint16_t>(ship->posY) - ship->ctxOY);
+				txBuff2->set_uint16(static_cast<uint16_t>(ship->posX));
+				txBuff2->set_uint16(static_cast<uint16_t>(ship->posY));
 				txBuff2->set_uint16(static_cast<uint16_t>(ship->angle * FP_4_12));
 
 				totalBullets += ship->GetGun()->GetBullets()->size();
@@ -250,8 +248,8 @@ void Universe::PerSessionTickEvent(Session& session)
 
 					for (auto& bullet : *bullets)
 					{
-						txBuff2->set_uint16(static_cast<int16_t>(bullet->posX) - ship->ctxOX);
-						txBuff2->set_uint16(static_cast<int16_t>(bullet->posY) - ship->ctxOY);
+						txBuff2->set_uint16(static_cast<int16_t>(bullet->posX));
+						txBuff2->set_uint16(static_cast<int16_t>(bullet->posY));
 					}
 				}
 
