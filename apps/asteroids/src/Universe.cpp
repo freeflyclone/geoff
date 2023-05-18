@@ -93,9 +93,7 @@ void Universe::CollisionDetection()
 
 	for (auto pair : m_players)
 	{
-		auto sessionID = pair.first;
 		auto player = pair.second;
-
 		auto& rocks = m_rockField->GetRocks();
 
 		for (rockIter = rocks.begin(); rockIter != rocks.end(); rockIter++)
