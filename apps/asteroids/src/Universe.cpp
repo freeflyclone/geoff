@@ -91,6 +91,15 @@ void Universe::CollisionDetection()
 	std::list<Gun::BulletIterator> collidedBullets;
 	Gun::BulletIterator bulletIter;
 
+	for (auto pair : m_players)
+	{
+		auto sessionID = pair.first;
+		auto player = pair.second;
+
+		auto ship = player->GetShip();
+
+		TRACE("ship[" << sessionID << "]: x: " << ship->posX << ", y: " << ship->posX << ", angle: " << ship->angle);
+	}
 
 	/*
 	for (rockIter = rocks.begin(); rockIter != rocks.end(); rockIter++)
