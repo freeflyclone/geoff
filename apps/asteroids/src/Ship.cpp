@@ -51,17 +51,18 @@ void Ship::KeyEvent(int key, bool isDown)
 
 	switch (key)
 	{
-	case 'a':
+	case 'A':
 	case 37:
 		m_left = isDown;
 		break;
 
-	case 'd':
+	case 'D':
 	case 39:
 		m_right = isDown;
 		break;
 
-	case 'w':
+	case 'I':
+	case 'W':
 	case 38:
 		m_thrusting = isDown;
 		break;
