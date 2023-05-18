@@ -45,23 +45,23 @@ void Player::KeyEvent(int key, bool isDown)
 
 	switch (key)
 	{
-		case 'a':
-		case'A':
+		case 'h':
+		case'H':
 			m_left_down = isDown;
 			break;
 
-		case 'd':
-		case'D':
+		case 'l':
+		case'L':
 			m_right_down = isDown;
 			break;
 
-		case 'w':
-		case'W':
+		case 'k':
+		case'K':
 			m_up_down = isDown;
 			break;
 
-		case 's':
-		case'S':
+		case 'j':
+		case'J':
 			m_down_down = isDown;
 			break;
 
