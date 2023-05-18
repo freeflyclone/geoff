@@ -15,6 +15,7 @@ AppBuffer::AppBuffer(std::size_t bufferLength, int isLittleEndian)
     m_writeOffset(0)
 {
     m_buff = new uint8_t[bufferLength];
+    memset(m_buff, 0, m_length);
 }
 
 AppBuffer::AppBuffer(const uint8_t *buffer, const std::size_t bufferLength, int isLittleEndian)
@@ -26,11 +27,12 @@ AppBuffer::AppBuffer(const uint8_t *buffer, const std::size_t bufferLength, int 
 
 AppBuffer::AppBuffer(AppBuffer& ab, size_t moreRoom, bool isLittleEndian)
     :
-    AppBuffer(ab.data(), ab.bytesRemaining() + moreRoom, isLittleEndian)
+    AppBuffer(ab.bytesWritten() + moreRoom, isLittleEndian)
 {
-    m_writeOffset = static_cast<int>(ab.bytesRemaining());
+    memcpy(m_buff, ab.data(), ab.bytesWritten());
+    m_writeOffset = static_cast<int>(ab.bytesWritten());
 
-    AB_TRACE(__FUNCTION__ << "bytesRemaining(): " << ab.bytesRemaining() << ", moreRoom: " << moreRoom << "m_length: " << m_length);
+    AB_TRACE(__FUNCTION__ << "bytesWritten(): " << ab.bytesWritten() << ", moreRoom: " << moreRoom << "m_length: " << m_length);
 }
 
 AppBuffer::~AppBuffer()
@@ -60,6 +62,7 @@ std::size_t AppBuffer::size()
 
 uint8_t* AppBuffer::data()
 {
+    assert(m_buff);
     return m_buff;
 }
 
