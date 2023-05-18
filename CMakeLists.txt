@@ -25,14 +25,29 @@ set(CMAKE_CONFIGURATION_TYPES Debug;Release)
 # These are relative to ${PROJECT_SOURCE_DIR}, that is, where it was cloned to.
 # Files you want to appear in the "Source Files" project folder are explicitly listed here
 file(GLOB GEOFF_APP_SRC_FILES
-	apps/asteroids/src/Asteroids.cpp
-	apps/asteroids/src/AsteroidsMain.cpp
-	apps/asteroids/src/AsteroidsSession.cpp)
+	apps/asteroids/src/Bullet.cpp
+	apps/asteroids/src/Gun.cpp
+	apps/asteroids/src/Main.cpp
+	apps/asteroids/src/Player.cpp
+	apps/asteroids/src/Rock.cpp
+	apps/asteroids/src/RockField.cpp
+	apps/asteroids/src/Session.cpp
+	apps/asteroids/src/Ship.cpp
+	apps/asteroids/src/Timer.cpp
+	apps/asteroids/src/Universe.cpp)
 	
 # Files to appear in "Header Files" project folder are explicitly listed here
 file(GLOB GEOFF_APP_INC_FILES
-	apps/asteroids/inc/Asteroids.h
-	apps/asteroids/inc/AsteroidsSession.h)
+	apps/asteroids/inc/Bullet.h
+	apps/asteroids/inc/Gun.h
+	apps/asteroids/inc/Player.h
+	apps/asteroids/inc/Rock.h
+	apps/asteroids/inc/RockField.h
+	apps/asteroids/inc/Session.h
+	apps/asteroids/inc/Ship.h
+	apps/asteroids/inc/Structs.h
+	apps/asteroids/inc/Timer.h
+	apps/asteroids/inc/Universe.h)
 	
 file(GLOB GEOFF_LIB_SRC_FILES
 	lib/src/AppBuffer.cpp
@@ -132,7 +147,7 @@ add_library(${GEOFF_LIB_NAME} STATIC ${GEOFF_LIB_SRC_FILES} ${GEOFF_LIB_INC_FILE
 find_package(Threads)
 
 target_include_directories(${GEOFF_LIB_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/lib/inc ${PROJECT_SOURCE_DIR}/apps)
-target_include_directories(${GEOFF_APP_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/lib/inc ${PROJECT_SOURCE_DIR}/apps)
+target_include_directories(${GEOFF_APP_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/lib/inc ${PROJECT_SOURCE_DIR}/apps ${PROJECT_SOURCE_DIR}/apps/asteroids/inc)
 
 # if GeoffLib is ever generated as a shared library, we want IT to be dependent on these.
 # (Note: doesn't seem to make any difference in VC when built as static library, which jives with what I know about linking)
