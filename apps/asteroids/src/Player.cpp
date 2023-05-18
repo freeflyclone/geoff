@@ -81,10 +81,10 @@ void Player::KeyEvent(int key, bool isDown)
 
 void Player::ClickEvent(int clickX, int clickY)
 {
-	PL_TRACE(__FUNCTION__);
-
 	int universeClickX = clickX + static_cast<int>(Context::ctxOX);
 	int universeClickY = clickY + static_cast<int>(Context::ctxOY);
+
+	PL_TRACE("clickX: " << clickX << ", clickY: " << clickY << "ucX: " << universeClickX << ", ucY: " << universeClickY);
 
 	g_universe->GetRockField()->LaunchOne(universeClickX, universeClickY, ROCK_RADIUS);
 }
@@ -106,17 +106,20 @@ void Player::ResizeEvent(int w, int h)
 
 void Player::TickEvent(Session& session)
 {
-	if (ctxOX > 0)
-		ctxOX -= m_left_down ? (m_deltaX + (m_shift_down ? 10 : 0)) : 0;
+	int16_t deltaX = m_deltaX + (m_shift_down ? 10 : 0);
+	int16_t deltaY = m_deltaY + (m_shift_down ? 10 : 0);
 
-	if (ctxOX < static_cast<uint16_t>(g_universe->sizeW - sizeW))
-		ctxOX += m_right_down ? (m_deltaX + (m_shift_down ? 10 : 0)) : 0;
+	if (ctxOX > deltaX)
+		ctxOX -= m_left_down ? deltaX : 0;
 
-	if (ctxOY > 0)
-		ctxOY -= m_up_down ? (m_deltaY + (m_shift_down ? 10 : 0)) : 0;
+	if (ctxOX < static_cast<uint16_t>(g_universe->sizeW - sizeW - deltaX))
+		ctxOX += m_right_down ? deltaX : 0;
 
-	if (ctxOY < static_cast<uint16_t>(g_universe->sizeH - sizeH))
-		ctxOY += m_down_down ? (m_deltaY + (m_shift_down ? 10 : 0)) : 0;
+	if (ctxOY > deltaY)
+		ctxOY -= m_up_down ? deltaY : 0;
+
+	if (ctxOY < static_cast<uint16_t>(g_universe->sizeH - sizeH - deltaY))
+		ctxOY += m_down_down ? deltaY : 0;
 
 	m_ship.ctxOX = ctxOX;
 	m_ship.ctxOY = ctxOY;

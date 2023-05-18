@@ -458,7 +458,7 @@ function drawRocks() {
         return;
 
     for (i = 0; i < numberOfRocks; i++) {
-        drawBullet(universeRocks[i].x, universeRocks[i].y, universeRocks[i].r, "green");
+        drawBullet(universeRocks[i].x - contextOffsetX, universeRocks[i].y - contextOffsetY, universeRocks[i].r, "green");
     }
 }
 
@@ -513,8 +513,8 @@ function drawRadar() {
         rockX /= radarScaler;
         rockY /= radarScaler;
 
-        rockX += radarCenterX - radarWW / 2;
-        rockY += radarCenterY - radarWH / 2;
+        rockX += radarStartX;
+        rockY += radarStartY;
 
         drawBullet(rockX, rockY, 2, "green");
     }
@@ -866,10 +866,10 @@ function OnUniverseTickMessage(data) {
         //console.log("numRocks: " + numRocks);
 
         for (i = 0; i < numRocks; i++) {
-            x = view.getUint16(offset) - contextOffsetX;
+            x = view.getUint16(offset);
             offset += 2;
 
-            y = view.getUint16(offset) - contextOffsetY;
+            y = view.getUint16(offset);
             offset += 2;
 
             r = view.getUint16(offset);
