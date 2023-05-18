@@ -47,26 +47,22 @@ void Player::KeyEvent(int key, bool isDown)
 	{
 		case 'a':
 		case'A':
-			//m_ctxDeltaX = (isDown) ? -1 : 0;
 			m_left_down = isDown;
 			break;
 
 		case 'd':
 		case'D':
 			m_right_down = isDown;
-			//m_ctxDeltaX = (isDown && (ctxOX < g_universe->sizeW - sizeW) ? +1 : 0);
 			break;
 
 		case 'w':
 		case'W':
 			m_up_down = isDown;
-			//m_ctxDeltaY = (isDown) ? -1 : 0;
 			break;
 
 		case 's':
 		case'S':
 			m_down_down = isDown;
-			//m_ctxDeltaY = (isDown && (ctxOY < g_universe->sizeH - sizeH) ? +1 : 0);
 			break;
 
 		case 16:

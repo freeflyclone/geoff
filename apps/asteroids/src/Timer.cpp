@@ -21,11 +21,11 @@ using namespace Websock;
 Timer::Timer(uint32_t intervalInUs)
 	:
 	m_tick_interval_in_us(intervalInUs),
-	m_tick(0)
+	m_tick(0),
+	m_timer(*WebsockServer::GetInstance().IoContext(), boost::posix_time::microseconds(m_tick_interval_in_us))
 {
 	TM_TRACE(__FUNCTION__);
 
-	m_timer = std::make_unique<net::deadline_timer>(*WebsockServer::GetInstance().IoContext(), boost::posix_time::microseconds(m_tick_interval_in_us));
 	m_run_timer = true;
 	
 	Ticker();
@@ -33,10 +33,11 @@ Timer::Timer(uint32_t intervalInUs)
 
 Timer::~Timer()
 {
-	TM_TRACE(__FUNCTION__);
+	TRACE(__FUNCTION__);
 
 	m_run_timer = false;
 	m_timer_complete = false;
+	/*
 	int retries = 50;
 	while (!m_timer_complete && retries)
 	{
@@ -44,6 +45,12 @@ Timer::~Timer()
 		std::this_thread::sleep_for(std::chrono::duration(std::chrono::milliseconds(10)));
 		retries--;
 	}
+	*/
+}
+
+void Timer::Cancel()
+{
+	m_timer.cancel();
 }
 
 uint32_t Timer::GetTick()
@@ -55,6 +62,9 @@ uint32_t Timer::GetTick()
 void Timer::TickEvent()
 {
 	TM_TRACE(__FUNCTION__);
+
+	if (!m_run_timer)
+		return;
 
 	if(g_universe)
 		g_universe->TickEvent(m_tick);
@@ -74,13 +84,6 @@ void Timer::Ticker()
 
 	boost::system::error_code ec;
 
-	if (!m_timer)
-	{
-		m_timer_complete = true;
-		TM_TRACE(__FUNCTION__);
-		return;
-	}
-
 	if (!m_run_timer)
 	{
 		m_timer_complete = true;
@@ -88,15 +91,20 @@ void Timer::Ticker()
 		return;
 	}
 
-	m_timer->expires_from_now(boost::posix_time::microseconds(m_tick_interval_in_us), ec);
+	m_timer.expires_from_now(boost::posix_time::microseconds(m_tick_interval_in_us), ec);
 	if (ec)
 	{
 		TRACE(ec);
 		return;
 	}
 
-	m_timer->async_wait([this](const boost::system::error_code& e) {
-		(void)e;
+	m_timer.async_wait([this](const boost::system::error_code& ec) {
+		if (ec)
+		{
+			TRACE("Error: " << ec);
+			return;
+		}
+
 		Ticker();
 	});
 }
