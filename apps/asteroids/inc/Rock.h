@@ -15,7 +15,7 @@ namespace asteroids
 		~Rock();
 
 		double Radius();
-		void TickEvent(Session&);
+		void TickEvent();
 
 	private:
 		double m_radius;

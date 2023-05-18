@@ -55,7 +55,7 @@ void RockField::DestroyRock(RockIterator rockIt)
 	//double dy = rock.deltaY;
 	double radius = rock.Radius();
 
-	RF_TRACE("Destroy Rock: X: " << rock->x << ", Y: " << rock->y << ", radius: " << rock->Radius());
+	RF_TRACE("Destroy Rock: X: " << xPos << ", Y: " << yPos << ", radius: " << radius);
 
 	if (radius >= ROCK_RADIUS)
 	{
@@ -69,11 +69,11 @@ void RockField::DestroyRock(RockIterator rockIt)
 	}
 }
 
-void RockField::TickEvent(Session& session)
+void RockField::TickEvent()
 {
 	RF_TRACE(__FUNCTION__);
 	for (auto& rock : m_rocks)
 	{
-		rock->TickEvent(session);
+		rock->TickEvent();
 	}
 }

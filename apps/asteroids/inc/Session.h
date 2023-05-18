@@ -20,8 +20,6 @@ namespace asteroids
 
 		Player* GetPlayer() { return m_player.get(); }
 
-		double DistanceBetweenPoints(Position& p1, Position& p2);
-
 		void TickEvent(uint32_t sessionID, uint32_t tickCount);
 
 	private:
@@ -30,8 +28,11 @@ namespace asteroids
 		void HandleClickEvent(AppBuffer& rxBuffer);
 		void HandleResizeEvent(AppBuffer& rxBuffer);
 
-		std::unique_ptr<Player> m_player;
+		uint32_t m_sessionID;
+		std::shared_ptr<Player> m_player;
 	};
+
+	double DistanceBetweenPoints(Position& p1, Position& p2);
 }
 
 #endif

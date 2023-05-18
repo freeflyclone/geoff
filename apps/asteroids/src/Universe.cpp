@@ -21,12 +21,12 @@ namespace asteroids
 	// we want just one of these, but we want to control when it gets created.
 	std::unique_ptr<Universe> g_universe;
 
-	const Universe& GetUniverse()
+	Universe* GetUniverse()
 	{
 		if (!g_universe)
 			g_universe = std::make_unique<Universe>(8192, 8192);
 
-		return *g_universe;
+		return g_universe.get();
 	}
 };
 
@@ -36,7 +36,8 @@ namespace asteroids
 Universe::Universe(int width, int height)
 	: Size({ static_cast<double>(width), static_cast<double>(height) }),
 	m_rockField(std::make_unique<RockField>(width, height)),
-	m_timer(std::make_unique<Timer>(1000000 / FPS))
+	m_timer(std::make_unique<Timer>(1000000 / FPS)),
+	m_ticks(0)
 {
 	UN_TRACE(__FUNCTION__);
 }
@@ -46,16 +47,27 @@ Universe::~Universe()
 	UN_TRACE(__FUNCTION__);
 }
 
-void Universe::TickEvent(Session& session, uint32_t tickCount)
+void Universe::NewPlayer(Session& session, int w, int h)
+{
+	m_players[session.SessionID()] = std::make_shared<Player>(session, w, h);
+
+	TRACE(__FUNCTION__);
+}
+std::shared_ptr<Player> Universe::GetPlayerById(uint32_t sessionID)
+{
+	return m_players[sessionID];
+}
+
+void Universe::TickEvent(uint32_t tickCount)
 {
 	UN_TRACE(__FUNCTION__);
 
 	m_ticks = tickCount;
 
 	if (m_rockField)
-		m_rockField->TickEvent(session);
+		m_rockField->TickEvent();
 
-	CollisionDetection(session);
+	CollisionDetection();
 
 	for (auto pair : g_sessions.get_map())
 	{
@@ -71,7 +83,7 @@ void Universe::TickEvent(Session& session, uint32_t tickCount)
 	}
 }
 
-void Universe::CollisionDetection(Session& session)
+void Universe::CollisionDetection()
 {
 	std::list<RockField::RockIterator> collidedRocks;
 	RockField::RockIterator rockIter;
@@ -79,38 +91,37 @@ void Universe::CollisionDetection(Session& session)
 	std::list<Gun::BulletIterator> collidedBullets;
 	Gun::BulletIterator bulletIter;
 
-	auto& rocks = m_rockField->GetRocks();
-	auto player = session.GetPlayer();
-
-	if (!player)
-		return;
-
-	auto bullets = player->GetShip()->GetGun()->GetBullets();
-
-	for (rockIter = rocks.begin(); rockIter != rocks.end(); rockIter++)
+	for (auto pair : m_players)
 	{
-		for (bulletIter = bullets->begin(); bulletIter != bullets->end(); bulletIter++)
+		auto sessionID = pair.first;
+		auto player = pair.second;
+
+		auto& rocks = m_rockField->GetRocks();
+
+		for (rockIter = rocks.begin(); rockIter != rocks.end(); rockIter++)
 		{
-			auto rock = rockIter->get();
-			auto bullet = bulletIter->get();
-
-			if (session.DistanceBetweenPoints(*rock, *bullet) < rock->Radius())
+			auto bullets = player->GetShip()->GetGun()->GetBullets();
+			for (bulletIter = bullets->begin(); bulletIter != bullets->end(); bulletIter++)
 			{
-				//TRACE("Bullet Hit");
-				collidedRocks.push_back(rockIter);
-				collidedBullets.push_back(bulletIter);
+				auto bullet = bulletIter->get();
+				auto rock = rockIter->get();
+
+				if (DistanceBetweenPoints(*rock, *bullet) < rock->Radius())
+				{
+					UN_TRACE("Bullet Hit");
+					collidedBullets.push_back(bulletIter);
+					collidedRocks.push_back(rockIter);
+				}
 			}
+			for (auto& bullet : collidedBullets)
+				bullets->erase(bullet);
+			collidedBullets.clear();
 		}
-		for (auto bullet : collidedBullets)
-			bullets->erase(bullet);
 
-		collidedBullets.clear();
+		for (auto& rock : collidedRocks)
+ 			m_rockField->DestroyRock(rock);
+		collidedRocks.clear();
 	}
-
-	for (auto it : collidedRocks)
-		m_rockField->DestroyRock(it);
-
-	collidedRocks.clear();
 }
 
 void Universe::PerSessionTickEvent(Session& session)
@@ -194,9 +205,13 @@ void Universe::PerSessionTickEvent(Session& session)
 			{
 				auto sessionID = pair.first;
 				auto sessPtr = pair.second;
+				auto player = sessPtr->GetPlayer();
 
-				if (sessionID == session.SessionID() || !sessPtr->GetPlayer())
+				if (sessionID == session.SessionID() || !player)
 				{
+					if (!player)
+						TRACE("Found a session with no with no player yet, where we shouldn't!");
+
 					continue;
 				}
 				

@@ -26,10 +26,8 @@ double Rock::Radius()
 	return m_radius;
 }
 
-void Rock::TickEvent(Session& session)
+void Rock::TickEvent()
 {
-	(void)session;
-
 	auto universeW = g_universe->Size::sizeW;
 	auto universeH = g_universe->Size::sizeH;
 

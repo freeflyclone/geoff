@@ -12,23 +12,17 @@ using namespace asteroids;
 Session::Session(uint32_t sessionID)
 	:
 	GameSession(sessionID),
+	m_sessionID(sessionID),
 	m_player(nullptr)
 {
 	SS_TRACE(__FUNCTION__);
+
 	GetUniverse();
 }
 
 Session::~Session()
 {
 	SS_TRACE(__FUNCTION__);
-}
-
-double Session::DistanceBetweenPoints(Position& p1, Position& p2)
-{
-	auto dxSquared = std::pow(p2.posX - p1.posX, 2);
-	auto dySquared = std::pow(p2.posY - p1.posY, 2);
-
-	return std::sqrt(dxSquared + dySquared);
 }
 
 void Session::HandleNewSession(AppBuffer& rxBuffer)
@@ -38,7 +32,11 @@ void Session::HandleNewSession(AppBuffer& rxBuffer)
 	auto w = rxBuffer.get_uint16(3);
 	auto h = rxBuffer.get_uint16(5);
 
-	m_player = std::make_unique<Player>(*this, static_cast<double>(w), static_cast<double>(h));
+	if (g_universe)
+	{
+		g_universe->NewPlayer(*this, w, h);
+		m_player = g_universe->GetPlayerById(m_sessionID);
+	}
 }
 
 void Session::HandleKeyEvent(AppBuffer& rxBuffer)
@@ -79,12 +77,20 @@ void Session::HandleResizeEvent(AppBuffer& rxBuffer)
 void Session::TickEvent(uint32_t sessionID, uint32_t tickCount)
 {
 	(void)sessionID;
+	(void)tickCount;
+
 	SS_TRACE(__FUNCTION__);
+
 	if (m_player)
 		m_player->TickEvent(*this);
 
-	if (g_universe)
-		g_universe->TickEvent(*this, tickCount);
-
 	OnTxReady(*this);
+}
+
+double asteroids::DistanceBetweenPoints(Position& p1, Position& p2)
+{
+	auto dxSquared = std::pow(p2.posX - p1.posX, 2);
+	auto dySquared = std::pow(p2.posY - p1.posY, 2);
+
+	return std::sqrt(dxSquared + dySquared);
 }

@@ -24,7 +24,7 @@ namespace asteroids
         void LaunchOne(double x, double y, double r);
         void DestroyRock(RockIterator rock);
 
-        void TickEvent(Session&);
+        void TickEvent();
 
     private:
         RockList_t m_rocks;
