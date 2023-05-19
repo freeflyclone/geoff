@@ -19,7 +19,7 @@ WebsockSession::~WebsockSession()
 	WS_TRACE("sessionID: " << m_sessionID);
 }
 
-void WebsockSession::OnTxReady(OnTxReadyCallback_t fn)
+void WebsockSession::SetOnTxReadyCallback(OnTxReadyCallback_t fn)
 {
 	m_tx_ready_callback = fn;
 }
