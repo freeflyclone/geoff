@@ -94,15 +94,22 @@ void Universe::CollisionDetection()
 	for (auto pair : m_players)
 	{
 		auto player = pair.second;
+		auto ship = player->GetShip();
 		auto& rocks = m_rockField->GetRocks();
 
 		for (rockIter = rocks.begin(); rockIter != rocks.end(); rockIter++)
 		{
+			auto rock = rockIter->get();
+			if ( !ship->Exploding() && DistanceBetweenPoints(*rock, *ship) < (ship->radius + rock->Radius()))
+			{
+				TRACE("ship smacks rock.");
+				collidedRocks.push_back(rockIter);
+			}
+
 			auto bullets = player->GetShip()->GetGun()->GetBullets();
 			for (bulletIter = bullets->begin(); bulletIter != bullets->end(); bulletIter++)
 			{
 				auto bullet = bulletIter->get();
-				auto rock = rockIter->get();
 
 				if (DistanceBetweenPoints(*rock, *bullet) < rock->Radius())
 				{

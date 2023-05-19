@@ -15,16 +15,17 @@ using namespace asteroids;
 
 Ship::Ship(uint16_t cw, uint16_t ch, double x, double y, double angle)
 	:
-	Context({cw, ch, static_cast<uint16_t>(g_universe->sizeW / 2 - cw / 2), static_cast<uint16_t>(g_universe->sizeH / 2 - ch / 2)}),
+	Context({ cw, ch, static_cast<uint16_t>(g_universe->sizeW / 2 - cw / 2), static_cast<uint16_t>(g_universe->sizeH / 2 - ch / 2) }),
 	Position({ x, y }),
 	Velocity({ 0, 0 }),
 	Orientation({ angle }),
-	Radius({SHIP_SIZE}),
+	Radius({ SHIP_SIZE }),
 	m_gun(std::make_unique<Gun>()),
 	m_rotation(0),
 	m_thrusting(false),
 	m_left(false),
-	m_right(false)
+	m_right(false),
+	m_exploding(false)
 {
 	SH_TRACE(__FUNCTION__);
 }

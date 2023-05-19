@@ -1,6 +1,7 @@
 #ifndef SHIP_H
 #define SHIP_H
 
+#include "Consts.h"
 #include "Structs.h"
 #include "Session.h"
 
@@ -20,6 +21,9 @@ namespace asteroids
 
 		void FireGuns();
 
+		void OnColision() { m_exploding = SHIP_EXPLODE_DUR; };
+		bool Exploding() { return m_exploding; }
+
 		void KeyEvent(int key, bool isDown);
 		void ResizeEvent(int w, int h);
 		void TickEvent(Session&);
@@ -32,6 +36,7 @@ namespace asteroids
 		bool m_thrusting;
 		bool m_left;
 		bool m_right;
+		double m_exploding;
 	};
 }
 #endif
