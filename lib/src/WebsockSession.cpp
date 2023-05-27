@@ -24,10 +24,10 @@ void WebsockSession::SetOnTxReadyCallback(OnTxReadyCallback_t fn)
 	m_tx_ready_callback = fn;
 }
 
-void WebsockSession::OnTxReady(WebsockSession &self)
+void WebsockSession::OnTxReady(WebsockSession &session)
 {
 	if (m_tx_ready_callback)
-		m_tx_ready_callback(self);
+		m_tx_ready_callback(session);
 }
 
 uint32_t WebsockSession::SessionID()

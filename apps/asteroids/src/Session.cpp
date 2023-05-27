@@ -22,7 +22,7 @@ Session::Session(uint32_t sessionID)
 
 Session::~Session()
 {
-	SS_TRACE(__FUNCTION__);
+	TRACE(__FUNCTION__);
 }
 
 void Session::HandleNewSession(AppBuffer& rxBuffer)

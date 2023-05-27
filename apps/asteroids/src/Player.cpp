@@ -36,7 +36,7 @@ Player::Player(Session& session, double width, double height)
 
 Player::~Player()
 {
-	PL_TRACE(__FUNCTION__);
+	TRACE(__FUNCTION__);
 }
 
 void Player::KeyEvent(int key, bool isDown)
