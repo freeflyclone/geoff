@@ -36,6 +36,7 @@ void Session::HandleNewSession(AppBuffer& rxBuffer)
 	{
 		g_universe->NewPlayer(*this, w, h);
 		m_player = g_universe->GetPlayerById(m_sessionID);
+		assert(m_player.get());
 	}
 }
 

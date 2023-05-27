@@ -27,6 +27,7 @@ namespace asteroids
 		uint32_t m_tick;
 		bool m_run_timer;
 		bool m_timer_complete;
+		std::mutex m_timer_mutex;
 		net::deadline_timer m_timer;
 	};
 }
