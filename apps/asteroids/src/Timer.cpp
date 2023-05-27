@@ -22,6 +22,7 @@ Timer::Timer(uint32_t intervalInUs)
 	:
 	m_tick_interval_in_us(intervalInUs),
 	m_tick(0),
+	m_timer_mutex(),
 	m_timer(*WebsockServer::GetInstance().IoContext(), boost::posix_time::microseconds(m_tick_interval_in_us))
 {
 	TM_TRACE(__FUNCTION__);
@@ -35,9 +36,11 @@ Timer::~Timer()
 {
 	TRACE(__FUNCTION__);
 
+	std::lock_guard<std::mutex> lock(m_timer_mutex);
+
 	m_run_timer = false;
 	m_timer_complete = false;
-	/*
+
 	int retries = 50;
 	while (!m_timer_complete && retries)
 	{
@@ -45,7 +48,6 @@ Timer::~Timer()
 		std::this_thread::sleep_for(std::chrono::duration(std::chrono::milliseconds(10)));
 		retries--;
 	}
-	*/
 }
 
 void Timer::Cancel()
@@ -74,12 +76,15 @@ void Timer::TickEvent()
 		auto sessionID = pair.first;
 		auto session = pair.second;
 
-		session->TickEvent(sessionID, m_tick);
+		if (session)
+			session->TickEvent(sessionID, m_tick);
 	}
 }
 
 void Timer::Ticker()
 {
+	std::lock_guard<std::mutex> lock(m_timer_mutex);
+
 	TickEvent();
 
 	boost::system::error_code ec;

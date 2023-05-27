@@ -63,9 +63,12 @@ class websocket_session
         // Set the OnTxReadyCallback_t function member of the WebsockSession to this lambda
         // We get one for each session, thus each session now has its own OnTxReady interrupt
         // for processing TimerTick() messages.
-        WebsockServer::GetInstance().FindSessionByID(m_sessionID)->OnTxReady([this](WebsockSession & session) {
+        WebsockServer::GetInstance().FindSessionByID(m_sessionID)->SetOnTxReadyCallback([this](WebsockSession & session) {
             post(derived().ws().get_executor(), [&]() {
                 //TRACE("Posted");
+
+                if (session.TxQueueEmpty())
+                    return;
 
                 std::unique_ptr<AppBuffer> txBuffer;
                 if (session.GetNextTxBuffer(txBuffer))
@@ -110,11 +113,14 @@ class websocket_session
         auto session = WebsockServer::GetInstance().FindSessionByID(m_sessionID);
         if (session)
         {
-            std::unique_ptr<AppBuffer> txBuff;
-
-            if (session->GetNextTxBuffer(txBuff))
+            if (!session->TxQueueEmpty())
             {
-                do_write(txBuff->data(), txBuff->bytesWritten());
+                std::unique_ptr<AppBuffer> txBuff;
+
+                if (session->GetNextTxBuffer(txBuff))
+                {
+                    do_write(txBuff->data(), txBuff->bytesWritten());
+                }
             }
         }
 
@@ -154,11 +160,14 @@ class websocket_session
         auto session = WebsockServer::GetInstance().FindSessionByID(m_sessionID);
         if (session)
         {
-            std::unique_ptr<AppBuffer> txBuff;
-
-            if (session->GetNextTxBuffer(txBuff))
+            if (!session->TxQueueEmpty())
             {
-                do_write(txBuff->data(), txBuff->bytesWritten());
+                std::unique_ptr<AppBuffer> txBuff;
+
+                if (session->GetNextTxBuffer(txBuff))
+                {
+                    do_write(txBuff->data(), txBuff->bytesWritten());
+                }
             }
         }
     }

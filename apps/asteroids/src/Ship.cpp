@@ -147,18 +147,18 @@ void Ship::MoveShip()
 
 	// handle wrapping at edge of screen
 	// (eventually: move the Context within the Universe)a
-	if (posX < offX - radius) {
-		posX = offX + windowW + radius;
+	if (posX < offX) {
+		posX = offX + windowW;
 	}
-	else if (posX > offX + windowW + radius) {
-		posX = offX - radius;
+	else if (posX > offX + windowW) {
+		posX = offX;
 	}
 
-	if (posY < offY - radius) {
-		posY = offY + windowH + radius;
+	if (posY < offY) {
+		posY = offY + windowH;
 	}
-	else if (posY > offY + windowH + radius) {
-		posY = offY - radius;
+	else if (posY > offY + windowH) {
+		posY = offY;
 	}
 }
 

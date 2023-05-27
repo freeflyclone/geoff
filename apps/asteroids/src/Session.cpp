@@ -22,7 +22,7 @@ Session::Session(uint32_t sessionID)
 
 Session::~Session()
 {
-	SS_TRACE(__FUNCTION__);
+	TRACE(__FUNCTION__);
 }
 
 void Session::HandleNewSession(AppBuffer& rxBuffer)
@@ -36,6 +36,7 @@ void Session::HandleNewSession(AppBuffer& rxBuffer)
 	{
 		g_universe->NewPlayer(*this, w, h);
 		m_player = g_universe->GetPlayerById(m_sessionID);
+		assert(m_player.get());
 	}
 }
 

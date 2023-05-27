@@ -63,7 +63,7 @@ public:
 	// Allow caller to specify a callback when a new AppBuffer for TX is ready
 	// (touching websocket_session is expensive to compile, this callback helps minimize
 	// dependencies)
-	void OnTxReady(OnTxReadyCallback_t);
+	void SetOnTxReadyCallback(OnTxReadyCallback_t);
 
 	uint32_t SessionID();
 	bool IsLittleEndian() { return m_isLittleEndian; }
@@ -76,6 +76,7 @@ public:
 
 	// Called in from websocket_session::on_write() and other places, to check for and return
 	// the next AppBuffer to send to the client side.
+	bool TxQueueEmpty() { return m_txQue.empty(); }
 	bool GetNextTxBuffer(std::unique_ptr<AppBuffer>& buffer);
 
 	virtual void CommsHandler(const uint8_t* buff, const size_t length);
