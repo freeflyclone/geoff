@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+	<meta charset="utf-8">
+	<title>Asteroids</title>
+	<link rel="icon" type="image/x-icon" href="/favicon.ico">
+	<style>
+		html, body {margin: 0; width: 100%; height: 100%; overflow: hidden; background: black; }
+		canvas { width: 100%; height: 100%; border: none; display: block; }
+	</style>
+</head>
+
+<body>
+	<canvas id="gameCanvas">
+		Your browser does not support the HTML canvas tag.
+	</canvas>
+
+	<script type="text/javascript" src="/js/GameFace.js"></script>
+	<script type="text/javascript" src="/asteroids/asteroids.js"></script>
+	<script type="text/javascript">
+		if (typeof GameFaceInit != 'undefined') {
+			GameFaceInit();
+		}
+		else {
+			console.log("GameFaceInit is undefined.");
+			setTimeout(GameFaceInit, 100);
+		}
+		if (typeof AsteroidsInit != 'undefined') {
+			AsteroidsInit();
+		}
+		else {
+			console.log("AsteroidsInit is undefined.");
+			setTimeout(AsteroidsInit, 100);
+		}
+	</script>
+</body>
+</html> 

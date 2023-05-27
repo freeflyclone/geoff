@@ -6,6 +6,7 @@
 class SSLContext : public ssl::context
 {
 public:
+    SSLContext(boost::system::error_code& ec);
     SSLContext(const std::string & certs_folder, boost::system::error_code & ec);
 
 private:

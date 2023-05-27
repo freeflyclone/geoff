@@ -14,6 +14,7 @@
 #include <boost/asio/ssl/context.hpp>
 #include <cstddef>
 #include <memory>
+#include "ServerUtils.h"
 
 /*  Load a signed certificate into the ssl context, and configure
     the context for use with a server.
@@ -26,7 +27,7 @@
 */
 inline
 void
-load_server_certificate(boost::asio::ssl::context& ctx)
+load_server_certificate(boost::asio::ssl::context& ctx, boost::system::error_code& ec)
 {
     /*
         The certificate was generated from CMD.EXE on Windows 10 using:
@@ -111,14 +112,29 @@ load_server_certificate(boost::asio::ssl::context& ctx)
         boost::asio::ssl::context::single_dh_use);
 
     ctx.use_certificate_chain(
-        boost::asio::buffer(cert.data(), cert.size()));
+        boost::asio::buffer(cert.data(), cert.size()), ec);
+    if (ec)
+    {
+        fail(ec, "use_certificate_chain");
+        return;
+    }
 
     ctx.use_private_key(
         boost::asio::buffer(key.data(), key.size()),
-        boost::asio::ssl::context::file_format::pem);
+        boost::asio::ssl::context::file_format::pem, ec);
+    if (ec)
+    {
+        fail(ec, "use_private_key");
+        return;
+    }
 
     ctx.use_tmp_dh(
-        boost::asio::buffer(dh.data(), dh.size()));
+        boost::asio::buffer(dh.data(), dh.size()),ec);
+    if (ec)
+    {
+        fail(ec, "use_tmp_dh");
+        return;
+    }
 }
 
 #endif
