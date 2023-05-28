@@ -22,6 +22,7 @@ Ship::Ship(uint16_t cw, uint16_t ch, double x, double y, double angle)
 	Radius({SHIP_SIZE}),
 	m_gun(std::make_unique<Gun>()),
 	m_rotation(0),
+	m_max_delta_v(SHIP_MAX_DELTA_V),
 	m_thrusting(false),
 	m_left(false),
 	m_right(false)
@@ -109,6 +110,17 @@ void Ship::MoveShip()
 
 		deltaX += thrustX;
 		deltaY += thrustY;
+
+		if (deltaX > m_max_delta_v)
+			deltaX = m_max_delta_v;
+		if (deltaX < -m_max_delta_v)
+			deltaX = -m_max_delta_v;
+
+		if (deltaY > m_max_delta_v)
+			deltaY = m_max_delta_v;
+		if (deltaY < -m_max_delta_v)
+			deltaY = -m_max_delta_v;
+
 
 		//SH_TRACE("Velockity: " << deltaX << "," << deltaY);
 	}

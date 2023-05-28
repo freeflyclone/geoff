@@ -40,6 +40,7 @@ file(GLOB GEOFF_APP_SRC_FILES
 file(GLOB GEOFF_APP_INC_FILES
 	apps/asteroids/inc/Bullet.h
 	apps/asteroids/inc/Gun.h
+	apps/asteroids/inc/Consts.h
 	apps/asteroids/inc/Player.h
 	apps/asteroids/inc/Rock.h
 	apps/asteroids/inc/RockField.h
