@@ -136,22 +136,30 @@ void Ship::MoveShip()
 
 	if (m_slide_viewport)
 	{
+		// left?
 		if (posX < (ctxOX + VIEWPORT_MARGIN))
 		{
-			ctxOX = posX - VIEWPORT_MARGIN;
+			if (posX > VIEWPORT_MARGIN)
+				ctxOX = posX - VIEWPORT_MARGIN;
 		}
+		// right?
 		else if (posX > (ctxOX + ctxW - VIEWPORT_MARGIN))
 		{
-			ctxOX = posX - ctxW + VIEWPORT_MARGIN;
+			if (posX < g_universe->sizeW - VIEWPORT_MARGIN)
+				ctxOX = posX - ctxW + VIEWPORT_MARGIN;
 		}
 
+		// up?
 		if (posY < (ctxOY + VIEWPORT_MARGIN))
 		{
-			ctxOY = posY - VIEWPORT_MARGIN;
+			if (posY > VIEWPORT_MARGIN)
+				ctxOY = posY - VIEWPORT_MARGIN;
 		}
+		// down?
 		else if (posY > (ctxOY + ctxH - VIEWPORT_MARGIN))
 		{
-			ctxOY = posY - ctxH + VIEWPORT_MARGIN;
+			if (posY < g_universe->sizeH - VIEWPORT_MARGIN)
+				ctxOY = posY - ctxH + VIEWPORT_MARGIN;
 		}
 	}
 
