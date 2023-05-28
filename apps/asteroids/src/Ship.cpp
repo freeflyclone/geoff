@@ -27,7 +27,9 @@ Ship::Ship(uint16_t cw, uint16_t ch, double x, double y, double angle)
 	m_thrusting(false),
 	m_left(false),
 	m_right(false),
-	m_slide_viewport(true)
+	m_slide_viewport(true),
+	m_wrap_viewport(false),
+	m_enforce_boundaries(true)
 {
 	SH_TRACE(__FUNCTION__);
 }
@@ -182,26 +184,54 @@ void Ship::MoveShip()
 	posX += deltaX;
 	posY += deltaY;
 
-	// Get Context dimensions & offset as doubles (not uint16_t)
-	auto offX = static_cast<double>(ctxOX);
-	auto offY = static_cast<double>(ctxOY);
-	auto windowW = static_cast<double>(ctxW);
-	auto windowH = static_cast<double>(ctxH);
+	if (m_enforce_boundaries)
+	{
+		if (posX < radius)
+		{
+			posX = radius;
+			deltaX = 0.0;
+		}
+		else if (posX + radius >= g_universe->sizeW)
+		{
+			posX = g_universe->sizeW - radius;
+			deltaX = 0.0;
+		}
 
-	// handle wrapping at edge of screen
-	// (eventually: move the Context within the Universe)a
-	if (posX < offX) {
-		posX = offX + windowW;
-	}
-	else if (posX > offX + windowW) {
-		posX = offX;
+		if (posY < radius)
+		{
+			posY = radius;
+			deltaY = 0.0;
+		}
+		else if (posY + radius >= g_universe->sizeH)
+		{
+			posY = g_universe->sizeH - radius;
+			deltaY = 0.0;
+		}
 	}
 
-	if (posY < offY) {
-		posY = offY + windowH;
-	}
-	else if (posY > offY + windowH) {
-		posY = offY;
+	if (m_wrap_viewport)
+	{
+		// Get Context dimensions & offset as doubles (not uint16_t)
+		auto offX = static_cast<double>(ctxOX);
+		auto offY = static_cast<double>(ctxOY);
+		auto windowW = static_cast<double>(ctxW);
+		auto windowH = static_cast<double>(ctxH);
+
+		// handle wrapping at edge of screen
+		// (eventually: move the Context within the Universe)a
+		if (posX < offX) {
+			posX = offX + windowW;
+		}
+		else if (posX > offX + windowW) {
+			posX = offX;
+		}
+
+		if (posY < offY) {
+			posY = offY + windowH;
+		}
+		else if (posY > offY + windowH) {
+			posY = offY;
+		}
 	}
 }
 

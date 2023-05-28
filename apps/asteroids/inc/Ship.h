@@ -35,6 +35,8 @@ namespace asteroids
 		bool m_left;
 		bool m_right;
 		bool m_slide_viewport;
+		bool m_wrap_viewport;
+		bool m_enforce_boundaries;
 	};
 }
 #endif
