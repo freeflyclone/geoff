@@ -15,14 +15,15 @@ using namespace asteroids;
 
 Ship::Ship(uint16_t cw, uint16_t ch, double x, double y, double angle)
 	:
-	Context({cw, ch, static_cast<uint16_t>(g_universe->sizeW / 2 - cw / 2), static_cast<uint16_t>(g_universe->sizeH / 2 - ch / 2)}),
+	Context({ cw, ch, static_cast<uint16_t>(g_universe->sizeW / 2 - cw / 2), static_cast<uint16_t>(g_universe->sizeH / 2 - ch / 2) }),
 	Position({ x, y }),
 	Velocity({ 0, 0 }),
 	Orientation({ angle }),
-	Radius({SHIP_SIZE}),
+	Radius({ SHIP_SIZE }),
 	m_gun(std::make_unique<Gun>()),
 	m_rotation(0),
 	m_max_delta_v(SHIP_MAX_DELTA_V),
+	m_viewport_margin(VIEWPORT_MARGIN),
 	m_thrusting(false),
 	m_left(false),
 	m_right(false),
@@ -137,29 +138,29 @@ void Ship::MoveShip()
 	if (m_slide_viewport)
 	{
 		// left?
-		if (posX < (ctxOX + VIEWPORT_MARGIN))
+		if (posX < (ctxOX + m_viewport_margin))
 		{
-			if (posX > VIEWPORT_MARGIN)
-				ctxOX = posX - VIEWPORT_MARGIN;
+			if (posX > m_viewport_margin)
+				ctxOX = posX - m_viewport_margin;
 		}
 		// right?
-		else if (posX > (ctxOX + ctxW - VIEWPORT_MARGIN))
+		else if (posX > (ctxOX + ctxW - m_viewport_margin))
 		{
-			if (posX < g_universe->sizeW - VIEWPORT_MARGIN)
-				ctxOX = posX - ctxW + VIEWPORT_MARGIN;
+			if (posX < g_universe->sizeW - m_viewport_margin)
+				ctxOX = posX - ctxW + m_viewport_margin;
 		}
 
 		// up?
-		if (posY < (ctxOY + VIEWPORT_MARGIN))
+		if (posY < (ctxOY + m_viewport_margin))
 		{
-			if (posY > VIEWPORT_MARGIN)
-				ctxOY = posY - VIEWPORT_MARGIN;
+			if (posY > m_viewport_margin)
+				ctxOY = posY - m_viewport_margin;
 		}
 		// down?
-		else if (posY > (ctxOY + ctxH - VIEWPORT_MARGIN))
+		else if (posY > (ctxOY + ctxH - m_viewport_margin))
 		{
-			if (posY < g_universe->sizeH - VIEWPORT_MARGIN)
-				ctxOY = posY - ctxH + VIEWPORT_MARGIN;
+			if (posY < g_universe->sizeH - m_viewport_margin)
+				ctxOY = posY - ctxH + m_viewport_margin;
 		}
 	}
 
