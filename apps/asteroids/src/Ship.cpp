@@ -25,7 +25,8 @@ Ship::Ship(uint16_t cw, uint16_t ch, double x, double y, double angle)
 	m_max_delta_v(SHIP_MAX_DELTA_V),
 	m_thrusting(false),
 	m_left(false),
-	m_right(false)
+	m_right(false),
+	m_slide_viewport(true)
 {
 	SH_TRACE(__FUNCTION__);
 }
@@ -131,6 +132,27 @@ void Ship::MoveShip()
 		deltaY -= FRICTION * deltaY / FPS;
 
 		//SH_TRACE("Velockity: " << deltaX << "," << deltaY);
+	}
+
+	if (m_slide_viewport)
+	{
+		if (posX < (ctxOX + VIEWPORT_MARGIN))
+		{
+			ctxOX = posX - VIEWPORT_MARGIN;
+		}
+		else if (posX > (ctxOX + ctxW - VIEWPORT_MARGIN))
+		{
+			ctxOX = posX - ctxW + VIEWPORT_MARGIN;
+		}
+
+		if (posY < (ctxOY + VIEWPORT_MARGIN))
+		{
+			ctxOY = posY - VIEWPORT_MARGIN;
+		}
+		else if (posY > (ctxOY + ctxH - VIEWPORT_MARGIN))
+		{
+			ctxOY = posY - ctxH + VIEWPORT_MARGIN;
+		}
 	}
 
 	// Rotation is tracked in radians, and we want to clip the rotation

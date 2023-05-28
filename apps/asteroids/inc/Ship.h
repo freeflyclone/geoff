@@ -33,6 +33,7 @@ namespace asteroids
 		bool m_thrusting;
 		bool m_left;
 		bool m_right;
+		bool m_slide_viewport;
 	};
 }
 #endif

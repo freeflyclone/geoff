@@ -102,6 +102,7 @@ void Player::ResizeEvent(int w, int h)
 
 void Player::TickEvent(Session& session)
 {
+	/*
 	int16_t deltaX = m_deltaX + (m_shift_down ? 10 : 0);
 	int16_t deltaY = m_deltaY + (m_shift_down ? 10 : 0);
 
@@ -119,8 +120,12 @@ void Player::TickEvent(Session& session)
 
 	m_ship.ctxOX = ctxOX;
 	m_ship.ctxOY = ctxOY;
+	*/
 
 	m_ship.TickEvent(session);
+
+	ctxOX = m_ship.ctxOX;
+	ctxOY = m_ship.ctxOY;
 
 	// make an AppBuffer for user's browser
 	size_t outSize = 26;
