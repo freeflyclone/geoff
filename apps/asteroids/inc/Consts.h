@@ -24,6 +24,7 @@ namespace asteroids
 	const double FP_4_12 = 4096.0;			 // scale angle to fixed point 4.12 precision
 	const double DEGREES_TO_RADS = M_PI / 180;
 	const double VIEWPORT_MARGIN = 200;		  // in pixels: for sliding viewport activation
+	const int NUM_STARS = 1600;
 }
 
 #endif

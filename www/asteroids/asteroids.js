@@ -220,7 +220,7 @@ function drawSpace() {
     var numStars = universeStars.length;
 
     for (i = 0; i < numStars; i++) {
-        drawBullet(universeStars[i].x - contextOffsetX, universeStars[i].y - contextOffsetY, 2, "white");
+        drawBullet(universeStars[i].x - contextOffsetX, universeStars[i].y - contextOffsetY, 3, "white");
     }
 }
 
@@ -975,7 +975,7 @@ function OnUniverseTickMessage(data) {
         y = view.getInt16(offset);
         offset += 2;
 
-        radius = 4;
+        radius = 2;
         color = "red";
         universeBullets.push({ x, y, radius, color });
     }

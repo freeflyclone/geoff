@@ -46,7 +46,7 @@ Universe::Universe(int width, int height)
 		return (double)rand() / (double)RAND_MAX;
 	};
 
-	for (int i = 0; i < 400; i++)
+	for (int i = 0; i < NUM_STARS; i++)
 	{
 		auto starX = random() * width;
 		auto starY = random() * height;
