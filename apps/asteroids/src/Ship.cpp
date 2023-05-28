@@ -15,16 +15,21 @@ using namespace asteroids;
 
 Ship::Ship(uint16_t cw, uint16_t ch, double x, double y, double angle)
 	:
-	Context({cw, ch, static_cast<uint16_t>(g_universe->sizeW / 2 - cw / 2), static_cast<uint16_t>(g_universe->sizeH / 2 - ch / 2)}),
+	Context({ cw, ch, static_cast<uint16_t>(g_universe->sizeW / 2 - cw / 2), static_cast<uint16_t>(g_universe->sizeH / 2 - ch / 2) }),
 	Position({ x, y }),
 	Velocity({ 0, 0 }),
 	Orientation({ angle }),
-	Radius({SHIP_SIZE}),
+	Radius({ SHIP_SIZE }),
 	m_gun(std::make_unique<Gun>()),
 	m_rotation(0),
+	m_max_delta_v(SHIP_MAX_DELTA_V),
+	m_viewport_margin(VIEWPORT_MARGIN),
 	m_thrusting(false),
 	m_left(false),
-	m_right(false)
+	m_right(false),
+	m_slide_viewport(true),
+	m_wrap_viewport(false),
+	m_enforce_boundaries(true)
 {
 	SH_TRACE(__FUNCTION__);
 }
@@ -110,6 +115,17 @@ void Ship::MoveShip()
 		deltaX += thrustX;
 		deltaY += thrustY;
 
+		if (deltaX > m_max_delta_v)
+			deltaX = m_max_delta_v;
+		if (deltaX < -m_max_delta_v)
+			deltaX = -m_max_delta_v;
+
+		if (deltaY > m_max_delta_v)
+			deltaY = m_max_delta_v;
+		if (deltaY < -m_max_delta_v)
+			deltaY = -m_max_delta_v;
+
+
 		//SH_TRACE("Velockity: " << deltaX << "," << deltaY);
 	}
 	else
@@ -119,6 +135,35 @@ void Ship::MoveShip()
 		deltaY -= FRICTION * deltaY / FPS;
 
 		//SH_TRACE("Velockity: " << deltaX << "," << deltaY);
+	}
+
+	if (m_slide_viewport)
+	{
+		// left?
+		if (posX < (ctxOX + m_viewport_margin))
+		{
+			if (posX > m_viewport_margin)
+				ctxOX = posX - m_viewport_margin;
+		}
+		// right?
+		else if (posX > (ctxOX + ctxW - m_viewport_margin))
+		{
+			if (posX < g_universe->sizeW - m_viewport_margin)
+				ctxOX = posX - ctxW + m_viewport_margin;
+		}
+
+		// up?
+		if (posY < (ctxOY + m_viewport_margin))
+		{
+			if (posY > m_viewport_margin)
+				ctxOY = posY - m_viewport_margin;
+		}
+		// down?
+		else if (posY > (ctxOY + ctxH - m_viewport_margin))
+		{
+			if (posY < g_universe->sizeH - m_viewport_margin)
+				ctxOY = posY - ctxH + m_viewport_margin;
+		}
 	}
 
 	// Rotation is tracked in radians, and we want to clip the rotation
@@ -139,26 +184,54 @@ void Ship::MoveShip()
 	posX += deltaX;
 	posY += deltaY;
 
-	// Get Context dimensions & offset as doubles (not uint16_t)
-	auto offX = static_cast<double>(ctxOX);
-	auto offY = static_cast<double>(ctxOY);
-	auto windowW = static_cast<double>(ctxW);
-	auto windowH = static_cast<double>(ctxH);
+	if (m_enforce_boundaries)
+	{
+		if (posX < radius)
+		{
+			posX = radius;
+			deltaX = 0.0;
+		}
+		else if (posX + radius >= g_universe->sizeW)
+		{
+			posX = g_universe->sizeW - radius;
+			deltaX = 0.0;
+		}
 
-	// handle wrapping at edge of screen
-	// (eventually: move the Context within the Universe)a
-	if (posX < offX) {
-		posX = offX + windowW;
-	}
-	else if (posX > offX + windowW) {
-		posX = offX;
+		if (posY < radius)
+		{
+			posY = radius;
+			deltaY = 0.0;
+		}
+		else if (posY + radius >= g_universe->sizeH)
+		{
+			posY = g_universe->sizeH - radius;
+			deltaY = 0.0;
+		}
 	}
 
-	if (posY < offY) {
-		posY = offY + windowH;
-	}
-	else if (posY > offY + windowH) {
-		posY = offY;
+	if (m_wrap_viewport)
+	{
+		// Get Context dimensions & offset as doubles (not uint16_t)
+		auto offX = static_cast<double>(ctxOX);
+		auto offY = static_cast<double>(ctxOY);
+		auto windowW = static_cast<double>(ctxW);
+		auto windowH = static_cast<double>(ctxH);
+
+		// handle wrapping at edge of screen
+		// (eventually: move the Context within the Universe)a
+		if (posX < offX) {
+			posX = offX + windowW;
+		}
+		else if (posX > offX + windowW) {
+			posX = offX;
+		}
+
+		if (posY < offY) {
+			posY = offY + windowH;
+		}
+		else if (posY > offY + windowH) {
+			posY = offY;
+		}
 	}
 }
 

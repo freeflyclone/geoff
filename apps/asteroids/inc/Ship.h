@@ -29,9 +29,14 @@ namespace asteroids
 
 		std::unique_ptr<Gun> m_gun;
 		double m_rotation;
+		double m_max_delta_v;
+		double m_viewport_margin;
 		bool m_thrusting;
 		bool m_left;
 		bool m_right;
+		bool m_slide_viewport;
+		bool m_wrap_viewport;
+		bool m_enforce_boundaries;
 	};
 }
 #endif

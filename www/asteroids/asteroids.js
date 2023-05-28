@@ -30,6 +30,7 @@ var level, lives, roids, score, scoreHigh, ship, text, textAlpha;
 var universeRocks = [];
 var universeShips = [];
 var universeBullets = [];
+var universeStars = [];
 
 var universeWidth;
 var universeHeight;
@@ -215,6 +216,12 @@ function shootLaser() {
 function drawSpace() {
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canv.width, canv.height);
+
+    var numStars = universeStars.length;
+
+    for (i = 0; i < numStars; i++) {
+        drawBullet(universeStars[i].x - contextOffsetX, universeStars[i].y - contextOffsetY, 3, "white");
+    }
 }
 
 function drawShip(x, y, a, color = "white") {
@@ -753,12 +760,36 @@ function AsteroidsInit() {
 function OnSessionRegistered(data) {
     view = new DataView(data);
     console.log("OnSessionRegistered");
+    var offset = 2;
 
     if (view.byteLength >= 8) {
-        sessionID = view.getUint32(2);
-        serverAppVersion = view.getUint16(6);
+        sessionID = view.getUint32(offset);
+        offset += 4;
+
+        serverAppVersion = view.getUint16(offset);
+        offset += 2;
         this.isConnected = true;
     }
+
+    if (offset >= DataView.byteLength)
+        return;
+
+    var numStars = view.getUint16(offset);
+
+    if (offset >= DataView.byteLength)
+        return;
+
+    for (i = 0; i < numStars; i++) {
+        x = view.getUint16(offset);
+        offset += 2;
+
+        y = view.getUint16(offset);
+        offset += 2;
+
+        universeStars.push({ x, y });
+    }
+
+    console.log("numStars pushed: " + universeStars.length);
 }
 
 function OnKeyMessage(data) {
@@ -944,7 +975,7 @@ function OnUniverseTickMessage(data) {
         y = view.getInt16(offset);
         offset += 2;
 
-        radius = 4;
+        radius = 2;
         color = "red";
         universeBullets.push({ x, y, radius, color });
     }

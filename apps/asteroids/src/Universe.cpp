@@ -37,9 +37,23 @@ Universe::Universe(int width, int height)
 	: Size({ static_cast<double>(width), static_cast<double>(height) }),
 	m_rockField(std::make_unique<RockField>(width, height)),
 	m_timer(std::make_unique<Timer>(1000000 / FPS)),
-	m_ticks(0)
+	m_ticks(0),
+	m_stars()
 {
 	UN_TRACE(__FUNCTION__);
+
+	auto random = []() -> double {
+		return (double)rand() / (double)RAND_MAX;
+	};
+
+	for (int i = 0; i < NUM_STARS; i++)
+	{
+		auto starX = random() * width;
+		auto starY = random() * height;
+
+		m_stars.push_back({ starX, starY });
+	}
+	TRACE("Generated " << m_stars.size() << " stars.");
 }
 
 Universe::~Universe()

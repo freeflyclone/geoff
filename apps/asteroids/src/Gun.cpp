@@ -26,6 +26,9 @@ Gun::BulletList_t* Gun::GetBullets()
 
 void Gun::Fire(Ship& ship)
 {
+	if (m_bullets.size() == GUN_MAG_SIZE)
+		return;
+
 	// Calculate firing solution from ship position & angle
 	double offX = static_cast<double>(ship.ctxOX);
 	double offY = static_cast<double>(ship.ctxOY);
