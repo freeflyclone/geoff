@@ -29,14 +29,36 @@ void Session::HandleNewSession(AppBuffer& rxBuffer)
 {
 	SS_TRACE(__FUNCTION__);
 
+	auto universe = GetUniverse();
+
 	auto w = rxBuffer.get_uint16(3);
 	auto h = rxBuffer.get_uint16(5);
 
-	if (g_universe)
+	if (universe)
 	{
-		g_universe->NewPlayer(*this, w, h);
-		m_player = g_universe->GetPlayerById(m_sessionID);
+		universe->NewPlayer(*this, w, h);
+		m_player = universe->GetPlayerById(m_sessionID);
 		assert(m_player.get());
+
+		Universe::StarField_t* stars = universe->GetStarField();
+		auto numStars = stars->size();
+
+		auto txSize = 8 + sizeof(uint16_t) + (numStars * 2 * sizeof(uint16_t));
+		auto txBuffer = std::make_unique<AppBuffer>(txSize, rxBuffer.isLittleEndian());
+
+		txBuffer->set_uint8(0xBB);
+		txBuffer->set_uint8(static_cast<uint8_t>(MessageType_t::SessionRegistered));
+		txBuffer->set_uint32(SessionID());
+		txBuffer->set_uint16((uint16_t)GAME_APP_VERSION);
+
+		txBuffer->set_uint16((uint16_t)numStars);
+		for (auto star : *stars)
+		{
+			txBuffer->set_uint16(static_cast<uint16_t>(star.posX));
+			txBuffer->set_uint16(static_cast<uint16_t>(star.posY));
+		}
+
+		CommitTxBuffer(txBuffer);
 	}
 }
 
