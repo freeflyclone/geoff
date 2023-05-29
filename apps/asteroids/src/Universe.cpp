@@ -112,22 +112,37 @@ void Universe::CollisionDetection()
 
 		for (rockIter = rocks.begin(); rockIter != rocks.end(); rockIter++)
 		{
+			bool rock_already_pushed = false;
+			auto rock = rockIter->get();
 			auto bullets = player->GetShip()->GetGun()->GetBullets();
+
 			for (bulletIter = bullets->begin(); bulletIter != bullets->end(); bulletIter++)
 			{
 				auto bullet = bulletIter->get();
-				auto rock = rockIter->get();
 
 				if (DistanceBetweenPoints(*rock, *bullet) < rock->Radius())
 				{
 					UN_TRACE("Bullet Hit");
 					collidedBullets.push_back(bulletIter);
 					collidedRocks.push_back(rockIter);
+					rock_already_pushed = true;
 				}
 			}
 			for (auto& bullet : collidedBullets)
 				bullets->erase(bullet);
 			collidedBullets.clear();
+
+			auto ship = player->GetShip();
+			if (!ship->IsExploding())
+			{
+				if (DistanceBetweenPoints(*rock, *ship) < rock->Radius() + ship->radius)
+				{
+					if (!rock_already_pushed)
+						collidedRocks.push_back(rockIter);
+
+					ship->Explode();
+				}
+			}
 		}
 
 		for (auto& rock : collidedRocks)

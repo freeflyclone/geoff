@@ -19,6 +19,8 @@ namespace asteroids
 		Gun* GetGun() { return m_gun.get(); }
 
 		void FireGuns();
+		void Explode();
+		bool IsExploding() { return m_is_exploding; }
 
 		void KeyEvent(int key, bool isDown);
 		void ResizeEvent(int w, int h);
@@ -31,12 +33,14 @@ namespace asteroids
 		double m_rotation;
 		double m_max_delta_v;
 		double m_viewport_margin;
+		double m_explosion_duration;
 		bool m_thrusting;
 		bool m_left;
 		bool m_right;
 		bool m_slide_viewport;
 		bool m_wrap_viewport;
 		bool m_enforce_boundaries;
+		bool m_is_exploding;
 	};
 }
 #endif

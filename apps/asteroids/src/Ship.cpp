@@ -10,8 +10,8 @@
 
 using namespace asteroids;
 
-//#undef SH_TRACE
-//#define SH_TRACE TRACE
+#undef SH_TRACE
+#define SH_TRACE TRACE
 
 Ship::Ship(uint16_t cw, uint16_t ch, double x, double y, double angle)
 	:
@@ -24,12 +24,14 @@ Ship::Ship(uint16_t cw, uint16_t ch, double x, double y, double angle)
 	m_rotation(0),
 	m_max_delta_v(SHIP_MAX_DELTA_V),
 	m_viewport_margin(VIEWPORT_MARGIN),
+	m_explosion_duration(SHIP_EXPLODE_DUR),
 	m_thrusting(false),
 	m_left(false),
 	m_right(false),
 	m_slide_viewport(true),
 	m_wrap_viewport(false),
-	m_enforce_boundaries(true)
+	m_enforce_boundaries(true),
+	m_is_exploding(false)
 {
 	SH_TRACE(__FUNCTION__);
 }
@@ -45,6 +47,14 @@ void Ship::FireGuns()
 
 	if(m_gun)
 		m_gun->Fire(*this);
+}
+
+void Ship::Explode()
+{
+	SH_TRACE(__FUNCTION__);
+	m_is_exploding = true;
+	deltaX = 0.0;
+	deltaY = 0.0;
 }
 
 void Ship::KeyEvent(int key, bool isDown)
@@ -96,6 +106,16 @@ void Ship::TickEvent(Session& session)
 
 	if(m_gun)
 		m_gun->TickEvent(session);
+
+	if (m_is_exploding)
+	{
+		m_explosion_duration -= SHIP_EXPLODE_DUR / FPS;
+		if (m_explosion_duration < 0)
+		{
+			m_explosion_duration = SHIP_EXPLODE_DUR;
+			m_is_exploding = false;
+		}
+	}
 }
 
 void Ship::MoveShip()
