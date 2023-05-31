@@ -19,7 +19,7 @@ Ship::Ship(uint16_t cw, uint16_t ch, double x, double y, double angle)
 	Position({ x, y }),
 	Velocity({ 0, 0 }),
 	Orientation({ angle }),
-	Radius({ SHIP_SIZE }),
+	Radius({ SHIP_SIZE / 2 }),
 	m_gun(std::make_unique<Gun>()),
 	m_rotation(0),
 	m_max_delta_v(SHIP_MAX_DELTA_V),
