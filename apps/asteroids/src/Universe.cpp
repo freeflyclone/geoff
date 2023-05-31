@@ -135,7 +135,9 @@ void Universe::CollisionDetection()
 			auto ship = player->GetShip();
 			if (!ship->IsExploding())
 			{
-				if (DistanceBetweenPoints(*rock, *ship) < rock->Radius() + ship->radius)
+				auto distance = DistanceBetweenPoints(*rock, *ship);
+
+				if ( distance < rock->Radius() + ship->radius)
 				{
 					if (!rock_already_pushed)
 						collidedRocks.push_back(rockIter);

@@ -20,7 +20,8 @@ namespace asteroids
 
 		void FireGuns();
 		void Explode();
-		bool IsExploding() { return m_is_exploding; }
+		bool IsExploding() { return m_exploding; }
+		bool IsThrusting() { return m_thrusting; }
 
 		void KeyEvent(int key, bool isDown);
 		void ResizeEvent(int w, int h);
@@ -40,7 +41,7 @@ namespace asteroids
 		bool m_slide_viewport;
 		bool m_wrap_viewport;
 		bool m_enforce_boundaries;
-		bool m_is_exploding;
+		bool m_exploding;
 	};
 }
 #endif

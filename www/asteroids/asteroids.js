@@ -20,7 +20,7 @@ const SHIP_INV_DUR = 3;             // duration of the ship's invisibility in se
 const SHIP_SIZE = 20;               // ship height in pixels
 const SHIP_THRUST = 10;             // acceleration of the ship in pixels per second per second
 const SHIP_TURN_SPEED = 360;        // turn speed in degrees per second
-const SHOW_BOUNDING = false;        // show or hide collision bounding
+const SHOW_BOUNDING = true;        // show or hide collision bounding
 const TEXT_FADE_TIME = 2.5;         // text fade time in seconds
 const TEXT_SIZE = 40;               // text font height in pixels
 const FP_4_12 = 4096.0;              // convert to fixed point 4.12, specifically for angle scaling
@@ -38,6 +38,8 @@ var contextWidth;
 var contextHeight;
 var contextOffsetX;
 var contextOffsetY;
+
+var shipsFlags = 0;
 
 function newGame() {
     level = 0;
@@ -83,6 +85,7 @@ function newShip() {
         bullets: [],
         rot: 0,
         thrusting: false,
+        exploding: false,
         thrust: {
             x: 0,
             y: 0
@@ -292,7 +295,7 @@ function drawAsteroids() {
 
 function drawShipFully() {
     var blinkOn = ship.blinkNum % 2 == 0;
-    var exploding = ship.explodeTime > 0;
+    var exploding = ship.exploding; //ship.explodeTime > 0;
 
     // draw the triangular ship
     if (!exploding) {
@@ -313,28 +316,30 @@ function drawShipFully() {
             }
         }
 
-        if (ship.thrusting && !ship.dead) {
+        if (ship.thrusting) { // && !ship.dead) {
+            var x = ship.x - contextOffsetX;
+            var y = ship.y - contextOffsetY;
+
             // draw the thruster
             ctx.strokeStyle = "white";
             ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(
-                ship.x, ship.y
+                x, y
             );
             ctx.lineTo( // rear left
-                ship.x - ship.r * (2 / 3 * Math.cos(ship.a) + 0.5 * Math.sin(ship.a)),
-                ship.y + ship.r * (2 / 3 * Math.sin(ship.a) - 0.5 * Math.cos(ship.a))
+                x - ship.r * (2 / 3 * Math.cos(ship.a) + 0.5 * Math.sin(ship.a)),
+                y + ship.r * (2 / 3 * Math.sin(ship.a) - 0.5 * Math.cos(ship.a))
             );
             ctx.lineTo( // rear centre (behind the ship)
-                ship.x - ship.r * 5 / 3 * Math.cos(ship.a),
-                ship.y + ship.r * 5 / 3 * Math.sin(ship.a)
+                x - ship.r * 5 / 3 * Math.cos(ship.a),
+                y + ship.r * 5 / 3 * Math.sin(ship.a)
             );
             ctx.lineTo( // rear right
-                ship.x - ship.r * (2 / 3 * Math.cos(ship.a) - 0.5 * Math.sin(ship.a)),
-                ship.y + ship.r * (2 / 3 * Math.sin(ship.a) + 0.5 * Math.cos(ship.a))
+                x - ship.r * (2 / 3 * Math.cos(ship.a) - 0.5 * Math.sin(ship.a)),
+                y + ship.r * (2 / 3 * Math.sin(ship.a) + 0.5 * Math.cos(ship.a))
             );
             ctx.closePath();
-            ctx.fill();
             ctx.stroke();
         }
     } else {
@@ -360,6 +365,7 @@ function drawShipFully() {
         ctx.arc(ship.x, ship.y, ship.r * 0.5, 0, Math.PI * 2, false);
         ctx.fill();
 
+/*
         // reduce the explode time
         ship.explodeTime--;
 
@@ -373,12 +379,13 @@ function drawShipFully() {
                 ship = newShip();
             }
         }
+*/
     }
 
     if (SHOW_BOUNDING) {
         ctx.strokeStyle = "lime";
         ctx.beginPath();
-        ctx.arc(ship.x, ship.y, ship.r, 0, Math.PI * 2, false);
+        ctx.arc(ship.x - contextOffsetX, ship.y - contextOffsetY, ship.r, 0, Math.PI * 2, false);
         ctx.stroke();
     }
 }
@@ -841,6 +848,12 @@ function OnPlayerTickMessage(data) {
         update();
         return;
     }
+
+    shipsFlags = view.getUint16(offset);
+    offset += 2;
+
+    ship.thrusting = (shipsFlags & 0x0001) ? true : false;
+    ship.exploding = (shipsFlags & 0x0002) ? true : false;
 
     numBullets = view.getUint16(offset);
     offset += 2;

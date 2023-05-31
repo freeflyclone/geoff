@@ -31,7 +31,7 @@ Ship::Ship(uint16_t cw, uint16_t ch, double x, double y, double angle)
 	m_slide_viewport(true),
 	m_wrap_viewport(false),
 	m_enforce_boundaries(true),
-	m_is_exploding(false)
+	m_exploding(false)
 {
 	SH_TRACE(__FUNCTION__);
 }
@@ -52,7 +52,7 @@ void Ship::FireGuns()
 void Ship::Explode()
 {
 	SH_TRACE(__FUNCTION__);
-	m_is_exploding = true;
+	m_exploding = true;
 	deltaX = 0.0;
 	deltaY = 0.0;
 }
@@ -107,13 +107,13 @@ void Ship::TickEvent(Session& session)
 	if(m_gun)
 		m_gun->TickEvent(session);
 
-	if (m_is_exploding)
+	if (m_exploding)
 	{
 		m_explosion_duration -= SHIP_EXPLODE_DUR / FPS;
 		if (m_explosion_duration < 0)
 		{
 			m_explosion_duration = SHIP_EXPLODE_DUR;
-			m_is_exploding = false;
+			m_exploding = false;
 		}
 	}
 }

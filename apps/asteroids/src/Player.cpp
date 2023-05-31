@@ -128,7 +128,7 @@ void Player::TickEvent(Session& session)
 	ctxOY = m_ship.ctxOY;
 
 	// make an AppBuffer for user's browser
-	size_t outSize = 26;
+	size_t outSize = 28;
 
 	// Handle m_bullets from gun
 	std::unique_ptr<AppBuffer> bulletsBuffer;
@@ -156,13 +156,18 @@ void Player::TickEvent(Session& session)
 	txBuff->set_uint16(static_cast<uint16_t>(m_ship.posY));
 	txBuff->set_uint16(static_cast<uint16_t>(m_ship.angle * FP_4_12));
 
-	// default bullet count to 0
+	// popluate ships flags word
+	uint16_t flags = m_ship.IsThrusting() ? 1 : 0;
+			 flags |= m_ship.IsExploding() ? 0x02 : 0;
+	txBuff->set_uint16(flags);
+
+	// default bullet count to 0 (overwritten if #bullets > 0)
 	txBuff->set_uint16(0);
 
-	if (outSize > 26)
+	if (outSize > 28)
 	{
 		auto offset = txBuff->allocate(static_cast<int>(bulletsBuffer->size()));
-		txBuff->set_uint16(24, bulletsBuffer->get_uint16(0));
+		txBuff->set_uint16(26, bulletsBuffer->get_uint16(0));
 		memcpy(txBuff->data() + offset, bulletsBuffer->data() + 2, bulletsBuffer->size() - 2);
 	}
 
