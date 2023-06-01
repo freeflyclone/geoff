@@ -35,6 +35,7 @@ namespace asteroids
         bool m_up_down;
         bool m_down_down;
         bool m_shift_down;
+        bool m_manual_viewport;
     };
 }
 

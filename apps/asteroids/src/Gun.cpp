@@ -46,7 +46,7 @@ void Gun::Fire(Ship& ship)
 	m_bullets.emplace_back(std::make_unique<Bullet>(px, py, mvx, mvy));
 }
 
-std::unique_ptr<AppBuffer> Gun::MakeBulletsBuffer(Session& session)
+std::unique_ptr<AppBuffer> Gun::MakeBuffer(Session& session)
 {
 	GN_TRACE(__FUNCTION__);
 	if (m_bullets.size() == 0)

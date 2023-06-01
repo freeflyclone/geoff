@@ -27,7 +27,7 @@ namespace asteroids
 
         void TickEvent(Session&);
 
-        std::unique_ptr<AppBuffer> MakeBulletsBuffer(Session&);
+        std::unique_ptr<AppBuffer> MakeBuffer(Session&);
 
     private:
         BulletList_t m_bullets;
