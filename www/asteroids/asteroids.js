@@ -20,7 +20,7 @@ const SHIP_INV_DUR = 3;             // duration of the ship's invisibility in se
 const SHIP_SIZE = 20;               // ship height in pixels
 const SHIP_THRUST = 10;             // acceleration of the ship in pixels per second per second
 const SHIP_TURN_SPEED = 360;        // turn speed in degrees per second
-const SHOW_BOUNDING = true;        // show or hide collision bounding
+const SHOW_BOUNDING = false;        // show or hide collision bounding
 const TEXT_FADE_TIME = 2.5;         // text fade time in seconds
 const TEXT_SIZE = 40;               // text font height in pixels
 const FP_4_12 = 4096.0;              // convert to fixed point 4.12, specifically for angle scaling
@@ -322,7 +322,7 @@ function drawShipFully() {
         }
         */
 
-        if (ship.thrusting) { // && !ship.dead) {
+        if (ship.thrusting && !ship.dead) {
             // draw the thruster
             ctx.strokeStyle = "white";
             ctx.lineWidth = 1;
@@ -367,22 +367,6 @@ function drawShipFully() {
         ctx.beginPath();
         ctx.arc(posX, posY, ship.r * 0.5, 0, Math.PI * 2, false);
         ctx.fill();
-
-/*
-        // reduce the explode time
-        ship.explodeTime--;
-
-        // reset the ship after the explosion has finished
-        if (ship.explodeTime == 0) {
-            lives--;
-            if (lives <= 0) {
-                gameOver();
-            }
-            else {
-                ship = newShip();
-            }
-        }
-*/
     }
 
     if (SHOW_BOUNDING) {

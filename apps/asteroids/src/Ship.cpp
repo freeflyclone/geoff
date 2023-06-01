@@ -216,6 +216,9 @@ void Ship::MoveShip()
 {
 	//SH_TRACE(__FUNCTION__ << "Ship: " << posX << "," << posY << " - " << deltaX << "," << deltaY << ", angle: " << angle << ", " << (m_thrusting ? "thrusting" : ""));
 
+	if (m_exploding || m_dead)
+		return;
+
 	m_rotation = 0;
 	m_rotation += m_left ? SHIP_RADS_PER_TICK : 0;
 	m_rotation -= m_right ? SHIP_RADS_PER_TICK : 0;
