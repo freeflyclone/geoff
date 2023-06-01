@@ -215,6 +215,21 @@ void Ship::TickEvent(Session& session)
 			m_invulnerable = false;
 			SH_TRACE("Vulnerable now.");
 		}
+		else
+		{
+			// set visibility to JS drawShipFully
+			m_visible = m_blink_num % 2;
+
+			if (m_blink_num > 0)
+			{
+				m_blink_time--;
+				if (m_blink_time <= 0)
+				{
+					m_blink_time = SHIP_BLINK_DUR * FPS;
+					m_blink_num--;
+				}
+			}
+		}
 	}
 }
 
