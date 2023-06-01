@@ -68,6 +68,7 @@ void Ship::NewLife()
 	else
 	{
 		SH_TRACE("No lives left");
+		TRACE("Game over dude!");
 		m_dead = true;
 	}
 }
