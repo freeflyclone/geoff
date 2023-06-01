@@ -23,7 +23,8 @@ Player::Player(Session& session, double width, double height)
 	m_right_down(false),
 	m_up_down(false),
 	m_down_down(false),
-	m_shift_down(false)
+	m_shift_down(false),
+	m_manual_viewport(false)
 {
 	// initialize Context: our browser's window size and offset within the g_universe virtual size
 	ctxW = static_cast<uint16_t>(width);
@@ -102,25 +103,27 @@ void Player::ResizeEvent(int w, int h)
 
 void Player::TickEvent(Session& session)
 {
-	/*
-	int16_t deltaX = m_deltaX + (m_shift_down ? 10 : 0);
-	int16_t deltaY = m_deltaY + (m_shift_down ? 10 : 0);
+	// see KeyEvent - tl;dr vi navigation keys, shift = boost
+	if (m_manual_viewport)
+	{
+		int16_t deltaX = m_deltaX + (m_shift_down ? 10 : 0);
+		int16_t deltaY = m_deltaY + (m_shift_down ? 10 : 0);
 
-	if (ctxOX > deltaX)
-		ctxOX -= m_left_down ? deltaX : 0;
+		if (ctxOX > deltaX)
+			ctxOX -= m_left_down ? deltaX : 0;
 
-	if (ctxOX < static_cast<uint16_t>(g_universe->sizeW - sizeW - deltaX))
-		ctxOX += m_right_down ? deltaX : 0;
+		if (ctxOX < static_cast<uint16_t>(g_universe->sizeW - sizeW - deltaX))
+			ctxOX += m_right_down ? deltaX : 0;
 
-	if (ctxOY > deltaY)
-		ctxOY -= m_up_down ? deltaY : 0;
+		if (ctxOY > deltaY)
+			ctxOY -= m_up_down ? deltaY : 0;
 
-	if (ctxOY < static_cast<uint16_t>(g_universe->sizeH - sizeH - deltaY))
-		ctxOY += m_down_down ? deltaY : 0;
+		if (ctxOY < static_cast<uint16_t>(g_universe->sizeH - sizeH - deltaY))
+			ctxOY += m_down_down ? deltaY : 0;
 
-	m_ship.ctxOX = ctxOX;
-	m_ship.ctxOY = ctxOY;
-	*/
+		m_ship.ctxOX = ctxOX;
+		m_ship.ctxOY = ctxOY;
+	}
 
 	m_ship.TickEvent(session);
 
