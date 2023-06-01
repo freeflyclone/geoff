@@ -10,8 +10,8 @@
 
 using namespace asteroids;
 
-#undef SH_TRACE
-#define SH_TRACE TRACE
+//#undef SH_TRACE
+//#define SH_TRACE TRACE
 
 Ship::Ship(uint16_t cw, uint16_t ch, double x, double y, double angle)
 	:
@@ -46,6 +46,30 @@ Ship::Ship(uint16_t cw, uint16_t ch, double x, double y, double angle)
 Ship::~Ship()
 {
 	SH_TRACE(__FUNCTION__);
+}
+
+void Ship::NewLife()
+{
+	if (m_lives_left)
+	{
+		m_invulnerable = true;
+		m_explosion_duration = SHIP_EXPLODE_DUR;
+		m_inv_duration = SHIP_INV_DUR;
+		m_blink_time = SHIP_BLINK_DUR * FPS;
+		m_blink_num = static_cast<int>(SHIP_INV_DUR / SHIP_BLINK_DUR);
+		m_lives_left--;
+
+		posX = ctxOX + ctxW / 2;
+		posY = ctxOY + ctxH / 2;
+		deltaX = 0.0;
+		deltaY = 0.0;
+		angle = 90 * DEGREES_TO_RADS;
+	}
+	else
+	{
+		SH_TRACE("No lives left");
+		m_dead = true;
+	}
 }
 
 void Ship::FireGuns()
@@ -179,7 +203,7 @@ void Ship::TickEvent(Session& session)
 		{
 			m_explosion_duration = SHIP_EXPLODE_DUR;
 			m_exploding = false;
-			TRACE("Explosion done.");
+			SH_TRACE("Explosion done.");
 			NewLife();
 		}
 	}
@@ -189,26 +213,8 @@ void Ship::TickEvent(Session& session)
 		if (m_inv_duration < 0)
 		{
 			m_invulnerable = false;
-			TRACE("Vulnerable now.");
+			SH_TRACE("Vulnerable now.");
 		}
-	}
-}
-
-void Ship::NewLife()
-{
-	if (m_lives_left)
-	{
-		m_invulnerable = true;
-		m_explosion_duration = SHIP_EXPLODE_DUR;
-		m_inv_duration = SHIP_INV_DUR;
-		m_blink_time = SHIP_BLINK_DUR * FPS;
-		m_blink_num = static_cast<int>(SHIP_INV_DUR / SHIP_BLINK_DUR);
-		m_lives_left--;
-	}
-	else
-	{
-		TRACE("No lives left");
-		m_dead = true;
 	}
 }
 
