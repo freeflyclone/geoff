@@ -21,7 +21,8 @@ namespace asteroids
 		void FireGuns();
 		void Explode();
 		bool IsExploding() { return m_exploding; }
-		bool IsThrusting() { return m_thrusting; }
+
+		std::unique_ptr<AppBuffer> MakeBuffer(Session&);
 
 		void KeyEvent(int key, bool isDown);
 		void ResizeEvent(int w, int h);
@@ -42,6 +43,8 @@ namespace asteroids
 		bool m_wrap_viewport;
 		bool m_enforce_boundaries;
 		bool m_exploding;
+		bool m_visible;
+		bool m_dead;
 	};
 }
 #endif

@@ -127,52 +127,7 @@ void Player::TickEvent(Session& session)
 
 	m_ship.TickEvent(session);
 
-	ctxOX = m_ship.ctxOX;
-	ctxOY = m_ship.ctxOY;
-
-	// make an AppBuffer for user's browser
-	size_t outSize = 28;
-
-	// Handle m_bullets from gun
-	std::unique_ptr<AppBuffer> bulletsBuffer;
-	auto gun = m_ship.GetGun();
-
-	bulletsBuffer = gun->MakeBulletsBuffer(session);
-	if (bulletsBuffer.get())
-		outSize += bulletsBuffer->size();
-
-	auto txBuff = std::make_unique<AppBuffer>(outSize, session.IsLittleEndian());
-
-	txBuff->set_uint8(0xBB);
-	txBuff->set_uint8(static_cast<uint8_t>(WebsockSession::MessageType_t::PlayerTickMessage));
-	txBuff->set_uint32(session.SessionID());
-	txBuff->set_uint32(g_universe->GetTicks());
-
-	//TRACE(__FUNCTION__ << "ctxW: " << ctxW << ", ctxH: " << ctxH << ", ctxOX: " << ctxOX << ", ctxOY: " << ctxOY);
-
-	txBuff->set_uint16(ctxW);
-	txBuff->set_uint16(ctxH);
-	txBuff->set_uint16(ctxOX);
-	txBuff->set_uint16(ctxOY);
-
-	txBuff->set_uint16(static_cast<uint16_t>(m_ship.posX));
-	txBuff->set_uint16(static_cast<uint16_t>(m_ship.posY));
-	txBuff->set_uint16(static_cast<uint16_t>(m_ship.angle * FP_4_12));
-
-	// popluate ships flags word
-	uint16_t flags = m_ship.IsThrusting() ? 1 : 0;
-			 flags |= m_ship.IsExploding() ? 0x02 : 0;
-	txBuff->set_uint16(flags);
-
-	// default bullet count to 0 (overwritten if #bullets > 0)
-	txBuff->set_uint16(0);
-
-	if (outSize > 28)
-	{
-		auto offset = txBuff->allocate(static_cast<int>(bulletsBuffer->size()));
-		txBuff->set_uint16(26, bulletsBuffer->get_uint16(0));
-		memcpy(txBuff->data() + offset, bulletsBuffer->data() + 2, bulletsBuffer->size() - 2);
-	}
+	auto txBuff = m_ship.MakeBuffer(session);
 
 	session.CommitTxBuffer(txBuff);
 }

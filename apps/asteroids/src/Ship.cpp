@@ -31,7 +31,9 @@ Ship::Ship(uint16_t cw, uint16_t ch, double x, double y, double angle)
 	m_slide_viewport(true),
 	m_wrap_viewport(false),
 	m_enforce_boundaries(true),
-	m_exploding(false)
+	m_exploding(false),
+	m_visible(true),
+	m_dead(false)
 {
 	SH_TRACE(__FUNCTION__);
 }
@@ -55,6 +57,61 @@ void Ship::Explode()
 	m_exploding = true;
 	deltaX = 0.0;
 	deltaY = 0.0;
+}
+
+std::unique_ptr<AppBuffer> Ship::MakeBuffer(Session& session)
+{
+	// make an AppBuffer for user's browser (at least the header)
+	size_t outSize = 28;
+
+	// Handle m_bullets from gun
+	std::unique_ptr<AppBuffer> bulletsBuffer;
+
+	// bullets present increase total size of output buffer
+	bulletsBuffer = m_gun->MakeBuffer(session);
+	if (bulletsBuffer.get())
+		outSize += bulletsBuffer->size();
+
+	// get properly sized output buffer
+	auto txBuff = std::make_unique<AppBuffer>(outSize, session.IsLittleEndian());
+
+	// start with Message start, Message type, session ID, tick count
+	txBuff->set_uint8(0xBB);
+	txBuff->set_uint8(static_cast<uint8_t>(WebsockSession::MessageType_t::PlayerTickMessage));
+	txBuff->set_uint32(session.SessionID());
+	txBuff->set_uint32(g_universe->GetTicks());
+
+	//TRACE(__FUNCTION__ << "ctxW: " << ctxW << ", ctxH: " << ctxH << ", ctxOX: " << ctxOX << ", ctxOY: " << ctxOY);
+
+	// support sliding viewport
+	txBuff->set_uint16(ctxW);
+	txBuff->set_uint16(ctxH);
+	txBuff->set_uint16(ctxOX);
+	txBuff->set_uint16(ctxOY);
+
+	// ship position, orientation
+	txBuff->set_uint16(static_cast<uint16_t>(posX));
+	txBuff->set_uint16(static_cast<uint16_t>(posY));
+	txBuff->set_uint16(static_cast<uint16_t>(angle * FP_4_12));
+
+	// ship's flags word
+	uint16_t flags = m_thrusting ? 1 : 0;
+	flags |= m_exploding ? 0x02 : 0;
+	txBuff->set_uint16(flags);
+
+	// default bullet count to 0 (overwritten if #bullets > 0)
+	txBuff->set_uint16(0);
+
+	// are there bullets?
+	if (outSize > 28)
+	{
+		// change bytesWritten, overwrite bullet count, add bullet data
+		auto offset = txBuff->allocate(static_cast<int>(bulletsBuffer->size()));
+		txBuff->set_uint16(26, bulletsBuffer->get_uint16(0));
+		memcpy(txBuff->data() + offset, bulletsBuffer->data() + 2, bulletsBuffer->size() - 2);
+	}
+
+	return txBuff;
 }
 
 void Ship::KeyEvent(int key, bool isDown)
