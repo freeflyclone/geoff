@@ -63,6 +63,10 @@ uint32_t Timer::GetTick()
 
 void Timer::TickEvent()
 {
+	//const std::chrono::time_point now = std::chrono::system_clock::now();
+	//auto uSec = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch());
+	//TRACE("now: " << uSec.count());
+
 	TM_TRACE(__FUNCTION__);
 
 	if (!m_run_timer)

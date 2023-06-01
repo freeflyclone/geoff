@@ -21,6 +21,7 @@ namespace asteroids
 		void FireGuns();
 		void Explode();
 		bool IsExploding() { return m_exploding; }
+		bool Vulnerable() { return !m_invulnerable; }
 
 		std::unique_ptr<AppBuffer> MakeBuffer(Session&);
 
@@ -29,6 +30,7 @@ namespace asteroids
 		void TickEvent(Session&);
 
 	private:
+		void NewLife();
 		void MoveShip();
 
 		std::unique_ptr<Gun> m_gun;
@@ -36,6 +38,10 @@ namespace asteroids
 		double m_max_delta_v;
 		double m_viewport_margin;
 		double m_explosion_duration;
+		double m_inv_duration;
+		double m_blink_time;
+		int m_blink_num;
+		int m_lives_left;
 		bool m_thrusting;
 		bool m_left;
 		bool m_right;
@@ -45,6 +51,7 @@ namespace asteroids
 		bool m_exploding;
 		bool m_visible;
 		bool m_dead;
+		bool m_invulnerable;
 	};
 }
 #endif

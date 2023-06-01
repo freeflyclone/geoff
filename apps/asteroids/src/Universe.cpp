@@ -36,7 +36,7 @@ namespace asteroids
 Universe::Universe(int width, int height)
 	: Size({ static_cast<double>(width), static_cast<double>(height) }),
 	m_rockField(std::make_unique<RockField>(width, height)),
-	m_timer(std::make_unique<Timer>(1000000 / FPS)),
+	m_timer(std::make_unique<Timer>(1000000 / static_cast<int>(FPS))),
 	m_ticks(0),
 	m_stars()
 {
@@ -133,7 +133,7 @@ void Universe::CollisionDetection()
 			collidedBullets.clear();
 
 			auto ship = player->GetShip();
-			if (!ship->IsExploding())
+			if (!ship->IsExploding() && ship->Vulnerable())
 			{
 				auto distance = DistanceBetweenPoints(*rock, *ship);
 

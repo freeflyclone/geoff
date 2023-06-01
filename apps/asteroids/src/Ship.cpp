@@ -25,6 +25,10 @@ Ship::Ship(uint16_t cw, uint16_t ch, double x, double y, double angle)
 	m_max_delta_v(SHIP_MAX_DELTA_V),
 	m_viewport_margin(VIEWPORT_MARGIN),
 	m_explosion_duration(SHIP_EXPLODE_DUR),
+	m_inv_duration(SHIP_INV_DUR),
+	m_blink_time(SHIP_BLINK_DUR * FPS),
+	m_blink_num(static_cast<int>(SHIP_INV_DUR / SHIP_BLINK_DUR)),
+	m_lives_left(5),
 	m_thrusting(false),
 	m_left(false),
 	m_right(false),
@@ -33,7 +37,8 @@ Ship::Ship(uint16_t cw, uint16_t ch, double x, double y, double angle)
 	m_enforce_boundaries(true),
 	m_exploding(false),
 	m_visible(true),
-	m_dead(false)
+	m_dead(false),
+	m_invulnerable(true)
 {
 	SH_TRACE(__FUNCTION__);
 }
@@ -97,9 +102,12 @@ std::unique_ptr<AppBuffer> Ship::MakeBuffer(Session& session)
 	// ship's flags word
 	uint16_t flags = m_thrusting ? 1 : 0;
 	flags |= m_exploding ? 0x02 : 0;
+	flags |= m_visible ? 0x04 : 0;
+	flags |= m_dead ? 0x08 : 0;
+
 	txBuff->set_uint16(flags);
 
-	// default bullet count to 0 (overwritten if #bullets > 0)
+	// default bullet count: 0 (overwritten if #bullets > 0)
 	txBuff->set_uint16(0);
 
 	// are there bullets?
@@ -166,12 +174,41 @@ void Ship::TickEvent(Session& session)
 
 	if (m_exploding)
 	{
-		m_explosion_duration -= SHIP_EXPLODE_DUR / FPS;
+		m_explosion_duration -= 1 / FPS;
 		if (m_explosion_duration < 0)
 		{
 			m_explosion_duration = SHIP_EXPLODE_DUR;
 			m_exploding = false;
+			TRACE("Explosion done.");
+			NewLife();
 		}
+	}
+	else if (m_invulnerable)
+	{
+		m_inv_duration -= 1 / FPS;
+		if (m_inv_duration < 0)
+		{
+			m_invulnerable = false;
+			TRACE("Vulnerable now.");
+		}
+	}
+}
+
+void Ship::NewLife()
+{
+	if (m_lives_left)
+	{
+		m_invulnerable = true;
+		m_explosion_duration = SHIP_EXPLODE_DUR;
+		m_inv_duration = SHIP_INV_DUR;
+		m_blink_time = SHIP_BLINK_DUR * FPS;
+		m_blink_num = static_cast<int>(SHIP_INV_DUR / SHIP_BLINK_DUR);
+		m_lives_left--;
+	}
+	else
+	{
+		TRACE("No lives left");
+		m_dead = true;
 	}
 }
 

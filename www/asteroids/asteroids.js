@@ -59,7 +59,7 @@ function newGame() {
 }
 
 function gameOver() {
-    ship.dead = true;
+    //ship.dead = true;
     text = "Game Over";
     textAlpha = 1.0;
 }
@@ -86,6 +86,7 @@ function newShip() {
         rot: 0,
         thrusting: false,
         exploding: false,
+        visible: false,
         thrust: {
             x: 0,
             y: 0
@@ -294,16 +295,20 @@ function drawAsteroids() {
 }
 
 function drawShipFully() {
-    var blinkOn = ship.blinkNum % 2 == 0;
+    var blinkOn = ship.visible; //ship.blinkNum % 2 == 0;
     var exploding = ship.exploding; //ship.explodeTime > 0;
+
+    var posX = ship.x - contextOffsetX;
+    var posY = ship.y - contextOffsetY;
 
     // draw the triangular ship
     if (!exploding) {
         if (blinkOn && !ship.dead) {
-            drawShip(ship.x - contextOffsetX, ship.y - contextOffsetY, ship.a)
+            drawShip(posX, posY, ship.a)
         }
 
         // handle blinking
+        /*
         if (ship.blinkNum > 0) {
 
             // reduce the blink time
@@ -315,29 +320,27 @@ function drawShipFully() {
                 ship.blinkNum--;
             }
         }
+        */
 
         if (ship.thrusting) { // && !ship.dead) {
-            var x = ship.x - contextOffsetX;
-            var y = ship.y - contextOffsetY;
-
             // draw the thruster
             ctx.strokeStyle = "white";
             ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(
-                x, y
+                posX, posY
             );
             ctx.lineTo( // rear left
-                x - ship.r * (2 / 3 * Math.cos(ship.a) + 0.5 * Math.sin(ship.a)),
-                y + ship.r * (2 / 3 * Math.sin(ship.a) - 0.5 * Math.cos(ship.a))
+                posX - ship.r * (2 / 3 * Math.cos(ship.a) + 0.5 * Math.sin(ship.a)),
+                posY + ship.r * (2 / 3 * Math.sin(ship.a) - 0.5 * Math.cos(ship.a))
             );
             ctx.lineTo( // rear centre (behind the ship)
-                x - ship.r * 5 / 3 * Math.cos(ship.a),
-                y + ship.r * 5 / 3 * Math.sin(ship.a)
+                posX - ship.r * 5 / 3 * Math.cos(ship.a),
+                posY + ship.r * 5 / 3 * Math.sin(ship.a)
             );
             ctx.lineTo( // rear right
-                x - ship.r * (2 / 3 * Math.cos(ship.a) - 0.5 * Math.sin(ship.a)),
-                y + ship.r * (2 / 3 * Math.sin(ship.a) + 0.5 * Math.cos(ship.a))
+                posX - ship.r * (2 / 3 * Math.cos(ship.a) - 0.5 * Math.sin(ship.a)),
+                posY + ship.r * (2 / 3 * Math.sin(ship.a) + 0.5 * Math.cos(ship.a))
             );
             ctx.closePath();
             ctx.stroke();
@@ -346,23 +349,23 @@ function drawShipFully() {
         // draw the explosion (concentric circles of different colours)
         ctx.fillStyle = "darkred";
         ctx.beginPath();
-        ctx.arc(ship.x, ship.y, ship.r * 1.7, 0, Math.PI * 2, false);
+        ctx.arc(posX, posY, ship.r * 1.7, 0, Math.PI * 2, false);
         ctx.fill();
         ctx.fillStyle = "red";
         ctx.beginPath();
-        ctx.arc(ship.x, ship.y, ship.r * 1.4, 0, Math.PI * 2, false);
+        ctx.arc(posX, posY, ship.r * 1.4, 0, Math.PI * 2, false);
         ctx.fill();
         ctx.fillStyle = "orange";
         ctx.beginPath();
-        ctx.arc(ship.x, ship.y, ship.r * 1.1, 0, Math.PI * 2, false);
+        ctx.arc(posX, posY, ship.r * 1.1, 0, Math.PI * 2, false);
         ctx.fill();
         ctx.fillStyle = "yellow";
         ctx.beginPath();
-        ctx.arc(ship.x, ship.y, ship.r * 0.8, 0, Math.PI * 2, false);
+        ctx.arc(posX, posY, ship.r * 0.8, 0, Math.PI * 2, false);
         ctx.fill();
         ctx.fillStyle = "white";
         ctx.beginPath();
-        ctx.arc(ship.x, ship.y, ship.r * 0.5, 0, Math.PI * 2, false);
+        ctx.arc(posX, posY, ship.r * 0.5, 0, Math.PI * 2, false);
         ctx.fill();
 
 /*
@@ -385,7 +388,7 @@ function drawShipFully() {
     if (SHOW_BOUNDING) {
         ctx.strokeStyle = "lime";
         ctx.beginPath();
-        ctx.arc(ship.x - contextOffsetX, ship.y - contextOffsetY, ship.r, 0, Math.PI * 2, false);
+        ctx.arc(posX, posY, ship.r, 0, Math.PI * 2, false);
         ctx.stroke();
     }
 }
@@ -854,6 +857,8 @@ function OnPlayerTickMessage(data) {
 
     ship.thrusting = (shipsFlags & 0x0001) ? true : false;
     ship.exploding = (shipsFlags & 0x0002) ? true : false;
+    ship.visible = (shipsFlags & 0x0004) ? true : false;
+    ship.dead = (shipsFlags & 0x0008) ? true : false;
 
     numBullets = view.getUint16(offset);
     offset += 2;
