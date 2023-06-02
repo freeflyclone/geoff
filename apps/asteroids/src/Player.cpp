@@ -56,11 +56,11 @@ std::unique_ptr<AppBuffer> Player::MakeBuffer(Session& session)
 
 	//TRACE(__FUNCTION__ << "ctxW: " << ctxW << ", ctxH: " << ctxH << ", ctxOX: " << ctxOX << ", ctxOY: " << ctxOY);
 
-	// support sliding viewport
-	txBuff->set_uint16(ctxW);
-	txBuff->set_uint16(ctxH);
-	txBuff->set_uint16(ctxOX);
-	txBuff->set_uint16(ctxOY);
+	// support sliding viewport (allowing ship to move it)
+	txBuff->set_uint16(m_ship.ctxW);
+	txBuff->set_uint16(m_ship.ctxH);
+	txBuff->set_uint16(m_ship.ctxOX);
+	txBuff->set_uint16(m_ship.ctxOY);
 
 	return txBuff;
 }
@@ -152,9 +152,9 @@ void Player::TickEvent(Session& session)
 
 	m_ship.TickEvent(session);
 
-	// TODO: bring back PlayerTickMessage header generation to this function.
-	auto txPlayerTickHeader = MakeBuffer(session);
+	// make Ship buffer first, Player viewport (ctx) position is dependency
 	auto txShipBuff = m_ship.MakeBuffer(session);
+	auto txPlayerTickHeader = MakeBuffer(session);
 
 	auto txBuff = std::make_unique<AppBuffer>(*txPlayerTickHeader, *txShipBuff, session.IsLittleEndian());
 
