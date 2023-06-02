@@ -734,7 +734,7 @@ function update() {
     drawRadar();
 
     //drawLasers();
-    //drawGameInfo();
+    drawGameInfo();
     //draw_tic_text();
 
     //detectLaserAsteroidHit();

@@ -91,33 +91,20 @@ void Ship::Explode()
 
 std::unique_ptr<AppBuffer> Ship::MakeBuffer(Session& session)
 {
-	// make an AppBuffer for user's browser (at least the header)
-	size_t outSize = 28;
+	// for ship's X,Y,ANGLE,FLAGS, BULLET_COUNT
+	const size_t minHeaderSize = 10;
+	size_t outSize = minHeaderSize;
 
 	// Handle m_bullets from gun
 	std::unique_ptr<AppBuffer> bulletsBuffer;
 
-	// bullets present increase total size of output buffer
+	// bullets present increases total size of output buffer
 	bulletsBuffer = m_gun->MakeBuffer(session);
 	if (bulletsBuffer.get())
 		outSize += bulletsBuffer->size();
 
 	// get properly sized output buffer
 	auto txBuff = std::make_unique<AppBuffer>(outSize, session.IsLittleEndian());
-
-	// start with Message start, Message type, session ID, tick count
-	txBuff->set_uint8(0xBB);
-	txBuff->set_uint8(static_cast<uint8_t>(WebsockSession::MessageType_t::PlayerTickMessage));
-	txBuff->set_uint32(session.SessionID());
-	txBuff->set_uint32(g_universe->GetTicks());
-
-	//TRACE(__FUNCTION__ << "ctxW: " << ctxW << ", ctxH: " << ctxH << ", ctxOX: " << ctxOX << ", ctxOY: " << ctxOY);
-
-	// support sliding viewport
-	txBuff->set_uint16(ctxW);
-	txBuff->set_uint16(ctxH);
-	txBuff->set_uint16(ctxOX);
-	txBuff->set_uint16(ctxOY);
 
 	// ship position, orientation
 	txBuff->set_uint16(static_cast<uint16_t>(posX));
@@ -126,21 +113,20 @@ std::unique_ptr<AppBuffer> Ship::MakeBuffer(Session& session)
 
 	// ship's flags word
 	uint16_t flags = m_thrusting ? 1 : 0;
-	flags |= m_exploding ? 0x02 : 0;
-	flags |= m_visible ? 0x04 : 0;
-	flags |= m_dead ? 0x08 : 0;
-
+	    flags |= m_exploding ? 0x02 : 0;
+	    flags |= m_visible ? 0x04 : 0;
+	    flags |= m_dead ? 0x08 : 0;
 	txBuff->set_uint16(flags);
 
 	// default bullet count: 0 (overwritten if #bullets > 0)
 	txBuff->set_uint16(0);
 
 	// are there bullets?
-	if (outSize > 28)
+	if (outSize > minHeaderSize)
 	{
 		// change bytesWritten, overwrite bullet count, add bullet data
 		auto offset = txBuff->allocate(static_cast<int>(bulletsBuffer->size()));
-		txBuff->set_uint16(26, bulletsBuffer->get_uint16(0));
+		txBuff->set_uint16(minHeaderSize - sizeof(uint16_t), bulletsBuffer->get_uint16(0));
 		memcpy(txBuff->data() + offset, bulletsBuffer->data() + 2, bulletsBuffer->size() - 2);
 	}
 
