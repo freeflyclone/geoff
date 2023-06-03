@@ -112,11 +112,12 @@ std::unique_ptr<AppBuffer> Ship::MakeBuffer(Session& session)
 	txBuff->set_uint16(static_cast<uint16_t>(angle * FP_4_12));
 
 	// ship's flags word
-	uint16_t flags = m_thrusting ? 1 : 0;
+	uint8_t flags = m_thrusting ? 1 : 0;
 	    flags |= m_exploding ? 0x02 : 0;
 	    flags |= m_visible ? 0x04 : 0;
 	    flags |= m_dead ? 0x08 : 0;
-	txBuff->set_uint16(flags);
+	txBuff->set_uint8(flags);
+	txBuff->set_uint8(static_cast<uint8_t>(m_lives_left));
 
 	// default bullet count: 0 (overwritten if #bullets > 0)
 	txBuff->set_uint16(0);

@@ -549,7 +549,7 @@ function drawRadar() {
 }
 
 function drawGameInfo() {
-    var exploding = ship.explodeTime > 0;
+    var exploding = ship.exploding;
 
     // draw the game text
     if (textAlpha >= 0) {
@@ -839,13 +839,16 @@ function OnPlayerTickMessage(data) {
         return;
     }
 
-    shipsFlags = view.getUint16(offset);
-    offset += 2;
+    shipsFlags = view.getUint8(offset);
+    offset += 1;
 
     ship.thrusting = (shipsFlags & 0x0001) ? true : false;
     ship.exploding = (shipsFlags & 0x0002) ? true : false;
     ship.visible = (shipsFlags & 0x0004) ? true : false;
     ship.dead = (shipsFlags & 0x0008) ? true : false;
+
+    lives = view.getUint8(offset);
+    offset += 1;
 
     numBullets = view.getUint16(offset);
     offset += 2;
