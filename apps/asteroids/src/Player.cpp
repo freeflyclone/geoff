@@ -19,7 +19,7 @@ Player::Player(double width, double height)
 	m_deltaX(1),
 	m_deltaY(1),
 	m_score(0),
-	m_phase(0)
+	m_phase(InLobby)
 {
 	// initialize Context: our browser's window size and offset within the g_universe virtual size
 	ctxW = static_cast<uint16_t>(width);
@@ -71,6 +71,13 @@ std::unique_ptr<AppBuffer> Player::MakeBuffer(Session& session)
 void Player::KeyEvent(int key, bool isDown)
 {
 	m_ship.KeyEvent(key, isDown);
+
+	if (isDown && m_phase == InLobby)
+	{
+		m_phase = Playing;
+		TRACE("Phase: " << m_phase);
+		m_ship.NewLife();
+	}
 }
 
 void Player::ClickEvent(int clickX, int clickY)
@@ -105,6 +112,11 @@ void Player::TickEvent(Session& session)
 	ctxOY = m_ship.ctxOY;
 
 	m_ship.TickEvent(session);
+
+	if (m_ship.Dead() && m_phase == Playing)
+	{
+		m_phase = GameOver;
+	}
 
 	// make Ship buffer first, Player viewport (ctx) position is dependency
 	auto txShipBuff = m_ship.MakeBuffer(session);

@@ -332,9 +332,6 @@ function drawGameInfo() {
         ctx.font = "small-caps " + TEXT_SIZE + "px dejavu sans mono";
         ctx.fillText(text, canv.width / 2, canv.height * 0.75);
         textAlpha -= (1.0 / TEXT_FADE_TIME / FPS);
-    } else if (ship.dead) {
-        // after "game over" fades, start a new game
-        newGame();
     }
 
     // draw the lives
@@ -418,6 +415,11 @@ function drawLobby() {
     ctx.textAlign = "left";
     ctx.font = TEXT_SIZE / 2 + "px helvitica";
     ctx.fillText("Launch rock at mouse position", anchorX, anchorY + offsetY);
+
+    offsetY += TEXT_SIZE * 2;
+    ctx.textAlign = "right";
+    ctx.font = TEXT_SIZE / 2 + "px helvitica";
+    ctx.fillText("Press any key to begin...", anchorX, anchorY + offsetY);
 }
 
 function update() {

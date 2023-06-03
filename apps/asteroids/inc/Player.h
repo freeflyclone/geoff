@@ -12,6 +12,13 @@ namespace asteroids
     class Player : public Context, public Size
     {
     public:
+        enum GamePhase
+        {
+            InLobby = 0,
+            Playing = 1,
+            GameOver = 2
+        };
+
         Player(double width, double height);
         ~Player();
 
