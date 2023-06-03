@@ -28,7 +28,7 @@ Ship::Ship(uint16_t cw, uint16_t ch, double x, double y, double angle)
 	m_inv_duration(SHIP_INV_DUR),
 	m_blink_time(SHIP_BLINK_DUR * FPS),
 	m_blink_num(static_cast<int>(SHIP_INV_DUR / SHIP_BLINK_DUR)),
-	m_lives_left(5),
+	m_lives_left(NUM_LIVES),
 	m_thrusting(false),
 	m_left(false),
 	m_right(false),
@@ -48,6 +48,14 @@ Ship::~Ship()
 	SH_TRACE(__FUNCTION__);
 }
 
+void Ship::Resurrect() 
+{ 
+	m_dead = false; 
+	m_lives_left = 1; 
+	NewLife();
+	m_lives_left = NUM_LIVES;
+}
+
 void Ship::NewLife()
 {
 	if (m_lives_left)
@@ -57,6 +65,10 @@ void Ship::NewLife()
 		m_inv_duration = SHIP_INV_DUR;
 		m_blink_time = SHIP_BLINK_DUR * FPS;
 		m_blink_num = static_cast<int>(SHIP_INV_DUR / SHIP_BLINK_DUR);
+		m_exploding = false;
+		m_visible = true;
+		m_dead = false;
+		m_invulnerable = true;
 		m_lives_left--;
 
 		posX = ctxOX + ctxW / 2;
@@ -68,7 +80,6 @@ void Ship::NewLife()
 	else
 	{
 		SH_TRACE("No lives left");
-		TRACE("Game over dude!");
 		m_dead = true;
 	}
 }
