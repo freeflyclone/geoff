@@ -819,6 +819,9 @@ function OnPlayerTickMessage(data) {
     contextOffsetY = view.getUint16(offset);
     offset += 2;
 
+    score = view.getUint32(offset);
+    offset += 4;
+
     shipX = view.getUint16(offset);
     offset += 2;
 

@@ -148,7 +148,22 @@ void Universe::CollisionDetection()
 		}
 
 		for (auto& rock : collidedRocks)
- 			m_rockField->DestroyRock(rock);
+		{
+			if ((*rock)->Radius() >= ROCK_RADIUS)
+			{
+				player->AddToScore(20);
+			}
+			else if ((*rock)->Radius() >= ROCK_RADIUS / 2)
+			{
+				player->AddToScore(50);
+			}
+			else if ((*rock)->Radius() >= ROCK_RADIUS / 4)
+			{
+				player->AddToScore(100);
+			}
+
+			m_rockField->DestroyRock(rock);
+		}
 		collidedRocks.clear();
 	}
 }

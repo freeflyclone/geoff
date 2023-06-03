@@ -18,6 +18,8 @@ namespace asteroids
         Ship* GetShip() { return &m_ship; }
         Session* GetSession() { return &m_session; }
 
+        void AddToScore(uint32_t increment);
+        
         std::unique_ptr<AppBuffer> MakeBuffer(Session&);
 
         void KeyEvent(int key, bool isDown);

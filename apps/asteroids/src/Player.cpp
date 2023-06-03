@@ -19,6 +19,7 @@ Player::Player(Session& session, double width, double height)
 	m_ship(static_cast<uint16_t>(width), static_cast<uint16_t>(height), g_universe->sizeW / 2, g_universe->sizeH / 2, 90 * DEGREES_TO_RADS),
 	m_deltaX(1),
 	m_deltaY(1),
+	m_score(0),
 	m_left_down(false),
 	m_right_down(false),
 	m_up_down(false),
@@ -40,10 +41,15 @@ Player::~Player()
 	TRACE(__FUNCTION__);
 }
 
+void Player::AddToScore(uint32_t increment)
+{
+	m_score += increment;
+}
+
 std::unique_ptr<AppBuffer> Player::MakeBuffer(Session& session)
 {
 	// make an AppBuffer(PlayerTickMessage) header for user's JS engine
-	size_t outSize = 18;
+	size_t outSize = 22;
 
 	// get properly sized output buffer
 	auto txBuff = std::make_unique<AppBuffer>(outSize, session.IsLittleEndian());
@@ -61,6 +67,8 @@ std::unique_ptr<AppBuffer> Player::MakeBuffer(Session& session)
 	txBuff->set_uint16(m_ship.ctxH);
 	txBuff->set_uint16(m_ship.ctxOX);
 	txBuff->set_uint16(m_ship.ctxOY);
+
+	txBuff->set_uint32(m_score);
 
 	return txBuff;
 }
@@ -103,8 +111,8 @@ void Player::KeyEvent(int key, bool isDown)
 
 void Player::ClickEvent(int clickX, int clickY)
 {
-	int universeClickX = clickX + static_cast<int>(Context::ctxOX);
-	int universeClickY = clickY + static_cast<int>(Context::ctxOY);
+	int universeClickX = clickX + static_cast<int>(m_ship.ctxOX);
+	int universeClickY = clickY + static_cast<int>(m_ship.ctxOY);
 
 	PL_TRACE("clickX: " << clickX << ", clickY: " << clickY << "ucX: " << universeClickX << ", ucY: " << universeClickY);
 
