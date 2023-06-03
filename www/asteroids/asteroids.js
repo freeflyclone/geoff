@@ -151,7 +151,7 @@ function drawShipFully() {
             ctx.closePath();
             ctx.stroke();
         }
-    } else {
+    } else if (!ship.dead) {
         // draw the explosion (concentric circles of different colours)
         ctx.fillStyle = "darkred";
         ctx.beginPath();
@@ -363,63 +363,66 @@ function drawLobby() {
 
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillStyle = "rgba(255, 255, 127,255)";
+    ctx.fillStyle = "rgba(255, 127, 63, 255)";
     ctx.font = TEXT_SIZE + "px arial";
     ctx.fillText("Multiplayer Asteroids", anchorX, anchorY);
 
-    ctx.textAlign = "right";
-    ctx.font = TEXT_SIZE / 2 + "px helvetica";
-    ctx.fillText("Key Map: ", anchorX, anchorY + offsetY);
-
     offsetY += TEXT_SIZE;
     ctx.textAlign = "right";
-    ctx.font = TEXT_SIZE / 2 + "px helvitica";
+    ctx.font = (TEXT_SIZE * 0.5) + "px arial";
     ctx.fillText("A, a, Left Arrow: ", anchorX, anchorY + offsetY);
 
     ctx.textAlign = "left";
-    ctx.font = TEXT_SIZE / 2 + "px helvitica";
     ctx.fillText("Rotate ship counter-clockwise", anchorX, anchorY + offsetY);
 
     offsetY += TEXT_SIZE / 2;
     ctx.textAlign = "right";
-    ctx.font = TEXT_SIZE / 2 + "px helvitica";
     ctx.fillText("D, d, Right Arrow: ", anchorX, anchorY + offsetY);
 
     ctx.textAlign = "left";
-    ctx.font = TEXT_SIZE / 2 + "px helvitica";
     ctx.fillText("Rotate ship clockwise", anchorX, anchorY + offsetY);
 
     offsetY += TEXT_SIZE / 2;
     ctx.textAlign = "right";
-    ctx.font = TEXT_SIZE / 2 + "px helvitica";
     ctx.fillText("W, w, I, i, Up Arrow: ", anchorX, anchorY + offsetY);
 
     ctx.textAlign = "left";
-    ctx.font = TEXT_SIZE / 2 + "px helvitica";
     ctx.fillText("Ship Thrust", anchorX, anchorY + offsetY);
 
     offsetY += TEXT_SIZE / 2;
     ctx.textAlign = "right";
-    ctx.font = TEXT_SIZE / 2 + "px helvitica";
     ctx.fillText("Space bar: ", anchorX, anchorY + offsetY);
 
     ctx.textAlign = "left";
-    ctx.font = TEXT_SIZE / 2 + "px helvitica";
     ctx.fillText("Fire bullet", anchorX, anchorY + offsetY);
 
     offsetY += TEXT_SIZE;
     ctx.textAlign = "right";
-    ctx.font = TEXT_SIZE / 2 + "px helvitica";
     ctx.fillText("Click: ", anchorX, anchorY + offsetY);
 
     ctx.textAlign = "left";
-    ctx.font = TEXT_SIZE / 2 + "px helvitica";
     ctx.fillText("Launch rock at mouse position", anchorX, anchorY + offsetY);
 
     offsetY += TEXT_SIZE * 2;
     ctx.textAlign = "right";
-    ctx.font = TEXT_SIZE / 2 + "px helvitica";
     ctx.fillText("Press any key to begin...", anchorX, anchorY + offsetY);
+}
+
+function drawGameOver() {
+    var anchorX = canv.width / 2;
+    var anchorY = canv.height * 0.5
+    var offsetY = TEXT_SIZE;
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "rgba(255, 127, 63, 255)";
+    ctx.font = TEXT_SIZE + "px arial";
+    ctx.fillText("Game Over", anchorX, anchorY);
+
+    offsetY += TEXT_SIZE;
+    ctx.textAlign = "center";
+    ctx.font = TEXT_SIZE / 2 + "px helvitica";
+    ctx.fillText("Press any key to play again...", anchorX, anchorY + offsetY);
 }
 
 function update() {
@@ -436,6 +439,7 @@ function update() {
 
         case GamePhase.GameOver:
             console.log("GameOver");
+            drawGameOver();
             break;
     }
 
@@ -448,6 +452,9 @@ function update() {
     drawRadar();
 
     drawGameInfo();
+
+    if (phase == GamePhase.GameOver)
+        drawGameOver();
 }
 
 // this game now depends on a steady timer tick Websock message 

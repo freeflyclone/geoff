@@ -6,6 +6,8 @@
 
 #define SH_TRACE(...)
 
+#include "Consts.h"
+
 namespace asteroids
 {
 	class Gun;
@@ -23,7 +25,7 @@ namespace asteroids
 		bool IsExploding() { return m_exploding; }
 		bool Vulnerable() { return !m_invulnerable; }
 		bool Dead() { return m_dead; }
-		void NewLife();
+		void Resurrect();
 
 		std::unique_ptr<AppBuffer> MakeBuffer(Session&);
 
@@ -33,6 +35,7 @@ namespace asteroids
 
 	private:
 		void MoveShip();
+		void NewLife();
 
 		std::unique_ptr<Gun> m_gun;
 		double m_rotation;

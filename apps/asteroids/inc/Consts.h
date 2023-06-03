@@ -25,6 +25,7 @@ namespace asteroids
 	const double DEGREES_TO_RADS = M_PI / 180;
 	const double VIEWPORT_MARGIN = 200;		  // in pixels: for sliding viewport activation
 	const int NUM_STARS = 1600;
+	const int NUM_LIVES = 5;
 }
 
 #endif

@@ -72,11 +72,16 @@ void Player::KeyEvent(int key, bool isDown)
 {
 	m_ship.KeyEvent(key, isDown);
 
-	if (isDown && m_phase == InLobby)
+	if (isDown && m_phase != Playing)
 	{
+		auto old_phase = m_phase;
 		m_phase = Playing;
-		TRACE("Phase: " << m_phase);
-		m_ship.NewLife();
+		PL_TRACE("Old phase: " << old_phase << ", New phase: " << m_phase);
+		if (m_ship.Dead())
+		{
+			m_score = 0;
+			m_ship.Resurrect();
+		}
 	}
 }
 
@@ -107,11 +112,14 @@ void Player::ResizeEvent(int w, int h)
 
 void Player::TickEvent(Session& session)
 {
-	// let Ship Context position move Player context postion
-	ctxOX = m_ship.ctxOX;
-	ctxOY = m_ship.ctxOY;
+	if (!m_ship.Dead())
+	{
+		// let Ship Context position move Player context postion
+		ctxOX = m_ship.ctxOX;
+		ctxOY = m_ship.ctxOY;
 
-	m_ship.TickEvent(session);
+		m_ship.TickEvent(session);
+	}
 
 	if (m_ship.Dead() && m_phase == Playing)
 	{
