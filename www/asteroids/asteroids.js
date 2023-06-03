@@ -25,6 +25,12 @@ const TEXT_FADE_TIME = 2.5;         // text fade time in seconds
 const TEXT_SIZE = 40;               // text font height in pixels
 const FP_4_12 = 4096.0;              // convert to fixed point 4.12, specifically for angle scaling
 
+const GamePhase = {
+    InLobby: 0,
+    Playing: 1,
+    GameOver: 2,
+}
+
 var level, lives, roids, phase, score, scoreHigh, ship, text, textAlpha;
 
 var universeRocks = [];
@@ -724,7 +730,19 @@ function moveAsteroids() {
 }
 
 function update() {
-    console.log("phase: " + phase);
+    switch (phase) {
+        case GamePhase.InLobby:
+            console.log("InLobby");
+            break;
+
+        case GamePhase.Playing:
+            console.log("Playing");
+            break;
+
+        case GamePhase.GameOver:
+            console.log("GameOver");
+            break;
+    }
 
     drawSpace();
     //drawAsteroids();
