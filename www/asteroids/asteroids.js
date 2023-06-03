@@ -25,7 +25,7 @@ const TEXT_FADE_TIME = 2.5;         // text fade time in seconds
 const TEXT_SIZE = 40;               // text font height in pixels
 const FP_4_12 = 4096.0;              // convert to fixed point 4.12, specifically for angle scaling
 
-var level, lives, roids, score, scoreHigh, ship, text, textAlpha;
+var level, lives, roids, phase, score, scoreHigh, ship, text, textAlpha;
 
 var universeRocks = [];
 var universeShips = [];
@@ -724,6 +724,8 @@ function moveAsteroids() {
 }
 
 function update() {
+    console.log("phase: " + phase);
+
     drawSpace();
     //drawAsteroids();
     drawShipFully();   
@@ -821,6 +823,9 @@ function OnPlayerTickMessage(data) {
 
     score = view.getUint32(offset);
     offset += 4;
+
+    phase = view.getUint16(offset);
+    offset += 2;
 
     shipX = view.getUint16(offset);
     offset += 2;

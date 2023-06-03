@@ -18,7 +18,8 @@ Player::Player(double width, double height)
 	m_ship(static_cast<uint16_t>(width), static_cast<uint16_t>(height), g_universe->sizeW / 2, g_universe->sizeH / 2, 90 * DEGREES_TO_RADS),
 	m_deltaX(1),
 	m_deltaY(1),
-	m_score(0)
+	m_score(0),
+	m_phase(0)
 {
 	// initialize Context: our browser's window size and offset within the g_universe virtual size
 	ctxW = static_cast<uint16_t>(width);
@@ -42,7 +43,7 @@ void Player::AddToScore(uint32_t increment)
 std::unique_ptr<AppBuffer> Player::MakeBuffer(Session& session)
 {
 	// make an AppBuffer(PlayerTickMessage) header for user's JS engine
-	size_t outSize = 22;
+	size_t outSize = 24;
 
 	// get properly sized output buffer
 	auto txBuff = std::make_unique<AppBuffer>(outSize, session.IsLittleEndian());
@@ -62,6 +63,7 @@ std::unique_ptr<AppBuffer> Player::MakeBuffer(Session& session)
 	txBuff->set_uint16(ctxOY);
 
 	txBuff->set_uint32(m_score);
+	txBuff->set_uint16(m_phase);
 
 	return txBuff;
 }

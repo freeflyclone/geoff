@@ -32,6 +32,7 @@ namespace asteroids
         int16_t m_deltaX;
         int16_t m_deltaY;
         uint32_t m_score;
+        uint16_t m_phase;
     };
 }
 
