@@ -359,10 +359,73 @@ function drawGameInfo() {
     ctx.fillText("High Score: " + scoreHigh, canv.width / 2, SHIP_SIZE);
 }
 
+function drawLobby() {
+    var anchorX = canv.width / 2;
+    var anchorY = canv.height * 0.25
+    var offsetY = TEXT_SIZE;
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "rgba(255, 255, 127,255)";
+    ctx.font = TEXT_SIZE + "px arial";
+    ctx.fillText("Multiplayer Asteroids", anchorX, anchorY);
+
+    ctx.textAlign = "right";
+    ctx.font = TEXT_SIZE / 2 + "px helvetica";
+    ctx.fillText("Key Map: ", anchorX, anchorY + offsetY);
+
+    offsetY += TEXT_SIZE;
+    ctx.textAlign = "right";
+    ctx.font = TEXT_SIZE / 2 + "px helvitica";
+    ctx.fillText("A, a, Left Arrow: ", anchorX, anchorY + offsetY);
+
+    ctx.textAlign = "left";
+    ctx.font = TEXT_SIZE / 2 + "px helvitica";
+    ctx.fillText("Rotate ship counter-clockwise", anchorX, anchorY + offsetY);
+
+    offsetY += TEXT_SIZE / 2;
+    ctx.textAlign = "right";
+    ctx.font = TEXT_SIZE / 2 + "px helvitica";
+    ctx.fillText("D, d, Right Arrow: ", anchorX, anchorY + offsetY);
+
+    ctx.textAlign = "left";
+    ctx.font = TEXT_SIZE / 2 + "px helvitica";
+    ctx.fillText("Rotate ship clockwise", anchorX, anchorY + offsetY);
+
+    offsetY += TEXT_SIZE / 2;
+    ctx.textAlign = "right";
+    ctx.font = TEXT_SIZE / 2 + "px helvitica";
+    ctx.fillText("W, w, I, i, Up Arrow: ", anchorX, anchorY + offsetY);
+
+    ctx.textAlign = "left";
+    ctx.font = TEXT_SIZE / 2 + "px helvitica";
+    ctx.fillText("Ship Thrust", anchorX, anchorY + offsetY);
+
+    offsetY += TEXT_SIZE / 2;
+    ctx.textAlign = "right";
+    ctx.font = TEXT_SIZE / 2 + "px helvitica";
+    ctx.fillText("Space bar: ", anchorX, anchorY + offsetY);
+
+    ctx.textAlign = "left";
+    ctx.font = TEXT_SIZE / 2 + "px helvitica";
+    ctx.fillText("Fire bullet", anchorX, anchorY + offsetY);
+
+    offsetY += TEXT_SIZE;
+    ctx.textAlign = "right";
+    ctx.font = TEXT_SIZE / 2 + "px helvitica";
+    ctx.fillText("Click: ", anchorX, anchorY + offsetY);
+
+    ctx.textAlign = "left";
+    ctx.font = TEXT_SIZE / 2 + "px helvitica";
+    ctx.fillText("Launch rock at mouse position", anchorX, anchorY + offsetY);
+}
+
 function update() {
     switch (phase) {
         case GamePhase.InLobby:
             console.log("InLobby");
+            drawLobby();
+            return;
             break;
 
         case GamePhase.Playing:
