@@ -19,6 +19,7 @@ Player::Player(Session& session, double width, double height)
 	m_ship(static_cast<uint16_t>(width), static_cast<uint16_t>(height), g_universe->sizeW / 2, g_universe->sizeH / 2, 90 * DEGREES_TO_RADS),
 	m_deltaX(1),
 	m_deltaY(1),
+	m_score(0),
 	m_left_down(false),
 	m_right_down(false),
 	m_up_down(false),
@@ -38,6 +39,38 @@ Player::Player(Session& session, double width, double height)
 Player::~Player()
 {
 	TRACE(__FUNCTION__);
+}
+
+void Player::AddToScore(uint32_t increment)
+{
+	m_score += increment;
+}
+
+std::unique_ptr<AppBuffer> Player::MakeBuffer(Session& session)
+{
+	// make an AppBuffer(PlayerTickMessage) header for user's JS engine
+	size_t outSize = 22;
+
+	// get properly sized output buffer
+	auto txBuff = std::make_unique<AppBuffer>(outSize, session.IsLittleEndian());
+
+	// Message start, Message type, session ID, tick count
+	txBuff->set_uint8(0xBB);
+	txBuff->set_uint8(static_cast<uint8_t>(WebsockSession::MessageType_t::PlayerTickMessage));
+	txBuff->set_uint32(session.SessionID());
+	txBuff->set_uint32(g_universe->GetTicks());
+
+	//TRACE(__FUNCTION__ << "ctxW: " << ctxW << ", ctxH: " << ctxH << ", ctxOX: " << ctxOX << ", ctxOY: " << ctxOY);
+
+	// support sliding viewport (allowing ship to move it)
+	txBuff->set_uint16(m_ship.ctxW);
+	txBuff->set_uint16(m_ship.ctxH);
+	txBuff->set_uint16(m_ship.ctxOX);
+	txBuff->set_uint16(m_ship.ctxOY);
+
+	txBuff->set_uint32(m_score);
+
+	return txBuff;
 }
 
 void Player::KeyEvent(int key, bool isDown)
@@ -78,8 +111,8 @@ void Player::KeyEvent(int key, bool isDown)
 
 void Player::ClickEvent(int clickX, int clickY)
 {
-	int universeClickX = clickX + static_cast<int>(Context::ctxOX);
-	int universeClickY = clickY + static_cast<int>(Context::ctxOY);
+	int universeClickX = clickX + static_cast<int>(m_ship.ctxOX);
+	int universeClickY = clickY + static_cast<int>(m_ship.ctxOY);
 
 	PL_TRACE("clickX: " << clickX << ", clickY: " << clickY << "ucX: " << universeClickX << ", ucY: " << universeClickY);
 
@@ -127,7 +160,11 @@ void Player::TickEvent(Session& session)
 
 	m_ship.TickEvent(session);
 
-	auto txBuff = m_ship.MakeBuffer(session);
+	// make Ship buffer first, Player viewport (ctx) position is dependency
+	auto txShipBuff = m_ship.MakeBuffer(session);
+	auto txPlayerTickHeader = MakeBuffer(session);
+
+	auto txBuff = std::make_unique<AppBuffer>(*txPlayerTickHeader, *txShipBuff, session.IsLittleEndian());
 
 	session.CommitTxBuffer(txBuff);
 }

@@ -8,6 +8,7 @@ public:
     AppBuffer(std::size_t bufferLength, int isLittleEndian);
     AppBuffer(const uint8_t* buffer, const std::size_t bufferLength, int isLittleEndian);
     AppBuffer(AppBuffer& ab, size_t moreRoom, bool isLittleEndian);
+    AppBuffer(AppBuffer& ab1, AppBuffer& ab2, bool isLittleEndian);
 
     ~AppBuffer();
 

@@ -35,6 +35,17 @@ AppBuffer::AppBuffer(AppBuffer& ab, size_t moreRoom, bool isLittleEndian)
     AB_TRACE(__FUNCTION__ << "bytesWritten(): " << ab.bytesWritten() << ", moreRoom: " << moreRoom << "m_length: " << m_length);
 }
 
+AppBuffer::AppBuffer(AppBuffer& ab1, AppBuffer& ab2, bool isLittleEndian)
+    :
+    AppBuffer(ab1.bytesWritten() + ab2.bytesWritten(), isLittleEndian)
+{
+    memcpy(m_buff, ab1.data(), ab1.bytesWritten());
+    memcpy(m_buff + ab1.bytesWritten(), ab2.data(), ab2.bytesWritten());
+    m_writeOffset = static_cast<int>(ab1.bytesWritten() + ab2.bytesWritten());
+
+    AB_TRACE(__FUNCTION__ << "bytesWritten(): " << ab.bytesWritten() << ", moreRoom: " << moreRoom << "m_length: " << m_length);
+}
+
 AppBuffer::~AppBuffer()
 {
     delete[] m_buff;

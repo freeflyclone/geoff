@@ -18,6 +18,10 @@ namespace asteroids
         Ship* GetShip() { return &m_ship; }
         Session* GetSession() { return &m_session; }
 
+        void AddToScore(uint32_t increment);
+        
+        std::unique_ptr<AppBuffer> MakeBuffer(Session&);
+
         void KeyEvent(int key, bool isDown);
         void ClickEvent(int x, int y);
         void ResizeEvent(int w, int h);
@@ -29,6 +33,7 @@ namespace asteroids
 
         int16_t m_deltaX;
         int16_t m_deltaY;
+        uint32_t m_score;
 
         bool m_left_down;
         bool m_right_down;
