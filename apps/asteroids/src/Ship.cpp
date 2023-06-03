@@ -269,26 +269,26 @@ void Ship::MoveShip()
 		if (posX < (ctxOX + m_viewport_margin))
 		{
 			if (posX > m_viewport_margin)
-				ctxOX = posX - m_viewport_margin;
+				ctxOX = static_cast<uint16_t>(posX - m_viewport_margin);
 		}
 		// right?
-		else if (posX > (ctxOX + ctxW - m_viewport_margin))
+		else if (posX > ((double)ctxOX + ctxW - m_viewport_margin))
 		{
 			if (posX < g_universe->sizeW - m_viewport_margin)
-				ctxOX = posX - ctxW + m_viewport_margin;
+				ctxOX = static_cast<uint16_t>(posX - ctxW + m_viewport_margin);
 		}
 
 		// up?
 		if (posY < (ctxOY + m_viewport_margin))
 		{
 			if (posY > m_viewport_margin)
-				ctxOY = posY - m_viewport_margin;
+				ctxOY = static_cast<uint16_t>(posY - m_viewport_margin);
 		}
 		// down?
-		else if (posY > (ctxOY + ctxH - m_viewport_margin))
+		else if (posY > ((double)ctxOY + ctxH - m_viewport_margin))
 		{
 			if (posY < g_universe->sizeH - m_viewport_margin)
-				ctxOY = posY - ctxH + m_viewport_margin;
+				ctxOY = static_cast<uint16_t>(posY - ctxH + m_viewport_margin);
 		}
 	}
 

@@ -63,7 +63,7 @@ Universe::~Universe()
 
 void Universe::NewPlayer(Session& session, int w, int h)
 {
-	m_players[session.SessionID()] = std::make_shared<Player>(session, w, h);
+	m_players[session.SessionID()] = std::make_shared<Player>(w, h);
 
 	TRACE(__FUNCTION__);
 }
