@@ -429,7 +429,7 @@ function update() {
     switch (phase) {
         case GamePhase.InLobby:
             console.log("InLobby");
-            drawLobby();
+            //drawLobby();
             return;
             break;
 

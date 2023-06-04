@@ -8,14 +8,127 @@
 	<style>
 		html, body {margin: 0; width: 100%; height: 100%; overflow: hidden; background: black; }
 		canvas { width: 100%; height: 100%; border: none; display: block; }
+
+        .overlay {
+            position: relative;
+            left: 0pt;
+            top: 0pt;
+        }
+
+        #wrapper {
+            width: 100%;
+			height: 100%;
+            text-align: center;
+            justify-content: center;
+            background: rgba(0,0,0, .25);
+        }
+
+        #lobby {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            background: rgba(0,0,0,0);
+			transform: translate(-50%, -50%);
+            z-index: 3;
+			color: rgba(255, 255, 255, 0.5);
+        }
+
+		#geoff {
+			z-index: 1;
+		}
+
+        h1 {
+			margin: 3pt;
+			font: 40pt Arial;
+        }
+        h2 {
+            margin: 3pt 3pt 15pt 3pt;
+            font: 16px Arial;
+        }
+        h3 {
+            margin: 15pt 3pt 3pt 3pt;
+            font: 16px Arial;
+        }
+        p {
+            margin: 4pt;
+        }
+		table{
+			width:100%;
+			font:12pt Arial;
+		}
+
+        th.left {
+            padding: 8pt 4pt 0pt 0pt;
+            text-align: right;
+            width: 50%;
+        }
+        th.right {
+            padding: 8pt 0pt 0pt 4pt;
+            text-align: left;
+            width: 50%;
+        }
+
+		td.left {
+			padding:0px 4px 0px 0px;
+			text-align:right;
+			width: 50%;
+		}
+        td.right {
+            padding: 0px 0px 0px 4px;
+            text-align: left;
+			width: 50%;
+        }
 	</style>
 </head>
 
 <body>
-	<div id="geoffDiv">
-		<canvas id="gameCanvas">
-			Your browser does not support the HTML canvas tag.
-		</canvas>
+	<div id="wrapper" class="overlay">
+		<div id="geoff">
+			<canvas id="gameCanvas">
+				Your browser does not support the HTML canvas tag.
+			</canvas>
+		</div>
+		<div id="lobby">
+			<h1>Multiplayer Asteroids</h1>
+			<h2><em>A new twist on an Arcade classic</em></h2>
+			<table>
+				<tr>
+					<th class="left">Key(s)</th>
+					<th class="right">Action</th>
+				</tr>
+				<tr>
+					<td class="left">A, Left Arrow: </td>
+					<td class="right">Rotate Ship Left</td>
+				</tr>
+				<tr>
+					<td class="left">D, Right Arrow: </td>
+					<td class="right">Rotate Ship Right</td>
+				</tr>
+				<tr>
+					<td class="left">W, I, Up Arrow: </td>
+					<td class="right">Ship Thrust</td>
+				</tr>
+				<tr>
+					<td class="left">Space bar: </td>
+					<td class="right">Fire bullet</td>
+				</tr>
+
+				<tr>
+					<td class="left">---------- </td>
+					<td class="right"> ----------</td>
+				</tr>
+
+				<tr>
+					<th class="left">Mouse</th>
+					<th class="right">Action</th>
+				</tr>
+				<tr style="vertical-align: top;">
+					<td class="left">Left Click:</td>
+					<td class="right">Spawn rock at mouse position</td>
+				</tr>
+			</table>
+			<h3><em>Press any key to begin...</em></h3>
+		</div>
 	</div>
 
 	<script type="text/javascript" src="/js/GameFace.js"></script>
