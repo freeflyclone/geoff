@@ -38,6 +38,17 @@
 			z-index: 1;
 		}
 
+        #lounge {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            background: rgba(0,0,0,0);
+            transform: translate(-50%, -50%) scale(100%, 100%);
+            z-index: 3;
+            color: rgb(255, 255, 255);
+            opacity: 0.75;
+        }
+
         h1 {
 			margin: 3pt;
 			font: 40pt Arial;
@@ -174,25 +185,28 @@
 			</table>
 			<h3 class="blink"><em>Press any key to begin...</em></h3>
 		</div>
-	</div>
+		<div id="lounge" style="visibility: hidden">
+			<h1>GameOver</h1>
+			<h2 class="blink"><em>Press any key to play again...</em></h2>
+		</div>
 
-	<script type="text/javascript" src="/js/GameFace.js"></script>
-	<script type="text/javascript" src="/asteroids/asteroids.js"></script>
-	<script type="text/javascript">
-		if (typeof GameFaceInit != 'undefined') {
-			GameFaceInit();
-		}
-		else {
-			console.log("GameFaceInit is undefined.");
-			setTimeout(GameFaceInit, 100);
-		}
-		if (typeof AsteroidsInit != 'undefined') {
-			AsteroidsInit();
-		}
-		else {
-			console.log("AsteroidsInit is undefined.");
-			setTimeout(AsteroidsInit, 100);
-		}
-	</script>
+		<script type="text/javascript" src="/js/GameFace.js"></script>
+		<script type="text/javascript" src="/asteroids/asteroids.js"></script>
+		<script type="text/javascript">
+			if (typeof GameFaceInit != 'undefined') {
+				GameFaceInit();
+			}
+			else {
+				console.log("GameFaceInit is undefined.");
+				setTimeout(GameFaceInit, 100);
+			}
+			if (typeof AsteroidsInit != 'undefined') {
+				AsteroidsInit();
+			}
+			else {
+				console.log("AsteroidsInit is undefined.");
+				setTimeout(AsteroidsInit, 100);
+			}
+		</script>
 </body>
 </html> 

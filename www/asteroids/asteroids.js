@@ -358,74 +358,6 @@ function drawGameInfo() {
     ctx.fillText("High Score: " + scoreHigh, canv.width / 2, SHIP_SIZE);
 }
 
-function drawLobby() {
-    var anchorX = canv.width / 2;
-    var anchorY = canv.height * 0.25
-    var offsetY = TEXT_SIZE;
-
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = "rgba(255, 127, 63, 255)";
-    ctx.font = TEXT_SIZE + "px arial";
-    ctx.fillText("Multiplayer Asteroids", anchorX, anchorY);
-
-    offsetY += TEXT_SIZE;
-    ctx.textAlign = "right";
-    ctx.font = (TEXT_SIZE * 0.5) + "px arial";
-    ctx.fillText("A, a, Left Arrow: ", anchorX, anchorY + offsetY);
-
-    ctx.textAlign = "left";
-    ctx.fillText("Rotate ship counter-clockwise", anchorX, anchorY + offsetY);
-
-    offsetY += TEXT_SIZE / 2;
-    ctx.textAlign = "right";
-    ctx.fillText("D, d, Right Arrow: ", anchorX, anchorY + offsetY);
-
-    ctx.textAlign = "left";
-    ctx.fillText("Rotate ship clockwise", anchorX, anchorY + offsetY);
-
-    offsetY += TEXT_SIZE / 2;
-    ctx.textAlign = "right";
-    ctx.fillText("W, w, I, i, Up Arrow: ", anchorX, anchorY + offsetY);
-
-    ctx.textAlign = "left";
-    ctx.fillText("Ship Thrust", anchorX, anchorY + offsetY);
-
-    offsetY += TEXT_SIZE / 2;
-    ctx.textAlign = "right";
-    ctx.fillText("Space bar: ", anchorX, anchorY + offsetY);
-
-    ctx.textAlign = "left";
-    ctx.fillText("Fire bullet", anchorX, anchorY + offsetY);
-
-    offsetY += TEXT_SIZE;
-    ctx.textAlign = "right";
-    ctx.fillText("Click: ", anchorX, anchorY + offsetY);
-
-    ctx.textAlign = "left";
-    ctx.fillText("Launch rock at mouse position", anchorX, anchorY + offsetY);
-
-    offsetY += TEXT_SIZE * 2;
-    ctx.textAlign = "right";
-    ctx.fillText("Press any key to begin...", anchorX, anchorY + offsetY);
-}
-
-function drawGameOver() {
-    var anchorX = canv.width / 2;
-    var anchorY = canv.height * 0.5
-    var offsetY = TEXT_SIZE;
-
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = "rgba(255, 127, 63, 255)";
-    ctx.font = TEXT_SIZE + "px arial";
-    ctx.fillText("Game Over", anchorX, anchorY);
-
-    offsetY += TEXT_SIZE;
-    ctx.textAlign = "center";
-    ctx.font = TEXT_SIZE / 2 + "px helvitica";
-    ctx.fillText("Press any key to play again...", anchorX, anchorY + offsetY);
-}
 
 function update() {
     switch (phase) {
@@ -444,6 +376,7 @@ function update() {
             else if (currentPhase == GamePhase.GameOver) {
                 currentPhase = phase;
                 console.log("Transition from GameOver to Playing");
+                document.getElementById("lounge").className = "zoom_out";
                 return;
             }
             console.log("Playing");
@@ -451,7 +384,13 @@ function update() {
 
         case GamePhase.GameOver:
             console.log("GameOver");
-            drawGameOver();
+            if (currentPhase == GamePhase.Playing) {
+                console.log("Transition from Playing to GameOver");
+                document.getElementById("lobby").style = "visiblility: hidden";
+                document.getElementById("lounge").style = "visibility = visible";
+                document.getElementById("lounge").className = "zoom_start";
+                currentPhase = phase;
+            }
             break;
     }
 
@@ -464,9 +403,6 @@ function update() {
     drawRadar();
 
     drawGameInfo();
-
-    if (phase == GamePhase.GameOver)
-        drawGameOver();
 }
 
 // this game now depends on a steady timer tick Websock message 
