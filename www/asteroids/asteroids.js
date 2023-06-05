@@ -193,6 +193,13 @@ function drawBullet(x, y, radius = 2, color = "cyan") {
     ctx.fill();
 }
 
+function drawRock(x, y, radius = 2, color = "cyan") {
+    ctx.strokeStyle = color;
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2, false);
+    ctx.stroke();
+}
+
 function drawBullets() {
     var numberOfBullets = Object.keys(ship.bullets).length;
     if (typeof ship.bullets == 'undefined') {
@@ -243,7 +250,7 @@ function drawRocks() {
         return;
 
     for (i = 0; i < numberOfRocks; i++) {
-        drawBullet(universeRocks[i].x - contextOffsetX, universeRocks[i].y - contextOffsetY, universeRocks[i].r, "green");
+        drawRock(universeRocks[i].x - contextOffsetX, universeRocks[i].y - contextOffsetY, universeRocks[i].r, "white");
     }
 }
 
