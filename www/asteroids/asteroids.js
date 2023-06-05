@@ -48,6 +48,7 @@ var contextOffsetY;
 var shipsFlags = 0;
 
 var currentPhase = GamePhase.InLobby;
+scoreHigh = 0;
 
 function newShip() {
     return {
