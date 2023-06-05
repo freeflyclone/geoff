@@ -147,8 +147,16 @@ class websocket_session
     {
         boost::ignore_unused(bytes_transferred);
 
+        // This indicates that the websocket_session was closed
+        if (ec == websocket::error::closed)
+        {
+            TRACE("on_write() closing");
+            WebsockServer::GetInstance().OnClose(m_sessionID);
+            return;
+        }
+
         if (ec)
-            return fail(ec, "write");
+            return fail(ec, "on_write");
 
         m_write_active = false;
 

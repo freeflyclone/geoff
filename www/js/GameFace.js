@@ -212,3 +212,13 @@ function GameFaceInit() {
     document.addEventListener("keydown", on_keydown);
     document.addEventListener("keyup", on_keyup);
 }
+
+const terminationEvent = 'onpagehide' in self ? 'pagehide' : 'unload';
+window.addEventListener(terminationEvent, (event) => {
+    console.log("termination event: " + event);
+    webSock.sock.close();
+});
+
+window.addEventListener('load', (event) => {
+    console.log("load event: " + event)
+});

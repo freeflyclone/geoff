@@ -93,6 +93,7 @@ protected:
 	std::recursive_mutex m_session_mutex;
 
 	OnTxReadyCallback_t m_tx_ready_callback;
+	std::thread::id m_thread_id;
 };
 
 #endif // WEBSOCK_SESSION_H

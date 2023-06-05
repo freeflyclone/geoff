@@ -9,14 +9,15 @@
 WebsockSession::WebsockSession(uint32_t sessionID) :
 	m_sessionID(sessionID),
 	m_isLittleEndian(true),
-	m_tx_ready_callback()
+	m_tx_ready_callback(),
+	m_thread_id(std::this_thread::get_id())
 {
-	WS_TRACE("sessionID: " << m_sessionID);
+	TRACE("sessionID: " << m_sessionID << ", thread_id: " << m_thread_id);
 }
 
 WebsockSession::~WebsockSession()
 {
-	WS_TRACE("sessionID: " << m_sessionID);
+	TRACE("sessionID: " << m_sessionID << ", thread_id: " << m_thread_id);
 }
 
 void WebsockSession::SetOnTxReadyCallback(OnTxReadyCallback_t fn)

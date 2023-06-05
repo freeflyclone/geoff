@@ -15,14 +15,14 @@ Session::Session(uint32_t sessionID)
 	m_sessionID(sessionID),
 	m_player(nullptr)
 {
-	SS_TRACE(__FUNCTION__);
+	TRACE("New Session: " << m_sessionID);
 
 	GetUniverse();
 }
 
 Session::~Session()
 {
-	TRACE(__FUNCTION__);
+	TRACE("Session done: " << m_sessionID);
 }
 
 void Session::HandleNewSession(AppBuffer& rxBuffer)
