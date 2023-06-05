@@ -28,9 +28,10 @@
             top: 50%;
             left: 50%;
             background: rgba(0,0,0,0);
-			transform: translate(-50%, -50%);
+			transform: translate(-50%, -50%) scale(100%, 100%);
             z-index: 3;
-			color: rgba(255, 255, 255, 0.5);
+			color: rgb(255, 255, 255);
+			opacity: 0.75;
         }
 
 		#geoff {
@@ -43,11 +44,11 @@
         }
         h2 {
             margin: 3pt 3pt 15pt 3pt;
-            font: 16px Arial;
+            font: 10pt Arial;
         }
         h3 {
             margin: 15pt 3pt 3pt 3pt;
-            font: 16px Arial;
+            font: 12pt Arial;
         }
         p {
             margin: 4pt;
@@ -69,15 +70,54 @@
         }
 
 		td.left {
-			padding:0px 4px 0px 0px;
+			padding:0pt 3pt 0pt 0pt;
 			text-align:right;
 			width: 50%;
 		}
         td.right {
-            padding: 0px 0px 0px 4px;
+            padding: 0pt 0pt 0pt 3pt;
             text-align: left;
 			width: 50%;
         }
+
+		.short {
+			height: 1pt;
+		}
+
+        .blink {
+            animation: blinker 2s ease-in-out infinite;
+        }
+
+        @keyframes blinker {
+            50% {
+                opacity: 0%;
+            }
+        }
+
+        .zoom_start {
+            animation-name: zoom-out-start;
+            animation-duration: 2s;
+            animation-timing-function: ease-in;
+            animation-fill-mode: forwards;
+        }
+
+		.zoom_out {
+			animation-name: zoom-out;
+			animation-duration: .5s;
+			animation-timing-function: ease-out;
+			animation-fill-mode: forwards;
+		}
+
+        @keyframes zoom-out-start {
+			0% { opacity: 0%; }
+            100% { opacity: 100%; }
+        }
+		@keyframes zoom-out {
+            100% {
+                transform: translate(-50%, -50%) scale(1%, 1%);
+                opacity: 0%;
+            }
+		}
 	</style>
 </head>
 
@@ -88,14 +128,19 @@
 				Your browser does not support the HTML canvas tag.
 			</canvas>
 		</div>
-		<div id="lobby">
+		<div id="lobby" class="zoom_start">
 			<h1>Multiplayer Asteroids</h1>
-			<h2><em>A new twist on an Arcade classic</em></h2>
+			<h2><em>A new twist on an arcade classic</em></h2>
 			<table>
 				<tr>
 					<th class="left">Key(s)</th>
 					<th class="right">Action</th>
 				</tr>
+				<tr class="short">
+					<td class="left">---------- </td>
+					<td class="right"> ----------</td>
+				</tr>
+
 				<tr>
 					<td class="left">A, Left Arrow: </td>
 					<td class="right">Rotate Ship Left</td>
@@ -114,20 +159,20 @@
 				</tr>
 
 				<tr>
+					<th class="left">Mouse</th>
+					<th class="right">Action</th>
+				</tr>
+				<tr class="short">
 					<td class="left">---------- </td>
 					<td class="right"> ----------</td>
 				</tr>
 
-				<tr>
-					<th class="left">Mouse</th>
-					<th class="right">Action</th>
-				</tr>
 				<tr style="vertical-align: top;">
 					<td class="left">Left Click:</td>
 					<td class="right">Spawn rock at mouse position</td>
 				</tr>
 			</table>
-			<h3><em>Press any key to begin...</em></h3>
+			<h3 class="blink"><em>Press any key to begin...</em></h3>
 		</div>
 	</div>
 

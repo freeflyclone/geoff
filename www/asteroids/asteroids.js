@@ -47,6 +47,8 @@ var contextOffsetY;
 
 var shipsFlags = 0;
 
+var currentPhase = GamePhase.InLobby;
+
 function newShip() {
     return {
         x: canv.width / 2,
@@ -429,11 +431,21 @@ function update() {
     switch (phase) {
         case GamePhase.InLobby:
             console.log("InLobby");
-            //drawLobby();
             return;
             break;
 
         case GamePhase.Playing:
+            if (currentPhase == GamePhase.InLobby) {
+                currentPhase = phase;
+                console.log("Transition from InLobby to Playing");
+                var lobby_div = document.getElementById("lobby");
+                lobby_div.className = "zoom_out";
+            }
+            else if (currentPhase == GamePhase.GameOver) {
+                currentPhase = phase;
+                console.log("Transition from GameOver to Playing");
+                return;
+            }
             console.log("Playing");
             break;
 
