@@ -17,7 +17,7 @@ WebsockSession::WebsockSession(uint32_t sessionID) :
 
 WebsockSession::~WebsockSession()
 {
-	TRACE("sessionID: " << m_sessionID << ", thread_id: " << m_thread_id);
+	TRACE("sessionID: " << m_sessionID << ", thread_id: " << m_thread_id << std::endl);
 }
 
 void WebsockSession::SetOnTxReadyCallback(OnTxReadyCallback_t fn)

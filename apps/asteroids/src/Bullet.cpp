@@ -14,7 +14,7 @@ Bullet::Bullet(double x, double y, double dx, double dy)
 	: 
 	Position({ x, y }),
 	Velocity({ dx, dy }),
-	m_ticks_left(180)
+	m_ticks_left(static_cast<unsigned int>(BULLET_DURATION * FPS))
 {
 	B_TRACE(__FUNCTION__);
 }
