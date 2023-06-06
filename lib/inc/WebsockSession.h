@@ -11,12 +11,10 @@
 *   Managment of AppBuffer marshalling to and from beast::flat_buffer
 *   Client-side endianness at runtime
 *   Unique Session ID at runtime
-*   IntervalTimer using boost::deadline_timer
 *   std::deque management of AppBuffers using std::unique_ptr
 *		Automatically manage AppBuffers
 *   Handling of incoming AppBuffers from client side via CommsHandler
 *   Handling of outbound AppBuffers to client side via CommitTxBuffer
-*   Periodic AppBuffer TX via TimerTic
 * 
 *   See also GameSession class.
 * 

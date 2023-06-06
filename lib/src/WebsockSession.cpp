@@ -12,12 +12,12 @@ WebsockSession::WebsockSession(uint32_t sessionID) :
 	m_tx_ready_callback(),
 	m_thread_id(std::this_thread::get_id())
 {
-	TRACE("sessionID: " << m_sessionID << ", thread_id: " << m_thread_id);
+	TRACE("sessionID: " << m_sessionID << ", thread_id: " << std::this_thread::get_id());
 }
 
 WebsockSession::~WebsockSession()
 {
-	TRACE("sessionID: " << m_sessionID << ", thread_id: " << m_thread_id << std::endl);
+	TRACE("sessionID: " << m_sessionID << ", thread_id: " << std::this_thread::get_id() << std::endl);
 }
 
 void WebsockSession::SetOnTxReadyCallback(OnTxReadyCallback_t fn)

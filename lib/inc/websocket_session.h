@@ -63,10 +63,11 @@ class websocket_session
         // Set the OnTxReadyCallback_t function member of the WebsockSession to this lambda
         // We get one for each session, thus each session now has its own OnTxReady interrupt
         // for processing TimerTick() messages.
-        WebsockServer::GetInstance().FindSessionByID(m_sessionID)->SetOnTxReadyCallback([this](WebsockSession & session) {
-            post(derived().ws().get_executor(), [&]() {
-                //TRACE("Posted");
+        auto session = WebsockServer::GetInstance().FindSessionByID(m_sessionID);
 
+        if (session)
+        {
+            session->SetOnTxReadyCallback([this](WebsockSession& session) {
                 if (session.TxQueueEmpty())
                     return;
 
@@ -76,7 +77,11 @@ class websocket_session
                     do_write(txBuffer->data(), txBuffer->bytesWritten());
                 }
             });
-        });
+        }
+        else
+        {
+            TRACE("session is null");
+        }
 
         do_read();
 
@@ -123,6 +128,10 @@ class websocket_session
                 }
             }
         }
+        else
+        {
+            TRACE("session is null");
+        }
 
         // start another async_read() no matter what.
         buffer_.consume(buffer_.size());
@@ -147,6 +156,8 @@ class websocket_session
     {
         boost::ignore_unused(bytes_transferred);
 
+        m_write_active = false;
+
         // This indicates that the websocket_session was closed
         if (ec == websocket::error::closed)
         {
@@ -157,8 +168,6 @@ class websocket_session
 
         if (ec)
             return fail(ec, "on_write");
-
-        m_write_active = false;
 
         // Server side is now allowed to send multiple messages back-to-back,
         // independently of input from the client.
@@ -177,6 +186,10 @@ class websocket_session
                     do_write(txBuff->data(), txBuff->bytesWritten());
                 }
             }
+        }
+        else
+        {
+            TRACE("session is null");
         }
     }
 

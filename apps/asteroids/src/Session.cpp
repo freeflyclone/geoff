@@ -102,7 +102,7 @@ void Session::TickEvent(uint32_t sessionID, uint32_t tickCount)
 	(void)sessionID;
 	(void)tickCount;
 
-	SS_TRACE(__FUNCTION__);
+	SS_TRACE(__FUNCTION__ << ", tid: " << std::this_thread::get_id());
 
 	if (m_player)
 		m_player->TickEvent(*this);

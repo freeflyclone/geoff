@@ -55,7 +55,10 @@ void WebsockServer::CommsHandler(uint32_t sessionID, beast::flat_buffer in_buffe
 	auto session = g_sessions.find_by_id(sessionID);
 
 	if (!session)
+	{
+		TRACE("session is null.");
 		return;
+	}
 
 	session->WebsockSession::CommsHandler(in_buffer, in_length);
 }
