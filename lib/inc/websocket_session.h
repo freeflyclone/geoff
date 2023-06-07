@@ -55,7 +55,9 @@ class websocket_session
         if (ec)
             return fail(ec, "accept");
 
+        // -------------------------------------------------------------------------------
         // when this call returns, a new WebsockSession for "m_sessionID" has been created.
+        // -------------------------------------------------------------------------------
         WebsockServer::GetInstance().OnAccept([&](uint32_t sessionID) {
             m_sessionID = sessionID;
         });
@@ -184,35 +186,6 @@ public:
 
 //------------------------------------------------------------------------------
 
-// Handles a plain WebSocket connection
-class plain_websocket_session : 
-    public websocket_session<plain_websocket_session> , 
-    public std::enable_shared_from_this<plain_websocket_session>
-{
-    websocket::stream<beast::tcp_stream> ws_;
-
-public:
-    // Create the session
-    explicit plain_websocket_session(beast::tcp_stream&& stream)
-        : ws_(std::move(stream))
-    {
-        // This line is a requirement for binary data!
-        // I was missing it in looking at Tim's code, but Wireshark showed me the
-        // packet was in text mode. (Note to Self: Wireshark is your friend!)
-        ws_.binary(true);
-
-		// Disable Nagle algorithm
-        const boost::asio::ip::tcp::no_delay option(true);
-        ws_.next_layer().socket().set_option(option);
-    }
-
-    // Called by the base class
-    websocket::stream<beast::tcp_stream>& ws()
-    {
-        return ws_;
-    }
-};
-
 //------------------------------------------------------------------------------
 
 // Handles an SSL WebSocket connection
@@ -241,5 +214,34 @@ public:
 };
 
 //------------------------------------------------------------------------------
+
+// Handles a plain WebSocket connection
+class plain_websocket_session :
+    public websocket_session<plain_websocket_session>,
+    public std::enable_shared_from_this<plain_websocket_session>
+{
+    websocket::stream<beast::tcp_stream> ws_;
+
+public:
+    // Create the session
+    explicit plain_websocket_session(beast::tcp_stream&& stream)
+        : ws_(std::move(stream))
+    {
+        // This line is a requirement for binary data!
+        // I was missing it in looking at Tim's code, but Wireshark showed me the
+        // packet was in text mode. (Note to Self: Wireshark is your friend!)
+        ws_.binary(true);
+
+        // Disable Nagle algorithm
+        const boost::asio::ip::tcp::no_delay option(true);
+        ws_.next_layer().socket().set_option(option);
+    }
+
+    // Called by the base class
+    websocket::stream<beast::tcp_stream>& ws()
+    {
+        return ws_;
+    }
+};
 
 #endif
