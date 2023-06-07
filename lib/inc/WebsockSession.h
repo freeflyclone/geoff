@@ -11,12 +11,10 @@
 *   Managment of AppBuffer marshalling to and from beast::flat_buffer
 *   Client-side endianness at runtime
 *   Unique Session ID at runtime
-*   IntervalTimer using boost::deadline_timer
 *   std::deque management of AppBuffers using std::unique_ptr
 *		Automatically manage AppBuffers
 *   Handling of incoming AppBuffers from client side via CommsHandler
 *   Handling of outbound AppBuffers to client side via CommitTxBuffer
-*   Periodic AppBuffer TX via TimerTic
 * 
 *   See also GameSession class.
 * 
@@ -93,6 +91,7 @@ protected:
 	std::recursive_mutex m_session_mutex;
 
 	OnTxReadyCallback_t m_tx_ready_callback;
+	std::thread::id m_thread_id;
 };
 
 #endif // WEBSOCK_SESSION_H

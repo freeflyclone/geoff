@@ -43,6 +43,8 @@ void WebsockServer::OnAccept(OnAcceptCallback_t fn)
 
 void WebsockServer::OnClose(uint32_t sessionID)
 {
+	const std::lock_guard<std::recursive_mutex> lock(m_serverMutex);
+
 	g_sessions.delete_by_id(sessionID);
 }
 
@@ -53,12 +55,17 @@ void WebsockServer::CommsHandler(uint32_t sessionID, beast::flat_buffer in_buffe
 	auto session = g_sessions.find_by_id(sessionID);
 
 	if (!session)
+	{
+		TRACE("session is null.");
 		return;
+	}
 
 	session->WebsockSession::CommsHandler(in_buffer, in_length);
 }
 
 std::shared_ptr<WebsockSession> WebsockServer::FindSessionByID(uint32_t sessionID)
 {
+	const std::lock_guard<std::recursive_mutex> lock(m_serverMutex);
+
 	return g_sessions.find_by_id(sessionID);
 }

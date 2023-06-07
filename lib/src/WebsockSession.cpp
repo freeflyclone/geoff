@@ -9,34 +9,39 @@
 WebsockSession::WebsockSession(uint32_t sessionID) :
 	m_sessionID(sessionID),
 	m_isLittleEndian(true),
-	m_tx_ready_callback()
+	m_tx_ready_callback(),
+	m_thread_id(std::this_thread::get_id())
 {
-	WS_TRACE("sessionID: " << m_sessionID);
+	TRACE("sessionID: " << m_sessionID << ", thread_id: " << std::this_thread::get_id());
 }
 
 WebsockSession::~WebsockSession()
 {
-	WS_TRACE("sessionID: " << m_sessionID);
+	TRACE("sessionID: " << m_sessionID << ", thread_id: " << std::this_thread::get_id() << std::endl);
 }
 
 void WebsockSession::SetOnTxReadyCallback(OnTxReadyCallback_t fn)
 {
+	const std::lock_guard<std::recursive_mutex> lock(m_session_mutex);
 	m_tx_ready_callback = fn;
 }
 
 void WebsockSession::OnTxReady(WebsockSession &session)
 {
+	const std::lock_guard<std::recursive_mutex> lock(m_session_mutex);
 	if (m_tx_ready_callback)
 		m_tx_ready_callback(session);
 }
 
 uint32_t WebsockSession::SessionID()
 {
+	const std::lock_guard<std::recursive_mutex> lock(m_session_mutex);
 	return m_sessionID;
 }
 
 void WebsockSession::CommsHandler(const uint8_t* buff, const size_t length)
 {
+	const std::lock_guard<std::recursive_mutex> lock(m_session_mutex);
 	if (!buff || length < 2)
 		return;
 

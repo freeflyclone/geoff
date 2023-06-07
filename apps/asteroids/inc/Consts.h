@@ -15,6 +15,7 @@ namespace asteroids
 	const double SHIP_MAX_DELTA_V = 20.0;	 // limit max velocity, pixels per tic.
 	const int GUN_MAG_SIZE = 6;				 // max in-flight bullets at once
 	const float MUZZLE_VELOCITY = 500;		 // pixels per second
+	const float BULLET_DURATION = 1.5;		 // bullet duration in seconds
 	const double ROCK_RADIUS = 32.0;         // Rock radius in pixels.
 	const int ROCK_SPEED = 50;               // Rock speed in pixels/second;
 

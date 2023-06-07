@@ -15,14 +15,14 @@ Session::Session(uint32_t sessionID)
 	m_sessionID(sessionID),
 	m_player(nullptr)
 {
-	SS_TRACE(__FUNCTION__);
+	TRACE("New Session: " << m_sessionID);
 
 	GetUniverse();
 }
 
 Session::~Session()
 {
-	TRACE(__FUNCTION__);
+	TRACE("Session done: " << m_sessionID);
 }
 
 void Session::HandleNewSession(AppBuffer& rxBuffer)
@@ -102,7 +102,7 @@ void Session::TickEvent(uint32_t sessionID, uint32_t tickCount)
 	(void)sessionID;
 	(void)tickCount;
 
-	SS_TRACE(__FUNCTION__);
+	SS_TRACE(__FUNCTION__ << ", tid: " << std::this_thread::get_id());
 
 	if (m_player)
 		m_player->TickEvent(*this);

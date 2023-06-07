@@ -33,6 +33,7 @@ public:
 
 	std::shared_ptr<SESSION_TYPE> find_by_id(uint32_t sessionID)
 	{
+		assert(!m_sessions.empty());
 		return m_sessions[sessionID];
 	}
 
@@ -40,11 +41,14 @@ public:
 	{
 		const std::lock_guard<std::mutex> lock(m_sessions_mutex);
 
+		assert(!m_sessions.empty());
+		TRACE("deleted_by_id: " << sessionID);
 		m_sessions.erase(sessionID);
 	}
 
 	size_t get_count()
 	{
+		assert(!m_sessions.empty());
 		return m_sessions.size();
 	}
 
