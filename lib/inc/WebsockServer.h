@@ -17,7 +17,7 @@ public:
 	void IoContext(net::io_context* ioc);
 	net::io_context* IoContext();
 
-	void OnAccept(OnAcceptCallback_t);
+	void OnAccept(OnAcceptCallback_t, boost::beast::tcp_stream &stream);
 	void OnClose(uint32_t sessionID);
 
 	void CommsHandler(uint32_t sessionID, beast::flat_buffer buffer, std::size_t bytes_transferred);

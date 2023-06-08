@@ -58,9 +58,11 @@ class websocket_session
         // -------------------------------------------------------------------------------
         // when this call returns, a new WebsockSession for "m_sessionID" has been created.
         // -------------------------------------------------------------------------------
-        WebsockServer::GetInstance().OnAccept([&](uint32_t sessionID) {
+        auto on_accept_cb = [&](uint32_t sessionID)
+        {
             m_sessionID = sessionID;
-        });
+        };
+        WebsockServer::GetInstance().OnAccept(on_accept_cb, derived().get_stream());
 
         // Set the OnTxReadyCallback_t function member of the WebsockSession to this lambda
         // We get one for each session, thus each session now has its own OnTxReady interrupt
