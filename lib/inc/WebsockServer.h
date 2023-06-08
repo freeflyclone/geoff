@@ -11,6 +11,7 @@ class WebsockServer
 {
 public:
 	static WebsockServer& GetInstance();
+	typedef std::function<void(uint32_t tick)> OnTimerTickCallback_t;
 	typedef std::function<void(uint32_t sessionId)> OnAcceptCallback_t;
 
 	void IoContext(net::io_context* ioc);
@@ -23,7 +24,11 @@ public:
 	std::shared_ptr<WebsockSession> FindSessionByID(uint32_t sessionID);
 
 	void SetTimerInterval(uint32_t interval_in_us);
-	void StartTimer();
+	uint32_t GetTimerTick();
+	void TimerHandler();
+	void OnTimerTick(uint32_t count);
+	void ShutdownTimer();
+	void AddTimerTickCallback(OnTimerTickCallback_t fn);
 
 private:
 	// I know what you're thinking: WTF is this?  It's Magic Statics!
@@ -44,7 +49,11 @@ private:
 	net::io_context *m_ioc;
 
 	uint32_t m_interval_in_us;
+	uint32_t m_tick_count;
+	bool m_run_timer;
+	bool m_timer_complete;
 	net::deadline_timer* m_tick_timer;
+	std::vector<OnTimerTickCallback_t> m_timer_callbacks;
 };
 
 #endif

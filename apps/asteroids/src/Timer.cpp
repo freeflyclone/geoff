@@ -13,7 +13,7 @@ using namespace asteroids;
 
 namespace Websock
 {
-	WebsockSessionManager<Session> g_sessions;
+	WebsockSessionManager<Session> g_session_manager;
 };
 using namespace Websock;
 
@@ -75,7 +75,7 @@ void Timer::TickEvent()
 	if(g_universe)
 		g_universe->TickEvent(m_tick);
 
-	for (auto pair : g_sessions.get_map())
+	for (auto pair : g_session_manager.get_map())
 	{
 		auto sessionID = pair.first;
 		auto session = pair.second;

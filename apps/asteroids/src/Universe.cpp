@@ -12,6 +12,7 @@
 
 #include "WebsockSessionManager.h"
 #include "AppSession.h"
+#include "WebsockServer.h"
 
 using namespace asteroids;
 using namespace Websock;
@@ -36,7 +37,7 @@ namespace asteroids
 Universe::Universe(int width, int height)
 	: Size({ static_cast<double>(width), static_cast<double>(height) }),
 	m_rockField(std::make_unique<RockField>(width, height)),
-	m_timer(std::make_unique<Timer>(1000000 / static_cast<int>(FPS))),
+	//m_timer(std::make_unique<Timer>(1000000 / static_cast<int>(FPS))),
 	m_ticks(0),
 	m_stars()
 {
@@ -54,6 +55,8 @@ Universe::Universe(int width, int height)
 		m_stars.push_back({ starX, starY });
 	}
 	TRACE("Generated " << m_stars.size() << " stars.");
+
+	WebsockServer::GetInstance().AddTimerTickCallback(std::bind(&Universe::TickEvent, this, std::placeholders::_1));
 }
 
 Universe::~Universe()
@@ -78,12 +81,18 @@ void Universe::TickEvent(uint32_t tickCount)
 
 	m_ticks = tickCount;
 
+	if (g_session_manager.get_count() == 0)
+	{
+		TRACE("No sessions");
+		return;
+	}
+
 	if (m_rockField)
 		m_rockField->TickEvent();
 
 	CollisionDetection();
 
-	for (auto pair : g_sessions.get_map())
+	for (auto pair : g_session_manager.get_map())
 	{
 		auto sess = pair.second;
 
@@ -219,7 +228,7 @@ void Universe::PerSessionTickEvent(Session& session)
 
 		// go through all sessions looking for those with valid Asteroids::Player
 		// and hence a valid ship
-		for (auto pair : g_sessions.get_map())
+		for (auto pair : g_session_manager.get_map())
 		{
 			auto sessionID = pair.first;
 			auto sessPtr = pair.second;
@@ -245,7 +254,7 @@ void Universe::PerSessionTickEvent(Session& session)
 			txBuff2->set_uint16(static_cast<uint16_t>(numShips));
 
 			//TRACE("there are " << numShips << " other ship(s)");
-			for (auto pair : g_sessions.get_map())
+			for (auto pair : g_session_manager.get_map())
 			{
 				auto sessionID = pair.first;
 				auto sessPtr = pair.second;
@@ -279,7 +288,7 @@ void Universe::PerSessionTickEvent(Session& session)
 
 				txBuff2->set_uint16(static_cast<uint16_t>(totalBullets));
 
-				for (auto pair : g_sessions.get_map())
+				for (auto pair : g_session_manager.get_map())
 				{
 					auto sessionID = pair.first;
 					auto sessPtr = pair.second;

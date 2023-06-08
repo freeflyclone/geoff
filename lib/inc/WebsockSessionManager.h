@@ -48,7 +48,7 @@ public:
 
 	size_t get_count()
 	{
-		assert(!m_sessions.empty());
+		//assert(!m_sessions.empty());
 		return m_sessions.size();
 	}
 
