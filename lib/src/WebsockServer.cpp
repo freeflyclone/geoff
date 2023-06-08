@@ -44,6 +44,8 @@ void WebsockServer::IoContext(net::io_context* ioc)
 
 		// initiate the timer
 		TimerHandler();
+
+		SetTimerInterval(1000000 / 60);
 	}
 }
 
@@ -100,6 +102,17 @@ void WebsockServer::OnTimerTick(uint32_t count)
 {
 	for (auto fn : m_timer_callbacks)
 		fn(count);
+
+	for (auto pair : g_session_manager.get_map())
+	{
+		uint32_t sessionID = pair.first;
+		auto session = pair.second;
+
+		if (session)
+		{
+			session->TickEvent(sessionID, count);
+		}
+	}
 }
 
 void WebsockServer::TimerHandler()

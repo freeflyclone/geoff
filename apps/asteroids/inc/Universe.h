@@ -21,7 +21,6 @@ namespace asteroids
 
         void NewPlayer(Session&, int w, int h);
 
-        Timer* GetTimer() { return m_timer.get(); }
         std::shared_ptr<Player> GetPlayerById(uint32_t sessionID);
 
         RockField* GetRockField() { return m_rockField.get(); }
@@ -36,7 +35,6 @@ namespace asteroids
 
         std::unique_ptr<RockField> m_rockField;
         std::map<uint32_t, std::shared_ptr<Player>> m_players;
-        std::unique_ptr<Timer> m_timer;
         uint32_t m_ticks;
         StarField_t m_stars;
     };
