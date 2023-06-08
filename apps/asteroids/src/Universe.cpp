@@ -81,10 +81,7 @@ void Universe::TickEvent(uint32_t tickCount)
 	m_ticks = tickCount;
 
 	if (g_session_manager.get_count() == 0)
-	{
-		TRACE("No sessions");
 		return;
-	}
 
 	if (m_rockField)
 		m_rockField->TickEvent();

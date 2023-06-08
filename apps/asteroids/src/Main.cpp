@@ -1,5 +1,15 @@
 #include "geoff.h"
 
+#include "Session.h"
+#include "WebsockSessionManager.h"
+
+namespace Websock
+{
+    WebsockSessionManager <asteroids::Session> g_session_manager;
+};
+using namespace Websock;
+
+
 int main(int argc, char* argv[])
 {
     if (argc != 5)

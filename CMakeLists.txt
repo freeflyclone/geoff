@@ -33,7 +33,6 @@ file(GLOB GEOFF_APP_SRC_FILES
 	apps/asteroids/src/RockField.cpp
 	apps/asteroids/src/Session.cpp
 	apps/asteroids/src/Ship.cpp
-	apps/asteroids/src/Timer.cpp
 	apps/asteroids/src/Universe.cpp)
 	
 # Files to appear in "Header Files" project folder are explicitly listed here
@@ -47,7 +46,6 @@ file(GLOB GEOFF_APP_INC_FILES
 	apps/asteroids/inc/Session.h
 	apps/asteroids/inc/Ship.h
 	apps/asteroids/inc/Structs.h
-	apps/asteroids/inc/Timer.h
 	apps/asteroids/inc/Universe.h)
 	
 file(GLOB GEOFF_LIB_SRC_FILES
