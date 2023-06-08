@@ -234,6 +234,11 @@ public:
     {
         return ws_;
     }
+
+    boost::beast::tcp_stream& get_stream()
+    {
+        return ws_.next_layer().next_layer();
+    }
 };
 
 //------------------------------------------------------------------------------
@@ -264,6 +269,12 @@ public:
     websocket::stream<beast::tcp_stream>& ws()
     {
         return ws_;
+    }
+
+    // Called by the base class
+    boost::beast::tcp_stream& get_stream()
+    {
+        return ws_.next_layer();
     }
 };
 
