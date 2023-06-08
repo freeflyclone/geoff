@@ -22,6 +22,9 @@ public:
 	void CommsHandler(uint32_t sessionID, beast::flat_buffer buffer, std::size_t bytes_transferred);
 	std::shared_ptr<WebsockSession> FindSessionByID(uint32_t sessionID);
 
+	void SetTimerInterval(uint32_t interval_in_us);
+	void StartTimer();
+
 private:
 	// I know what you're thinking: WTF is this?  It's Magic Statics!
 	// https://blog.mbedded.ninja/programming/languages/c-plus-plus/magic-statics/
@@ -39,6 +42,9 @@ private:
 
 	std::recursive_mutex m_serverMutex;
 	net::io_context *m_ioc;
+
+	uint32_t m_interval_in_us;
+	net::deadline_timer* m_tick_timer;
 };
 
 #endif
