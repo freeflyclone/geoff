@@ -74,7 +74,6 @@ void Player::KeyEvent(int key, bool isDown)
 
 	if (isDown && m_phase != Playing)
 	{
-		auto old_phase = m_phase;
 		m_phase = Playing;
 		PL_TRACE("Old phase: " << old_phase << ", New phase: " << m_phase);
 		if (m_ship.Dead())

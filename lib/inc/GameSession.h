@@ -34,7 +34,7 @@
 class GameSession : public WebsockSession
 {
 public:
-	GameSession(uint32_t sessionID);
+	GameSession(uint32_t sessionID, boost::beast::tcp_stream& stream);
 	~GameSession();
 
 	void CommsHandler(AppBuffer &) override;

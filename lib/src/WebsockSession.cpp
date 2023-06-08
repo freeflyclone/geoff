@@ -6,8 +6,9 @@
 //#define WS_TRACE TRACE
 #define WS_TRACE(...)
 
-WebsockSession::WebsockSession(uint32_t sessionID) :
+WebsockSession::WebsockSession(uint32_t sessionID, boost::beast::tcp_stream& beast_stream) :
 	m_sessionID(sessionID),
+	m_beast_stream(beast_stream),
 	m_isLittleEndian(true),
 	m_tx_ready_callback(),
 	m_thread_id(std::this_thread::get_id())

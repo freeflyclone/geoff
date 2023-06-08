@@ -55,7 +55,7 @@ public:
 		UniverseTickMessage = 0x09
 	};
 
-	WebsockSession(uint32_t sessionID);
+	WebsockSession(uint32_t sessionID, boost::beast::tcp_stream& beast_stream);
 	virtual ~WebsockSession();
 
 	// Allow caller to specify a callback when a new AppBuffer for TX is ready
@@ -85,6 +85,8 @@ public:
 
 protected:
 	uint32_t m_sessionID;
+	boost::beast::tcp_stream& m_beast_stream;
+
 	bool m_isLittleEndian;
 
 	std::deque<std::unique_ptr<AppBuffer>> m_txQue;

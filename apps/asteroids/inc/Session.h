@@ -29,7 +29,6 @@ namespace asteroids
 		void HandleResizeEvent(AppBuffer& rxBuffer);
 
 		uint32_t m_sessionID;
-		boost::beast::tcp_stream& m_beast_stream;
 		std::shared_ptr<Player> m_player;
 	};
 

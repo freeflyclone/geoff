@@ -12,8 +12,8 @@ std::ostream& operator<<(std::ostream& os, const GameSession& gs)
 	return os;
 }
 
-GameSession::GameSession(uint32_t sessionID)
-	: WebsockSession(sessionID)
+GameSession::GameSession(uint32_t sessionID, boost::beast::tcp_stream& stream)
+	: WebsockSession(sessionID, stream)
 {
 	GS_TRACE("sessionID: " << SessionID());
 }
