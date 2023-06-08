@@ -9,10 +9,11 @@
 
 using namespace asteroids;
 
-Session::Session(uint32_t sessionID)
+Session::Session(uint32_t sessionID, boost::beast::tcp_stream& beast_stream)
 	:
 	GameSession(sessionID),
 	m_sessionID(sessionID),
+	m_beast_stream(beast_stream),
 	m_player(nullptr)
 {
 	TRACE("New Session: " << m_sessionID);

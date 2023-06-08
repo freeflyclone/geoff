@@ -19,13 +19,13 @@ public:
 		TRACE("");
 	}
 
-	virtual uint32_t add_session() 
+	virtual uint32_t add_session(boost::beast::tcp_stream& beast_stream) 
 	{
 		const std::lock_guard<std::mutex> lock(m_sessions_mutex);
 		
 		auto session_id = m_session_id;
 
-		m_sessions[m_session_id] = std::make_shared<SESSION_TYPE>(m_session_id);
+		m_sessions[m_session_id] = std::make_shared<SESSION_TYPE>(m_session_id, beast_stream);
 		m_session_id = (m_session_id + 1) & 0xFFFFFFFF;
 
 		return session_id;

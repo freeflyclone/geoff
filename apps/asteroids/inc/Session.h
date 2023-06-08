@@ -15,7 +15,7 @@ namespace asteroids
 	class Session : public GameSession
 	{
 	public:
-		Session(uint32_t sessionID);
+		Session(uint32_t sessionID, boost::beast::tcp_stream& stream);
 		~Session();
 
 		Player* GetPlayer() { return m_player.get(); }
@@ -29,6 +29,7 @@ namespace asteroids
 		void HandleResizeEvent(AppBuffer& rxBuffer);
 
 		uint32_t m_sessionID;
+		boost::beast::tcp_stream& m_beast_stream;
 		std::shared_ptr<Player> m_player;
 	};
 

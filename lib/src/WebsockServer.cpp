@@ -56,7 +56,7 @@ net::io_context* WebsockServer::IoContext()
 
 void WebsockServer::OnAccept(OnAcceptCallback_t fn, boost::beast::tcp_stream& stream)
 {
-	fn(g_session_manager.add_session());
+	fn(g_session_manager.add_session(stream));
 }
 
 void WebsockServer::OnClose(uint32_t sessionID)
