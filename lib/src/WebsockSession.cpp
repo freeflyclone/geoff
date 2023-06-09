@@ -18,7 +18,7 @@ WebsockSession::WebsockSession(uint32_t sessionID, boost::beast::tcp_stream& bea
 
 WebsockSession::~WebsockSession()
 {
-	TRACE("sessionID: " << m_sessionID << ", thread_id: " << std::this_thread::get_id() << std::endl);
+	TRACE("sessionID: " << m_sessionID << ", thread_id: " << std::this_thread::get_id());
 }
 
 void WebsockSession::SetOnTxReadyCallback(OnTxReadyCallback_t fn)

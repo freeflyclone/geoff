@@ -90,7 +90,6 @@ class websocket_session
         }
 
         do_read();
-
     }
 
     void do_read()
@@ -207,6 +206,11 @@ public:
         // Accept the WebSocket upgrade request
         do_accept(std::move(req));
     }
+
+    ~websocket_session()
+    {
+        TRACE(__FUNCTION__ << std::endl);
+    }
 };
 
 //------------------------------------------------------------------------------
@@ -225,6 +229,7 @@ public:
     explicit ssl_websocket_session(beast::ssl_stream<beast::tcp_stream>&& stream) : 
         ws_(std::move(stream))
     {
+        TRACE(std::endl << __FUNCTION__);
         ws_.binary(true);
 
         const boost::asio::ip::tcp::no_delay option(true);

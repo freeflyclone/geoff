@@ -5,7 +5,7 @@
 
 namespace Websock
 {
-    WebsockSessionManager <asteroids::Session> g_session_manager;
+    WebsockSessionManager <asteroids::Session> gsm;
 };
 using namespace Websock;
 

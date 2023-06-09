@@ -10,11 +10,11 @@
 // compiler how to complete the type definition for the desired 
 // derived WebsockSession.  
 // 
-// It is expected that only a single "g_session_manager" object will
+// It is expected that only a single "gsm" object will
 // ever exist.  AsteroidsSession is just the first example.
 #include "asteroids/inc/Session.h"
 namespace Websock {
-	extern WebsockSessionManager<asteroids::Session> g_session_manager;
+	extern WebsockSessionManager<asteroids::Session> gsm;
 }
 
 #endif

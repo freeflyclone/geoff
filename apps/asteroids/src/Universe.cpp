@@ -80,7 +80,7 @@ void Universe::TickEvent(uint32_t tickCount)
 
 	m_ticks = tickCount;
 
-	if (g_session_manager.get_count() == 0)
+	if (gsm.get_count() == 0)
 		return;
 
 	if (m_rockField)
@@ -88,7 +88,7 @@ void Universe::TickEvent(uint32_t tickCount)
 
 	CollisionDetection();
 
-	for (auto pair : g_session_manager.get_map())
+	for (auto pair : gsm.get_map())
 	{
 		auto sess = pair.second;
 
@@ -224,7 +224,7 @@ void Universe::PerSessionTickEvent(Session& session)
 
 		// go through all sessions looking for those with valid Asteroids::Player
 		// and hence a valid ship
-		for (auto pair : g_session_manager.get_map())
+		for (auto pair : gsm.get_map())
 		{
 			auto sessionID = pair.first;
 			auto sessPtr = pair.second;
@@ -250,7 +250,7 @@ void Universe::PerSessionTickEvent(Session& session)
 			txBuff2->set_uint16(static_cast<uint16_t>(numShips));
 
 			//TRACE("there are " << numShips << " other ship(s)");
-			for (auto pair : g_session_manager.get_map())
+			for (auto pair : gsm.get_map())
 			{
 				auto sessionID = pair.first;
 				auto sessPtr = pair.second;
@@ -284,7 +284,7 @@ void Universe::PerSessionTickEvent(Session& session)
 
 				txBuff2->set_uint16(static_cast<uint16_t>(totalBullets));
 
-				for (auto pair : g_session_manager.get_map())
+				for (auto pair : gsm.get_map())
 				{
 					auto sessionID = pair.first;
 					auto sessPtr = pair.second;

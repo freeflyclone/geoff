@@ -56,21 +56,21 @@ net::io_context* WebsockServer::IoContext()
 
 void WebsockServer::OnAccept(OnAcceptCallback_t fn, boost::beast::tcp_stream& stream)
 {
-	fn(g_session_manager.add_session(stream));
+	fn(gsm.add_session(stream));
 }
 
 void WebsockServer::OnClose(uint32_t sessionID)
 {
 	const std::lock_guard<std::recursive_mutex> lock(m_serverMutex);
 
-	g_session_manager.delete_by_id(sessionID);
+	gsm.delete_by_id(sessionID);
 }
 
 void WebsockServer::CommsHandler(uint32_t sessionID, beast::flat_buffer in_buffer, std::size_t in_length)
 {
 	const std::lock_guard<std::recursive_mutex> lock(m_serverMutex);
 
-	auto session = g_session_manager.find_by_id(sessionID);
+	auto session = gsm.find_by_id(sessionID);
 
 	if (!session)
 	{
@@ -85,7 +85,7 @@ std::shared_ptr<WebsockSession> WebsockServer::FindSessionByID(uint32_t sessionI
 {
 	const std::lock_guard<std::recursive_mutex> lock(m_serverMutex);
 
-	return g_session_manager.find_by_id(sessionID);
+	return gsm.find_by_id(sessionID);
 }
 
 void WebsockServer::SetTimerInterval(uint32_t interval_in_us)
@@ -103,10 +103,10 @@ void WebsockServer::OnTimerTick(uint32_t count)
 	for (auto fn : m_timer_callbacks)
 		fn(count);
 
-	for (auto pair : g_session_manager.get_map())
+	for (auto pair = gsm.get_map().cbegin(); pair != gsm.get_map().cend(); pair++ )
 	{
-		uint32_t sessionID = pair.first;
-		auto session = pair.second;
+		uint32_t sessionID = pair->first;
+		auto session = pair->second;
 
 		if (session)
 		{
