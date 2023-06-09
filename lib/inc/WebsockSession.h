@@ -83,6 +83,8 @@ public:
 	// Call the TX ready callback specified by the caller
 	void OnTxReady(WebsockSession&);
 
+	boost::beast::tcp_stream& GetStream() { return m_beast_stream; }
+
 protected:
 	uint32_t m_sessionID;
 	boost::beast::tcp_stream& m_beast_stream;

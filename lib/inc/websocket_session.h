@@ -71,13 +71,13 @@ class websocket_session
 
         if (session)
         {
-            session->SetOnTxReadyCallback([this](WebsockSession& session) {
-                post(derived().ws().get_executor(), [&]() {
-                    if (session.TxQueueEmpty())
+            session->SetOnTxReadyCallback([this](WebsockSession& sess) {
+                post(sess.GetStream().get_executor(), [&]() {
+                    if (sess.TxQueueEmpty())
                         return;
 
                     std::unique_ptr<AppBuffer> txBuffer;
-                    if (session.GetNextTxBuffer(txBuffer))
+                    if (sess.GetNextTxBuffer(txBuffer))
                     {
                         do_write(txBuffer->data(), txBuffer->bytesWritten());
                     }
