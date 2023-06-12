@@ -55,7 +55,8 @@ file(GLOB GEOFF_LIB_SRC_FILES
 	lib/src/SSLContext.cpp
 	lib/src/ServerUtils.cpp
 	lib/src/WebsockServer.cpp
-	lib/src/WebsockSession.cpp)
+	lib/src/WebsockSession.cpp
+	lib/src/WebsockTimer.cpp)
 
 file(GLOB GEOFF_LIB_INC_FILES
 	apps/AppSession.h
@@ -69,7 +70,8 @@ file(GLOB GEOFF_LIB_INC_FILES
 	lib/inc/websocket_session.h
 	lib/inc/WebsockServer.h
 	lib/inc/WebsockSession.h
-	lib/inc/WebsockSessionManager.h)
+	lib/inc/WebsockSessionManager.h
+	lib/inc/WebsockTimer.h)
 
 # Files within the source tree "www" tree are all implicitly (automatically) added.
 # Things like .html, .js, .gif, etc. The tree structure is preserved. 
